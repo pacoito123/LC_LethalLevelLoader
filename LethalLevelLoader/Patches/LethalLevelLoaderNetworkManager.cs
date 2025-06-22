@@ -35,8 +35,15 @@ namespace LethalLevelLoader
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            gameObject.name = "LethalLevelLoaderNetworkManager";
+
+            if (_instance != null && _instance != this) // Using '_instance' to avoid the FindObjectOfType() search + error log.
+            {
+                Destroy(Instance);
+            }
+
             Instance = this;
+
+            gameObject.name = "LethalLevelLoaderNetworkManager";
             DebugHelper.Log("LethalLevelLoaderNetworkManager Spawned.", DebugType.User);
         }
 
