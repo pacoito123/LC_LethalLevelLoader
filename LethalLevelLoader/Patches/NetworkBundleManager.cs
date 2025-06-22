@@ -44,9 +44,19 @@ namespace LethalLevelLoader
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            if (_instance != null && _instance != this) // Using '_instance' to avoid the FindObjectOfType() search + error log.
+            {
+                // Transfer currently-loaded bundle to the new bundle manager instance.
+                currentRouteRequestor = Instance.currentRouteRequestor;
+
+                Destroy(Instance);
+            }
+
+            Instance = this;
+
             gameObject.name = "NetworkBundleManager";
             DebugHelper.Log("NetworkBundleManger Has Spawned!", DebugType.IAmBatby);
-            Instance = this;
 
             if (Plugin.IsLobbyInitialized == true)
                 Initialize();
@@ -59,16 +69,17 @@ namespace LethalLevelLoader
             AssetBundles.AssetBundleLoader.OnBundleUnloaded.AddListener(Instance.RefreshLoadStatus);
         }
 
-        public override void OnNetworkDespawn()
+        public override void OnDestroy()
         {
-            base.OnNetworkDespawn();
             AssetBundles.AssetBundleLoader.OnBundleLoaded.RemoveListener(Instance.RefreshLoadStatus);
             AssetBundles.AssetBundleLoader.OnBundleUnloaded.RemoveListener(Instance.RefreshLoadStatus);
+            base.OnDestroy();
         }
 
         //This should run anytime the client joins a lobby
         private void Initialize()
         {
+            Plugin.onLobbyInitialized -= Initialize; // Unsubscribe immediately from the event, to ensure it's only called once per instance.
             DebugHelper.Log("NetworkBundleManager Initializing.", DebugType.User);
             GenerateSceneDict();
             GenerateAssetBundleGroupDict();
@@ -84,12 +95,15 @@ namespace LethalLevelLoader
             if (currentRouteRequestor != null)
                 previousGroups = GetRouteGroups(currentRouteRequestor);
 
-            if (currentRouteRequestor != LevelManager.CurrentExtendedLevel)
+            // Only unload when about to load a different level.
+            if (LevelManager.CurrentExtendedLevel != null && currentRouteRequestor != LevelManager.CurrentExtendedLevel)
+            {
                 foreach (AssetBundleGroup bundleGroup in previousGroups)
                     if (!newGroups.Contains(bundleGroup))
                         bundleGroup.TryUnloadGroup();
 
-            currentRouteRequestor = LevelManager.CurrentExtendedLevel;
+                currentRouteRequestor = LevelManager.CurrentExtendedLevel;
+            }
 
             foreach (AssetBundleGroup bundleGroup in newGroups)
                 if (!previousGroups.Contains(bundleGroup))
