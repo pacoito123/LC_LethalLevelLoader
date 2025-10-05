@@ -30,7 +30,7 @@ namespace LethalLevelLoader
 
         public List<NetworkSceneInfo> networkSceneInfos;
         internal Dictionary<string, List<AssetBundleGroup>> assetBundleGroupSceneDict = new Dictionary<string, List<AssetBundleGroup>>();
-        
+
         //internal List<AssetBundleGroup> currentRouteRequestedBundles = new List<AssetBundleGroup>();
         internal ExtendedLevel currentRouteRequestor;
 
@@ -107,7 +107,7 @@ namespace LethalLevelLoader
             RequestLoadStatusRefreshServerRpc();
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, RequireOwnership = false)]
         internal void RequestLoadStatusRefreshServerRpc()
         {
             DebugHelper.Log("Refeshing Loaded Bundles Status!", DebugType.User);
@@ -117,7 +117,7 @@ namespace LethalLevelLoader
             RequestLoadStatusRefreshClientRpc();
         }
 
-        [ClientRpc]
+        [Rpc(SendTo.ClientsAndHost)]
         private void RequestLoadStatusRefreshClientRpc()
         {
             RefreshLoadStatus();
@@ -140,7 +140,7 @@ namespace LethalLevelLoader
             SetLoadedStatusServerRpc(NetworkManager.LocalClientId, loadedStatus);
         }
 
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, RequireOwnership = false)]
         private void SetLoadedStatusServerRpc(ulong clientID, bool status)
         {
             int index = NetworkManager.ConnectedClientsIds.ToList().IndexOf(clientID);
