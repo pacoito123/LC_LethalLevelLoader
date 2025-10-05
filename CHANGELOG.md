@@ -1,18 +1,24 @@
 **Changelog**
 --
 
-**<details><summary>Version 1.4.12</summary>**
+**<details><summary>Version 1.5.0</summary>**
 
 **<details><summary>Features</summary>**
 
-* Updated mod for Lethal Company version 70
+* Updated mod for Lethal Company version 73
 * Added ExtendedUnlockableItem (suits, ship furniture, ship upgrades)
+
+</details>
 
 **<details><summary>Fixes</summary>**
 
 * Fixed SpawnableMapObjects defined in ExtendedDungeonFlow not spawning for clients
 * Fixed some ExtendedContent not being re-registered on the terminal after a lobby reload
 * Fixed OnLethalBundleLoaded listeners being called multiple times (once for every bundle found)
+* Fixed bundle of the currently-routed moon unloading immediately after reloading the save file
+  * Should make [LLLHotreloadPatch](https://thunderstore.io/c/lethal-company/p/dopadream/LLLHotreloadPatch) no longer needed
+
+</details>
 
 </details>
 
