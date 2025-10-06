@@ -121,7 +121,7 @@ namespace LethalLevelLoader
             RequestLoadStatusRefreshServerRpc();
         }
 
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [ServerRpc(RequireOwnership = false)]
         internal void RequestLoadStatusRefreshServerRpc()
         {
             DebugHelper.Log("Refeshing Loaded Bundles Status!", DebugType.User);
@@ -131,7 +131,7 @@ namespace LethalLevelLoader
             RequestLoadStatusRefreshClientRpc();
         }
 
-        [Rpc(SendTo.ClientsAndHost)]
+        [ClientRpc]
         private void RequestLoadStatusRefreshClientRpc()
         {
             RefreshLoadStatus();
@@ -154,7 +154,7 @@ namespace LethalLevelLoader
             SetLoadedStatusServerRpc(NetworkManager.LocalClientId, loadedStatus);
         }
 
-        [Rpc(SendTo.Server, RequireOwnership = false)]
+        [ServerRpc(RequireOwnership = false)]
         private void SetLoadedStatusServerRpc(ulong clientID, bool status)
         {
             int index = NetworkManager.ConnectedClientsIds.ToList().IndexOf(clientID);
