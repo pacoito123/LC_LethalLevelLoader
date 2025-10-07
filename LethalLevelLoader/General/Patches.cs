@@ -356,13 +356,16 @@ if (AssetBundleLoader.noBundlesFound == true)
             foreach (ExtendedBuyableVehicle customExtendedBuyableVehicle in PatchedContent.CustomExtendedBuyableVehicles)
                 TerminalManager.CreateBuyableVehicleTerminalData(customExtendedBuyableVehicle);
 
-            DebugStopwatch.StartStopWatch("ExtendedUnlockableItem Injection");
+            if (Plugin.IsSetupComplete == false) // Only needs to be done once.
+            {
+                DebugStopwatch.StartStopWatch("ExtendedUnlockableItem Injection");
 
-            UnlockableItemManager.PatchVanillaUnlockableItemLists();
-            UnlockableItemManager.SetUnlockableItemIDs();
+                UnlockableItemManager.PatchVanillaUnlockableItemLists();
+                UnlockableItemManager.SetUnlockableItemIDs();
 
-            foreach (ExtendedBuyableVehicle customExtendedBuyableVehicle in PatchedContent.CustomExtendedBuyableVehicles)
-                TerminalManager.CreateBuyableVehicleTerminalData(customExtendedBuyableVehicle);
+                foreach (ExtendedUnlockableItem customExtendedUnlockableItem in PatchedContent.CustomExtendedUnlockableItems)
+                    TerminalManager.CreateUnlockableItemTerminalData(customExtendedUnlockableItem);
+            }
 
             DebugStopwatch.StartStopWatch("Create ExtendedLevelGroups & Filter Assets");
 
@@ -419,18 +422,6 @@ if (AssetBundleLoader.noBundlesFound == true)
                             allVehicles.Add(extendedBuyableVehicle.BuyableVehicle);
 
                         Terminal.buyableVehicles = [.. allVehicles];
-                    }
-                    // ...
-
-                    // Load ExtendedUnlockableItem store page entries:
-                    if (extendedMod.ExtendedUnlockableItems.Count > 0)
-                    {
-                        List<UnlockableItem> allBuyableUnlockableItems = [.. StartOfRound.unlockablesList.unlockables];
-
-                        foreach (ExtendedUnlockableItem extendedUnlockableItem in extendedMod.ExtendedUnlockableItems)
-                            allBuyableUnlockableItems.Add(extendedUnlockableItem.UnlockableItem);
-
-                        StartOfRound.unlockablesList.unlockables = [.. allBuyableUnlockableItems];
                     }
                     // ...
                 }

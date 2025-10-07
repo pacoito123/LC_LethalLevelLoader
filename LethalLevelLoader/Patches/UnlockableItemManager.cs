@@ -22,7 +22,7 @@ namespace LethalLevelLoader
             {
                 if (extendedUnlockableItem.UnlockableItem.unlockableType == 1)
                 {
-                    if (extendedUnlockableItem.UnlockableItem.prefabObject == null && extendedUnlockableItem.UnlockableItem.alreadyUnlocked)
+                    if (extendedUnlockableItem.UnlockableItem.prefabObject == null || extendedUnlockableItem.UnlockableItem.alreadyUnlocked)
                     {
                         continue;
                     }
