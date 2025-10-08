@@ -55,11 +55,11 @@ public static class NetworkScenePatcher
         if (patched) return; patched = true;
 
         Hook("GenerateScenesInBuild", GenerateScenesInBuild_Hook);
-        Hook("SceneNameFromHash", SceneNameFromHash_Hook);
-        Hook("ValidateSceneBeforeLoading", ValidateSceneBeforeLoading_Hook, new[] {typeof(int), typeof(string), typeof(LoadSceneMode)});
-        Hook("SceneHashFromNameOrPath", ReplaceBuildIndexByScenePath);
-        Hook("ValidateSceneEvent", ReplaceBuildIndexByScenePath);
-        Hook("ScenePathFromHash", ReplaceScenePathByBuildIndex);
+        Hook("SceneNameFromHash", SceneNameFromHash_Hook, [typeof(uint)]);
+        Hook("ValidateSceneBeforeLoading", ValidateSceneBeforeLoading_Hook, [typeof(int), typeof(string), typeof(LoadSceneMode)]);
+        Hook("SceneHashFromNameOrPath", ReplaceBuildIndexByScenePath, [typeof(string)]);
+        Hook("ValidateSceneEvent", ReplaceBuildIndexByScenePath, [typeof(string), typeof(bool)]);
+        Hook("ScenePathFromHash", ReplaceScenePathByBuildIndex, [typeof(uint)]);
     }
 
     internal static void Hook(string target, Delegate func, params Type[] args) => hooks.Hook<NetworkSceneManager>(target, func, args);

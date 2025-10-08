@@ -236,6 +236,9 @@ namespace LethalLevelLoader
 
         private static bool TryRegisterNetworkPrefabReference(PrefabReference prefabReference)
         {
+            if (prefabReference.Prefab == null)
+                return (false);
+
             if (VanillaNetworkPrefabNameDict.TryGetValue(prefabReference.Prefab.name, out GameObject vanillaPrefab))
             {
                 prefabReference.Restore(vanillaPrefab);

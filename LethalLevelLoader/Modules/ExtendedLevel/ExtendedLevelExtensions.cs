@@ -6,6 +6,6 @@ namespace LethalLevelLoader
 {
     public static class ExtendedLevelExtensions
     {
-        public static ExtendedLevel AsExtended(this SelectableLevel level) => LevelManager.ExtensionDictionary[level];
+        public static ExtendedLevel AsExtended(this SelectableLevel level) => (level.name != "TestAllEnemies") ? LevelManager.ExtensionDictionary[level] : null;
     }
 }
