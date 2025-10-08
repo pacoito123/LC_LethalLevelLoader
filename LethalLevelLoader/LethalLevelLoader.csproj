@@ -5,7 +5,7 @@
       <TargetFramework>netstandard2.1</TargetFramework>
       <AssemblyName>LethalLevelLoader</AssemblyName>
       <Description>A Custom API to support the manual and dynamic integration of custom levels and dungeons in Lethal Company.</Description>
-      <Version>1.4.12</Version>
+      <Version>2.0.0</Version>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
       <LangVersion>preview</LangVersion>
 
@@ -43,7 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Evaisa.LethalLib" Version="0.16.2" />
+    <PackageReference Include="Evaisa.LethalLib" Version="1.0.3" PrivateAssets="all" />
     <PackageReference Include="MinVer" Version="4.*" PrivateAssets="all" Private="false" />
   </ItemGroup>
 
@@ -64,12 +64,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MaxWasUnavailable.LethalModDataLib" Version="1.2.2" />
-    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="70.0.0-ngd.0" Publicize="true" />
+    <PackageReference Include="MaxWasUnavailable.LethalModDataLib" Version="1.2.2" PrivateAssets="all" />
+    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="73.0.0-ngd.0" PrivateAssets="all" Publicize="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -77,13 +77,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="LethalFoundation">
-      <HintPath>..\..\..\..\Program Files (x86)\Steam\steamapps\common\Lethal Company\BepInEx\plugins\LethalFoundation\LethalFoundation.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="../LethalFoundation/LethalFoundation/LethalFoundation.csproj">
+        <PrivateAssets>all</PrivateAssets>
+        <Project>{5FF7B90C-5730-4749-B0F8-C428C1B226B0}</Project>
+        <Name>LethalFoundation</Name>
+        <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 
   <Target Name="NetcodePatch" AfterTargets="PostBuildEvent">
-    <Exec Command="netcode-patch &quot;$(TargetPath)&quot; @(ReferencePathWithRefAssemblies-> '&quot;%(Identity)&quot;', ' ')" />
+    <Exec Command="netcode-patch -uv 2022.3.62 -nv 1.12.0 -tv 1.0.0 &quot;$(TargetPath)&quot; @(ReferencePathWithRefAssemblies->'&quot;%(Identity)&quot;', ' ')" />
   </Target>
 
   <PropertyGroup>
