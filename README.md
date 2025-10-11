@@ -1,5 +1,9 @@
-**LethalLevelLoader**
+**LethalLevelLoaderUpdated**
 --
+
+> **NOTE:** This is a temporary upload of [LethalLevelLoader](https://thunderstore.io/c/lethal-company/p/IAmBatby/LethalLevelLoader) ([MIT](https://raw.githubusercontent.com/IAmBatby/LethalLevelLoader/b629d1db2256f60588e96996e9702d8c7c0b034e/LICENSE.md)) updated for the latest versions of the game (`v73` and above), while the [pull request](https://github.com/IAmBatby/LethalLevelLoader/pull/190) is still under review. This package will be deprecated the moment an update is finalized and released.
+
+---
 
 **A Custom API to support the manual and dynamic integration of all forms of custom content in Lethal Company.**
 

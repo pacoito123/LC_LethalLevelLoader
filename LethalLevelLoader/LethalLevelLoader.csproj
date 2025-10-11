@@ -66,6 +66,15 @@
     <PackageReference Include="LethalCompany.GameLibs.Steam" Version="73.0.0-ngd.0" PrivateAssets="all" Publicize="true" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LethalLevelLoader.Patcher\LethalLevelLoader.Patcher.csproj">
+      <PrivateAssets>all</PrivateAssets>
+      <Project>{61D32BE1-468B-4F5F-9B30-11B4760235BE}</Project>
+      <Name>LethalLevelLoader.Patcher</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
   <Target Name="NetcodePatch" AfterTargets="PostBuildEvent">
     <Exec Command="netcode-patch -uv 2022.3.62 -nv 1.12.0 -tv 1.0.0 &quot;$(TargetPath)&quot; @(ReferencePathWithRefAssemblies->'&quot;%(Identity)&quot;', ' ')" />
   </Target>

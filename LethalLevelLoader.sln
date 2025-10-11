@@ -5,6 +5,8 @@ VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LethalLevelLoader", "LethalLevelLoader\LethalLevelLoader.csproj", "{79E1F472-4E91-4514-8F19-914AD5255804}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LethalLevelLoader.Patcher", "LethalLevelLoader.Patcher\LethalLevelLoader.Patcher.csproj", "{61D32BE1-468B-4F5F-9B30-11B4760235BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{79E1F472-4E91-4514-8F19-914AD5255804}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79E1F472-4E91-4514-8F19-914AD5255804}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79E1F472-4E91-4514-8F19-914AD5255804}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61D32BE1-468B-4F5F-9B30-11B4760235BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61D32BE1-468B-4F5F-9B30-11B4760235BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61D32BE1-468B-4F5F-9B30-11B4760235BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61D32BE1-468B-4F5F-9B30-11B4760235BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
