@@ -1,6 +1,15 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.5.1</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed clients not being able to land the ship (after the game has started)
+  * Also fixed being able to pull the lever before the ship finished routing, which would play the animation but not do anything
+
+</details>
+
 **<details><summary>Version 1.5.0</summary>**
 
 **<details><summary>Features</summary>**
