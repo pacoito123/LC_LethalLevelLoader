@@ -10,6 +10,8 @@
 
 </details>
 
+</details>
+
 **<details><summary>Version 1.5.0</summary>**
 
 **<details><summary>Features</summary>**
