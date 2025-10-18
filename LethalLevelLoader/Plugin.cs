@@ -5,6 +5,7 @@ using HarmonyLib;
 using LethalLevelLoader.Tools;
 using System;
 using System.Reflection;
+using Unity.Netcode;
 using UnityEngine;
 using Application = UnityEngine.Application;
 
@@ -17,7 +18,7 @@ namespace LethalLevelLoader
     {
         public const string ModGUID = "imabatby.lethallevelloader";
         public const string ModName = "LethalLevelLoader";
-        public const string ModVersion = "1.5.0";
+        public const string ModVersion = "1.5.1";
 
         internal static Plugin Instance;
 
@@ -56,11 +57,14 @@ namespace LethalLevelLoader
             Harmony.PatchAll(typeof(SafetyPatches));
 
             TrySoftPatch(LethalLib.Plugin.ModGUID, typeof(LethalLibPatches));
-			
-            NetworkScenePatcher.Patch();
-			Patches.InitMonoModHooks();
 
-            NetcodePatch();
+            NetworkScenePatcher.Patch();
+            Patches.InitMonoModHooks();
+
+            // Allow using NetworkVariables with bool types:
+            NetworkVariableSerializationTypes.InitializeSerializer_UnmanagedByMemcpy<bool>();
+            NetworkVariableSerializationTypes.InitializeEqualityChecker_UnmanagedIEquatable<bool>();
+            // ...
 
             GameObject assetBundleLoaderObject = new GameObject("LethalLevelLoader AssetBundleLoader");
             AssetBundleLoader assetBundleLoader = assetBundleLoaderObject.AddComponent<AssetBundleLoader>();
@@ -102,30 +106,6 @@ namespace LethalLevelLoader
         {
             IsLobbyInitialized = true;
             onLobbyInitialized?.Invoke();
-        }
-
-        private void NetcodePatch()
-        {
-            try
-            {
-                var types = Assembly.GetExecutingAssembly().GetTypes();
-                foreach (var type in types)
-                {
-                    var methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-                    foreach (var method in methods)
-                    {
-                        var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
-                        if (attributes.Length > 0)
-                        {
-                            method.Invoke(null, null);
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                DebugHelper.LogError("NetcodePatcher Failed! This Is Very Bad.", DebugType.Developer);
-            }
         }
 
         internal static void TrySoftPatch(string pluginName, Type type)
