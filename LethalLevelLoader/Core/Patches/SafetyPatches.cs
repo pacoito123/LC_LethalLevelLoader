@@ -83,11 +83,11 @@ namespace LethalLevelLoader
         }
 
 
-        [HarmonyPriority(harmonyPriority)]
+        /* [HarmonyPriority(harmonyPriority)]
         [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
-        [HarmonyPrefix]
-        internal static bool RoundManagerSpawnScrapInLevel_Prefix()
-        {
+        [HarmonyPrefix] */
+        internal static bool RoundManagerSpawnScrapInLevel_Prefix() => true;
+        /* {
             List<SpawnableItemWithRarity> invalidSpawnableItemWithRarity = new List<SpawnableItemWithRarity>();
             foreach (SpawnableItemWithRarity spawnableScrap in LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap)
                 if (spawnableScrap.spawnableItem == null || spawnableScrap.rarity == 0)
@@ -105,7 +105,7 @@ namespace LethalLevelLoader
             }
 
             return (true);
-        }
+        } */
 
         [HarmonyPriority(harmonyPriority)]
         [HarmonyPatch(typeof(TimeOfDay), "SetWeatherBasedOnVariables")]
