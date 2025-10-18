@@ -735,37 +735,45 @@ if (AssetBundleLoader.noBundlesFound == true)
                 NetworkBundleManager.Instance.OnClientsChangedRefresh();
         }
 
-        [HarmonyPatch(typeof(StartMatchLever), nameof(StartMatchLever.Start)), HarmonyPostfix, HarmonyPriority(priority)]
-        internal static void StartMatchLeverStart_Postfix(StartMatchLever __instance)
-        {
-            previousHoverTip = __instance.triggerScript.hoverTip;
-            previousInteractableState = __instance.triggerScript.interactable;
-        }
-
-        [HarmonyPatch(typeof(StartMatchLever), nameof(StartMatchLever.Update)), HarmonyPrefix, HarmonyPriority(priority)]
-        internal static void StartMatchLeverUpdate_Prefix(StartMatchLever __instance)
-        {
-            if (SceneManager.loadedSceneCount > 1) return;
-            __instance.triggerScript.disabledHoverTip = NetworkBundleManager.AllowedToLoadLevel ? previousHoverTip : disabledText;
-            __instance.triggerScript.interactable = NetworkBundleManager.AllowedToLoadLevel ? previousInteractableState : false;
-
-            if (NetworkBundleManager.AllowedToLoadLevel == true)
-            {
-                previousInteractableState = __instance.triggerScript.interactable;
-                previousHoverTip = __instance.triggerScript.disabledHoverTip;
-            }
-        }
-
 
         internal const string disabledText = "[ At least one player is loading custom moon! ]";
-        private static string previousHoverTip;
-        private static bool previousInteractableState;
-        [HarmonyPatch(typeof(StartMatchLever), nameof(StartMatchLever.Update)), HarmonyPostfix, HarmonyPriority(priority)]
-        internal static void StartMatchLeverUpdate_Postfix(StartMatchLever __instance)
+
+        [HarmonyPatch(typeof(StartMatchLever), nameof(StartMatchLever.Update)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> StartMatchLever_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            if (SceneManager.loadedSceneCount > 1) return;
-            __instance.triggerScript.disabledHoverTip = NetworkBundleManager.AllowedToLoadLevel ? previousHoverTip : disabledText;
-            __instance.triggerScript.interactable = NetworkBundleManager.AllowedToLoadLevel ? previousInteractableState : false;
+            CodeMatch[] matches = [new(OpCodes.Call, AccessTools.Method(typeof(GameNetworkManager), "get_Instance")),
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(GameNetworkManager), nameof(GameNetworkManager.gameHasStarted)))];
+
+            return new CodeMatcher(instructions, generator).MatchForward(false, matches)
+            .Advance(3)
+            .InsertAndAdvance( // Set lever as uninteractable for clients while the game hasn't started yet.
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(StartMatchLever), nameof(StartMatchLever.triggerScript))),
+                new(OpCodes.Ldc_I4_0),
+                new(OpCodes.Stfld, AccessTools.Field(typeof(InteractTrigger), nameof(InteractTrigger.interactable))))
+            .MatchForward(false, matches)
+            .CreateLabel(out Label readyTarget)
+            .Insert(
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(StartMatchLever), nameof(StartMatchLever.triggerScript))),
+                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(CheckLever))),
+                new(OpCodes.Brtrue, readyTarget),
+                new(OpCodes.Ret)) // Return early to avoid tooltip being replaced with "Start game/Land ship", if bundle is not yet loaded.
+            .InstructionEnumeration();
+        }
+
+        private static bool CheckLever(InteractTrigger trigger)
+        {
+            trigger.interactable = NetworkBundleManager.AllowedToLoadLevel;
+
+            if (!trigger.interactable)
+            {
+                trigger.disabledHoverTip = disabledText;
+
+                return false;
+            }
+
+            return true;
         }
 
         //DunGen Optimization Patches (Credit To LadyRaphtalia, Author Of Scarlet Devil Mansion)
