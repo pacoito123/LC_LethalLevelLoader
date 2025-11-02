@@ -86,7 +86,7 @@ namespace LethalLevelLoader
                 Instance.GetUpdatedLevelCurrentWeatherServerRpc();
         }
 
-        [ServerRpc]
+        [Rpc(SendTo.Server)]
         public void GetRandomExtendedDungeonFlowServerRpc()
         {
             DebugHelper.Log("Getting Random DungeonFlows!", DebugType.User);
@@ -104,7 +104,7 @@ namespace LethalLevelLoader
             SetRandomExtendedDungeonFlowClientRpc(flows);
         }
 
-        [ServerRpc]
+        [Rpc(SendTo.Server)]
         private void GetUpdatedLevelCurrentWeatherServerRpc()
         {
             List<NetworkString> levelNames = new List<NetworkString>();
@@ -118,7 +118,7 @@ namespace LethalLevelLoader
             SetUpdatedLevelCurrentWeatherClientRpc(levelNames.ToArray(), weatherTypes.ToArray());
         }
 
-        [ClientRpc]
+        [Rpc(SendTo.ClientsAndHost)]
         public void SetUpdatedLevelCurrentWeatherClientRpc(NetworkString[] levelNames, LevelWeatherType[] weatherTypes)
         {
             Dictionary<ExtendedLevel, LevelWeatherType> syncedLevelCurrentWeathers = new Dictionary<ExtendedLevel, LevelWeatherType>();
@@ -138,7 +138,7 @@ namespace LethalLevelLoader
             }
         }
 
-        [ClientRpc]
+        [Rpc(SendTo.ClientsAndHost)]
         public void SetRandomExtendedDungeonFlowClientRpc(NetworkValueWithRarity<NetworkContentReference<ExtendedDungeonFlow>>[] dungeons)
         {
             DebugHelper.Log("Setting Random DungeonFlows!", DebugType.User);
@@ -149,13 +149,13 @@ namespace LethalLevelLoader
             Refs.CurrentLevel.dungeonFlowTypes = cachedDungeons;
         }
 
-        [ServerRpc]
+        [Rpc(SendTo.Server)]
         public void GetDungeonFlowSizeServerRpc()
         {
             SetDungeonFlowSizeClientRpc(DungeonLoader.GetClampedDungeonSize());
         }
 
-        [ClientRpc]
+        [Rpc(SendTo.ClientsAndHost)]
         public void SetDungeonFlowSizeClientRpc(float hostSize)
         {
             if (Refs.RuntimeDungeon == null) return;
@@ -163,7 +163,7 @@ namespace LethalLevelLoader
             Refs.RuntimeDungeon.Generate();
         }
 
-        [ServerRpc]
+        [Rpc(SendTo.Server)]
         internal void SetExtendedLevelValuesServerRpc(ExtendedLevelData extendedLevelData)
         {
             if (PatchedContent.TryGetExtendedContent(extendedLevelData.UniqueIdentifier, out ExtendedLevel extendedLevel))
@@ -171,7 +171,7 @@ namespace LethalLevelLoader
             else
                 DebugHelper.Log("Failed To Send Level Info!", DebugType.User);
         }
-        [ClientRpc]
+        [Rpc(SendTo.ClientsAndHost)]
         internal void SetExtendedLevelValuesClientRpc(ExtendedLevelData extendedLevelData)
         {
             if (PatchedContent.TryGetExtendedContent(extendedLevelData.UniqueIdentifier, out ExtendedLevel extendedLevel))
