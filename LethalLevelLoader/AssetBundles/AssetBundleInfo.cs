@@ -161,7 +161,13 @@ namespace LethalLevelLoader.AssetBundles
                 OnBundleLoaded.Invoke(this);
             }
             else
-                DebugHelper.LogError("AssetBundleInfo: " + AssetBundleFileName + " failed to load.", DebugType.User);
+            {
+                activeLoadRequest = null;
+                bundleLoadStopwatch.Stop();
+                LastTimeLoaded = Time.time;
+                DebugHelper.LogError("AssetBundleInfo: " + AssetBundleFileName + " failed to load or is already loaded. Skipping...", DebugType.User);
+                AssetBundleLoader.Instance.AssetBundleInfos.Remove(this);
+            }
         }
 
         private IEnumerator UnloadBundleRequest()
