@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.5.3</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed soft compatibility for [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib) erroring when not present
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.5.2</summary>**
 
 **<details><summary>Fixes</summary>**

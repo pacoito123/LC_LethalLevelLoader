@@ -1,8 +1,5 @@
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using Dawn;
-using UnityEngine;
 
 namespace LethalLevelLoader.Compatibility
 {
@@ -47,7 +44,16 @@ namespace LethalLevelLoader.Compatibility
                 dawnExtendedLevel.name = dawnExtendedLevel.NumberlessPlanetName + "ExtendedLevel";
 
                 // Copy all moon tags into the ExtendedLevel, in 'LLL format'.
-                CopyLLLFormatTags(dawnMoonInfo, dawnExtendedLevel);
+                foreach (NamespacedKey namespacedTag in dawnMoonInfo.AllTags())
+                {
+                    string tag = ConvertToLLLFormat(namespacedTag.Key);
+
+                    if (dawnExtendedLevel.TryAddTag(tag))
+                    {
+                        DebugHelper.Log("Added tag: " + tag, DebugType.Developer);
+                    }
+                }
+                // ...
 
                 // Let DawnLib handle moon configuration.
                 dawnExtendedLevel.GenerateAutomaticConfigurationOptions = false;
@@ -58,6 +64,7 @@ namespace LethalLevelLoader.Compatibility
             }
         }
 
+        /* // TODO: Extension method makes soft compat angry?
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         internal static int CopyLLLFormatTags<T>(this DawnBaseInfo<T> dawnInfo, ExtendedContent content) where T : DawnBaseInfo<T>
         {
@@ -75,7 +82,7 @@ namespace LethalLevelLoader.Compatibility
             }
 
             return addedTags;
-        }
+        } */
 
         internal static string ConvertToLLLFormat(string dawnFormatString)
         {
