@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.5.4</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed potential cyclic dependency with [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib) soft compatibility
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.5.3</summary>**
 
 **<details><summary>Fixes</summary>**

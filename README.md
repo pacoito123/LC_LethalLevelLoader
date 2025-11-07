@@ -14,7 +14,7 @@
 **Description**
 --
 
-### **1.5.3 for Lethal Company v73 Has Released!**
+### **1.5.4 for Lethal Company v73 Has Released!**
 
 **LethalLevelLoader** is a custom API to support the manual and dynamic integration of custom levels and dungeons in Lethal Company.  
 Mod Developers can provide LethalLevelLoader with their custom content via code or via automatic AssetBundle detection, and from there LethalLevelLoader will seamlessly load the content into the game.

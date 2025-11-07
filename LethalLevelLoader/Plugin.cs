@@ -14,13 +14,12 @@ namespace LethalLevelLoader
 {
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     [BepInDependency(LethalLib.Plugin.ModGUID, BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency(DawnLib.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(LethalModDataLib.PluginInfo.PLUGIN_GUID)]
     public class Plugin : BaseUnityPlugin
     {
         public const string ModGUID = "imabatby.lethallevelloader";
         public const string ModName = "LethalLevelLoader";
-        public const string ModVersion = "1.5.3";
+        public const string ModVersion = "1.5.4";
 
         internal static Plugin Instance;
 
