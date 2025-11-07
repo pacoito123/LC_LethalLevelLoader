@@ -43,7 +43,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedLevel> list = new List<ExtendedLevel>();
                 foreach (ExtendedLevel level in ExtendedLevels)
-                    if (level.ContentType == ContentType.Custom)
+                    if (level.ContentType is ContentType.Custom or ContentType.External)
                         list.Add(level);
                 return (list);
             }
@@ -76,7 +76,7 @@ namespace LethalLevelLoader
                 foreach (SelectableLevel selectableLevel in OriginalContent.MoonsCatalogue)
                     list.Add(selectableLevel);
                 foreach (ExtendedLevel level in ExtendedLevels)
-                    if (level.ContentType == ContentType.Custom)
+                    if (level.ContentType is ContentType.Custom or ContentType.External)
                         list.Add(level.SelectableLevel);
                 return (list);
             }

@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using ScriptableObject = UnityEngine.ScriptableObject;
 
-public enum ContentType { Vanilla, Custom, Any } //Any & All included for built in checks.
+public enum ContentType { Vanilla, Custom, Any, External } //Any & All included for built in checks, External for content registered by others.
 
 namespace LethalLevelLoader
 {
@@ -155,7 +155,7 @@ namespace LethalLevelLoader
             if (OverrideQuicksandPrefab == null)
                 OverrideQuicksandPrefab = LevelLoader.defaultQuicksandPrefab;
 
-            if (ContentType == ContentType.Custom)
+            if (ContentType is ContentType.Custom or ContentType.External)
             {
                 name = NumberlessPlanetName.StripSpecialCharacters() + "ExtendedLevel";
                 SelectableLevel.name = NumberlessPlanetName.StripSpecialCharacters() + "Level";
@@ -203,7 +203,7 @@ namespace LethalLevelLoader
 
         internal void SetLevelID()
         {
-            if (ContentType == ContentType.Custom)
+            if (ContentType is ContentType.Custom)
             {
                 SelectableLevel.levelID = PatchedContent.ExtendedLevels.IndexOf(this);
                 if (RouteNode != null)

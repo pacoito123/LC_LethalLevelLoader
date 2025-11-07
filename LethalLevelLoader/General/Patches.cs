@@ -1,6 +1,7 @@
 ﻿using DunGen;
 using GameNetcodeStuff;
 using HarmonyLib;
+using LethalLevelLoader.Compatibility;
 using LethalLevelLoader.Tools;
 using MonoMod.Cil;
 using System;
@@ -236,6 +237,12 @@ if (AssetBundleLoader.noBundlesFound == true)
                 AssetBundleLoader.InitializeBundles();
 
                 PatchedContent.PopulateContentDictionaries();
+
+                if (DawnLibCompatibility.Enabled)
+                {
+                    // Create ExtendedLevel for DawnLib moons.
+                    DawnLibCompatibility.RegisterDawnExtendedLevels(); 
+                }
 
                 foreach (ExtendedLevel extendedLevel in PatchedContent.CustomExtendedLevels)
                     extendedLevel.SetLevelID();

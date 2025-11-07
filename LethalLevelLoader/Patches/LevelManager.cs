@@ -54,8 +54,9 @@ namespace LethalLevelLoader
 
         internal static void PatchVanillaLevelLists()
         {
-            Patches.StartOfRound.levels = PatchedContent.SelectableLevels.ToArray();
-            TerminalManager.Terminal.moonsCatalogueList = PatchedContent.MoonsCatalogue.ToArray();
+            // Filter 'External' moons from vanilla lists to avoid duplicate entries (assumes they are being added in some other way).
+            Patches.StartOfRound.levels = PatchedContent.ExtendedLevels.Where(level => level.ContentType != ContentType.External).Select(level => level.SelectableLevel).ToArray();
+            TerminalManager.Terminal.moonsCatalogueList = [.. Patches.StartOfRound.levels];
         }
 
         internal static void InitializeShipAnimatorOverrideController()
@@ -90,14 +91,12 @@ namespace LethalLevelLoader
 
             if (levelType == ContentType.Any)
                 extendedLevelsList = PatchedContent.ExtendedLevels;
-            else if (levelType == ContentType.Custom)
+            else if (levelType is ContentType.Custom or ContentType.External)
                 extendedLevelsList = PatchedContent.CustomExtendedLevels;
             else if (levelType == ContentType.Vanilla)
                 extendedLevelsList = PatchedContent.VanillaExtendedLevels;
 
-            foreach (ExtendedLevel extendedLevel in extendedLevelsList)
-                if (extendedLevel.SelectableLevel == selectableLevel)
-                    returnExtendedLevel = extendedLevel;
+            returnExtendedLevel = extendedLevelsList.Find(extendedLevel => extendedLevel.SelectableLevel == selectableLevel);
 
             return (returnExtendedLevel != null);
         }
