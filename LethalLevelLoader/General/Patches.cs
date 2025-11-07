@@ -737,6 +737,7 @@ if (AssetBundleLoader.noBundlesFound == true)
 
 
         internal const string disabledText = "[ At least one player is loading custom moon! ]";
+        internal const string routingText = "Routing...";
 
         [HarmonyPatch(typeof(StartMatchLever), nameof(StartMatchLever.Update)), HarmonyTranspiler, HarmonyPriority(priority)]
         internal static IEnumerable<CodeInstruction> StartMatchLever_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
@@ -764,11 +765,11 @@ if (AssetBundleLoader.noBundlesFound == true)
 
         private static bool CheckLever(InteractTrigger trigger)
         {
-            trigger.interactable = NetworkBundleManager.AllowedToLoadLevel;
+            trigger.interactable = NetworkBundleManager.AllowedToLoadLevel && !StartOfRound.Instance.travellingToNewLevel;
 
             if (!trigger.interactable)
             {
-                trigger.disabledHoverTip = disabledText;
+                trigger.disabledHoverTip = StartOfRound.Instance.travellingToNewLevel ? routingText : disabledText;
 
                 return false;
             }
