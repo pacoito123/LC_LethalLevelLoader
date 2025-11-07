@@ -1,6 +1,20 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.5.2</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Made any found duplicate bundles be skipped from loading
+  * Should allow the game to launch properly after attempting to load a bundle that's already loaded
+* Made ship lever no longer able to be pulled while the ship is still in its routing animation
+  * Tooltip now also says "Routing..." when switching to a different moon
+* Added some soft compatibility for moons registered through [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib)
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.5.1</summary>**
 
 **<details><summary>Fixes</summary>**

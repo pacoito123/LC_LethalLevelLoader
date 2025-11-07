@@ -1,13 +1,13 @@
 {
     "name": "LethalLevelLoaderUpdated",
-    "version_number": "1.5.1",
+    "version_number": "1.5.2",
     "website_url": "https://github.com/pacoito123/LC_LethalLevelLoader",
     "description": "A Custom API to support the manual and dynamic integration of all forms of custom content in Lethal Company. (v73 Compatible)",
     "dependencies": [
         "IAmBatby-LethalLevelLoader-1.4.11",
         "MaxWasUnavailable-LethalModDataLib-1.2.2",
         "Evaisa-FixPluginTypesSerialization-1.1.4",
-        "BepInEx-BepInExPack-5.4.2100"
+        "BepInEx-BepInExPack-5.4.2304"
     ],
     "incompatibilities":[
         "HolographicWings-LethalExpansion-1.3.45",
