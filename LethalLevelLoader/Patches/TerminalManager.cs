@@ -888,10 +888,6 @@ namespace LethalLevelLoader
 
         internal static void CreateUnlockableItemTerminalData(ExtendedUnlockableItem extendedUnlockableItem)
         {
-            int unlockableItemIndex = Patches.StartOfRound.unlockablesList.unlockables.Count();
-
-
-
             //Terminal Buy Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
             terminalKeyword.name = extendedUnlockableItem.UnlockableItem.unlockableName.StripSpecialCharacters().Sanitized() + "Keyword";
@@ -921,7 +917,7 @@ namespace LethalLevelLoader
                     terminalNodeBuy.displayText += "\n" + "\n" + "Please CONFIRM or DENY." + "\n" + "\n";
                 }
             }
-            terminalNodeBuy.shipUnlockableID = unlockableItemIndex;
+            terminalNodeBuy.shipUnlockableID = extendedUnlockableItem.UnlockableItemID;
 
             //Terminal Buy Confirm Node
             TerminalNode terminalNodeBuyConfirm;
@@ -946,7 +942,7 @@ namespace LethalLevelLoader
                     terminalNodeBuyConfirm.displayText += "Your new balance is [playerCredits]";
                 }
             }
-            terminalNodeBuyConfirm.shipUnlockableID = unlockableItemIndex;
+            terminalNodeBuyConfirm.shipUnlockableID = extendedUnlockableItem.UnlockableItemID;
 
             //Terminal Info Node
             TerminalNode terminalNodeInfo = null;
