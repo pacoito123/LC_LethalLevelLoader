@@ -73,6 +73,9 @@ namespace LethalLevelLoader
 
         internal static bool hasRequestedToLoadMainMenu;
 
+        // Keep a dictionary of commonly-used NetworkPrefabs to restore (e.g. 'EntranceTeleportA') for faster lookup.
+        internal static Dictionary<string, GameObject> cachedNetworkPrefabs = new Dictionary<string, GameObject>();
+
         //This Function is used to Register NetworkPrefabs to the GameNetworkManager on GameNetworkManager.Start()
         internal static void NetworkRegisterCustomContent(NetworkManager networkManager)
         {
@@ -705,69 +708,75 @@ namespace LethalLevelLoader
                 DebugHelper.LogError("Cannot Network Register ExtendedDungeonFlow: " + extendedDungeonFlow.name + " Due To Null DungeonFlow!", DebugType.User);
                 return;
             }
-            List<string> restoredObjectsDebugList = new List<string>();
-            List<string> registeredObjectsDebugList = new List<string>();
 
-            List<GameObject> registeredPrefabs = new List<GameObject>();
-            foreach (NetworkPrefab networkPrefab in networkManager.NetworkConfig.Prefabs.m_Prefabs)
-                registeredPrefabs.Add(networkPrefab.Prefab);
+            HashSet<string> registeredPrefabs = new HashSet<string>();
+            HashSet<string> restoredPrefabs = new HashSet<string>();
 
-            List<SpawnSyncedObject> spawnSyncedObjects = extendedDungeonFlow.DungeonFlow.GetSpawnSyncedObjects();
-            List<SpawnableMapObject> extendedSpawnableMapObjects = extendedDungeonFlow.SpawnableMapObjects;
-
-            foreach (GameObject registeredPrefab in registeredPrefabs)
+            foreach (SpawnSyncedObject spawnSyncedObject in extendedDungeonFlow.DungeonFlow.GetSpawnSyncedObjects())
             {
-                foreach (SpawnSyncedObject spawnSyncedObject in new List<SpawnSyncedObject>(spawnSyncedObjects))
-                    if (spawnSyncedObject.spawnPrefab != null && spawnSyncedObject.spawnPrefab.name == registeredPrefab.name)
+                if (spawnSyncedObject == null || spawnSyncedObject.spawnPrefab == null || registeredPrefabs.Contains(spawnSyncedObject.spawnPrefab.name))
+                    continue;
+
+                if (!cachedNetworkPrefabs.TryGetValue(spawnSyncedObject.spawnPrefab.name, out GameObject registeredPrefab))
+                {
+                    foreach (NetworkPrefab networkPrefab in networkManager.NetworkConfig.Prefabs.m_Prefabs)
                     {
-                        spawnSyncedObject.spawnPrefab = registeredPrefab;
-                        spawnSyncedObjects.Remove(spawnSyncedObject);
-                        if (!restoredObjectsDebugList.Contains(registeredPrefab.name))
-                            restoredObjectsDebugList.Add(registeredPrefab.name);
+                        if (networkPrefab.Prefab.name == spawnSyncedObject.spawnPrefab.name)
+                        {
+                            cachedNetworkPrefabs.Add(spawnSyncedObject.spawnPrefab.name, networkPrefab.Prefab);
+                            spawnSyncedObject.spawnPrefab = networkPrefab.Prefab;
+                            restoredPrefabs.Add(spawnSyncedObject.spawnPrefab.name);
+                            break;
+                        }
                     }
 
-                // Just in case it's already registered as a network prefab for whatever reason, though it might not be necessary:
-                foreach (SpawnableMapObject spawnableMapObject in new List<SpawnableMapObject>(extendedSpawnableMapObjects))
-                    if(spawnableMapObject.prefabToSpawn != null && spawnableMapObject.prefabToSpawn.name == registeredPrefab.name)
+                    if (!restoredPrefabs.Contains(spawnSyncedObject.spawnPrefab.name))
                     {
-                        spawnableMapObject.prefabToSpawn = registeredPrefab;
-                        extendedSpawnableMapObjects.Remove(spawnableMapObject);
-                        if(!restoredObjectsDebugList.Contains(registeredPrefab.name))
-                            restoredObjectsDebugList.Add(registeredPrefab.name);
+                        if (!spawnSyncedObject.spawnPrefab.TryGetComponent(out NetworkObject _))
+                            spawnSyncedObject.spawnPrefab.AddComponent<NetworkObject>();
+                        LethalLevelLoaderNetworkManager.RegisterNetworkPrefab(spawnSyncedObject.spawnPrefab);
+                        registeredPrefabs.Add(spawnSyncedObject.spawnPrefab.name);
                     }
-                // ...
-            }
-            foreach (SpawnSyncedObject spawnSyncedObject in spawnSyncedObjects)
-            {
-                if (spawnSyncedObject != null && spawnSyncedObject.spawnPrefab != null)
-                {
-                    if (spawnSyncedObject.spawnPrefab.GetComponent<NetworkObject>() == null)
-                        spawnSyncedObject.spawnPrefab.AddComponent<NetworkObject>();
-                    LethalLevelLoaderNetworkManager.RegisterNetworkPrefab(spawnSyncedObject.spawnPrefab);
-
-                    if (!registeredObjectsDebugList.Contains(spawnSyncedObject.spawnPrefab.name))
-                        registeredObjectsDebugList.Add(spawnSyncedObject.spawnPrefab.name);
                 }
+                else
+                    spawnSyncedObject.spawnPrefab = registeredPrefab;
             }
-            foreach (SpawnableMapObject spawnableMapObject in extendedSpawnableMapObjects)
+            foreach (SpawnableMapObject spawnableMapObject in extendedDungeonFlow.SpawnableMapObjects)
             {
-                if(spawnableMapObject != null && spawnableMapObject.prefabToSpawn != null)
-                {
-                    if(!spawnableMapObject.prefabToSpawn.TryGetComponent(out NetworkObject _))
-                        spawnableMapObject.prefabToSpawn.AddComponent<NetworkObject>();
-                    LethalLevelLoaderNetworkManager.RegisterNetworkPrefab(spawnableMapObject.prefabToSpawn);
+                if (spawnableMapObject == null || spawnableMapObject.prefabToSpawn == null || registeredPrefabs.Contains(spawnableMapObject.prefabToSpawn.name))
+                    continue;
 
-                    if(!registeredObjectsDebugList.Contains(spawnableMapObject.prefabToSpawn.name))
-                        registeredObjectsDebugList.Add(spawnableMapObject.prefabToSpawn.name);
+                if (!cachedNetworkPrefabs.TryGetValue(spawnableMapObject.prefabToSpawn.name, out GameObject registeredPrefab))
+                {
+                    foreach (NetworkPrefab networkPrefab in networkManager.NetworkConfig.Prefabs.m_Prefabs)
+                    {
+                        if (networkPrefab.Prefab.name == spawnableMapObject.prefabToSpawn.name)
+                        {
+                            cachedNetworkPrefabs.Add(spawnableMapObject.prefabToSpawn.name, networkPrefab.Prefab);
+                            spawnableMapObject.prefabToSpawn = networkPrefab.Prefab;
+                            restoredPrefabs.Add(spawnableMapObject.prefabToSpawn.name);
+                            break;
+                        }
+                    }
+
+                    if (!restoredPrefabs.Contains(spawnableMapObject.prefabToSpawn.name))
+                    {
+                        if (!spawnableMapObject.prefabToSpawn.TryGetComponent(out NetworkObject _))
+                            spawnableMapObject.prefabToSpawn.AddComponent<NetworkObject>();
+                        LethalLevelLoaderNetworkManager.RegisterNetworkPrefab(spawnableMapObject.prefabToSpawn);
+                        registeredPrefabs.Add(spawnableMapObject.prefabToSpawn.name);
+                    }
                 }
+                else
+                    spawnableMapObject.prefabToSpawn = registeredPrefab;
             }
 
             string debugString = "Automatically Restored The Following SpawnablePrefab's In " + extendedDungeonFlow.DungeonFlow.name + ": ";
-            foreach (string debug in restoredObjectsDebugList)
+            foreach (string debug in restoredPrefabs)
                 debugString += debug + ", ";
             DebugHelper.Log(debugString, DebugType.Developer);
             debugString = "Automatically Registered The Following SpawnablePrefab's In " + extendedDungeonFlow.DungeonFlow.name + ": ";
-            foreach (string debug in registeredObjectsDebugList)
+            foreach (string debug in registeredPrefabs)
                 debugString += debug + ", ";
             DebugHelper.Log(debugString, DebugType.Developer);
         }
