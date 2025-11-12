@@ -1,6 +1,25 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.5.5</summary>**
+
+**<details><summary>Features</summary>**
+
+* Made any _known_ scene AssetBundles be skipped from being loaded at the start
+  * A _known_ bundle refers to a scene bundle that has been loaded at least once, and thus has an entry present in the file kept in the BepInEx cache folder
+  * Due to just being a text file, all _known_ bundle entries should also properly import and export with modpack codes
+
+</details>
+
+**<details><summary>Fixes</summary>**
+
+* Fixed ExtendedUnlockableItem terminal node IDs not being properly set
+* Improved SpawnSyncedObject (and SpawnableMapObject) restoration and registering steps a bit
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.5.4</summary>**
 
 **<details><summary>Fixes</summary>**
