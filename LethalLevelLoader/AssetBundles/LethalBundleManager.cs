@@ -1,6 +1,7 @@
 ﻿using LethalLevelLoader.AssetBundles;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -31,7 +32,40 @@ namespace LethalLevelLoader
 
             PatchedContent.VanillaMod = ExtendedMod.Create("LethalCompany", "Zeekerss");
 
+            ReadKnownSceneBundles();
             TryLoadLethalBundles();
+        }
+
+        private static void ReadKnownSceneBundles()
+        {
+            if (File.Exists(AssetBundles.AssetBundleLoader.KnownSceneBundlesPath))
+            {
+                string[] lines = File.ReadAllLines(AssetBundles.AssetBundleLoader.KnownSceneBundlesPath);
+
+                // Check if first line read matches manifest version.
+                if (lines.Length < 1 || !int.TryParse(lines[0], out int version) || version != LethalBundleManifest.ManifestVersion)
+                {
+                    DebugHelper.LogWarning("Invalid or different manifest version found, it will be remade.'", DebugType.User);
+                    return;
+                }
+
+                // Populate known scene bundles dictionary:
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    LethalBundleManifest parsedBundle = new LethalBundleManifest(lines[i]);
+                    AssetBundles.AssetBundleLoader.knownSceneBundles.Add(parsedBundle.bundleName, parsedBundle);
+                }
+                // ...
+            }
+        }
+
+        private static void WriteKnownSceneBundles()
+        {
+            List<string> knownEntries = new List<string>() { LethalBundleManifest.ManifestVersion.ToString() };
+            knownEntries.AddRange(AssetBundles.AssetBundleLoader.knownSceneBundles.Values.Select(manifest => manifest.ToString()));
+
+            File.WriteAllLines(AssetBundles.AssetBundleLoader.KnownSceneBundlesPath, knownEntries, Encoding.UTF8);
+            AssetBundles.AssetBundleLoader.knownSceneBundles = null; // Don't need dictionary after scene bundles have been written to file.
         }
 
         private static bool TryLoadLethalBundles()
@@ -264,6 +298,7 @@ namespace LethalLevelLoader
                             extendedModEvent.Invoke(extendedMod); 
 
 
+            WriteKnownSceneBundles();
             NetworkRegisterCustomScenes();
 
             AssetBundles.AssetBundleLoader.ClearCache();

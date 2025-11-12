@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using BepInEx;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -40,6 +41,16 @@ namespace LethalLevelLoader.AssetBundles
         //Semi legacy
         internal static Dictionary<string, List<Action<AssetBundle>>> onLethalBundleLoadedRequestDict = new Dictionary<string, List<Action<AssetBundle>>>();
 
+        internal static string KnownSceneBundlesPath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(field))
+                    field = Paths.CachePath + Path.DirectorySeparatorChar + "scenebundles.txt";
+                return field;
+            }
+        }
+        internal static Dictionary<string, LethalBundleManifest> knownSceneBundles = new Dictionary<string, LethalBundleManifest>();
 
         private static int processedBundleCount;
         private static int requestedBundleCount;
@@ -130,7 +141,27 @@ namespace LethalLevelLoader.AssetBundles
                 OnBeforeProcessBundles.Invoke();
                 OnBundleLoaded.AddListener(ProcessInitialBundleLoading);
                 foreach (AssetBundleInfo info in Instance.AssetBundleInfos)
+                {
+                    // Skip any known scene bundles, and have them only load via hotreloading.
+                    if (knownSceneBundles.TryGetValue(info.AssetBundleFileName, out LethalBundleManifest bundleManifest))
+                    {
+                        // Make sure bundles are the same (time-wise), in case there's any changes done to scenes for a different version of the mod that's loading.
+                        if (bundleManifest.timestamp == File.GetLastWriteTime(info.AssetBundleFilePath).Ticks)
+                        {
+                            DebugHelper.Log("Skipping streaming bundle " + bundleManifest.bundleName + ", as it will be loaded later.", DebugType.Developer);
+                            info.Initialize(); // Initialize AssetBundleInfo fields for proper AssetBundleGroup creation.
+
+                            requestedBundleCount--;
+                            processedBundleCount++;
+
+                            continue;
+                        }
+                        else
+                            DebugHelper.Log("Found different version of bundle " + bundleManifest.bundleName + ", it will not be skipped.", DebugType.User);
+                    }
+
                     info.TryLoadBundle();
+                }
             }
             else
             {
@@ -238,7 +269,7 @@ namespace LethalLevelLoader.AssetBundles
                         {
                             if (info.AssetBundleName == lethalBundleRequest.Key)
                             {
-                                AssetBundle newBundle = AssetBundle.GetAllLoadedAssetBundles().First(bundle => bundle.name == info.AssetBundleName);
+                                AssetBundle newBundle = AssetBundle.GetAllLoadedAssetBundles().FirstOrDefault(bundle => bundle.name == info.AssetBundleName);
                                 if (newBundle != null)
                                     foreach (Action<AssetBundle> bundleEvent in lethalBundleRequest.Value)
                                         bundleEvent.Invoke(newBundle);

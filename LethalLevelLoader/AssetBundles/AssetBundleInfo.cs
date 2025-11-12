@@ -89,6 +89,22 @@ namespace LethalLevelLoader.AssetBundles
             if (hasInitialized) return;
             hasInitialized = true;
 
+            // Initialize() is called early for bundles in the known scene bundles dictionary, before they're loaded.
+            if (assetBundle == null && AssetBundleLoader.knownSceneBundles.TryGetValue(AssetBundleFileName, out LethalBundleManifest bundleManifest))
+            {
+                IsHotReloadable = true;
+
+                AssetBundleMode = AssetBundleType.Streaming;
+                AssetBundleName = bundleManifest.bundleName;
+
+                sceneNames.AddRange(bundleManifest.sceneNames);
+                streamingBundleScenePaths.AddRange(bundleManifest.scenePaths);
+                allAssetPaths.AddRange(bundleManifest.scenePaths);
+
+                return;
+            }
+            // ...
+
             AssetBundleName = assetBundle.name;
             sceneNames = AssetBundleUtilities.GetSceneNamesFromLoadedAssetBundle(assetBundle);
             if (assetBundle.isStreamedSceneAssetBundle)
@@ -96,6 +112,14 @@ namespace LethalLevelLoader.AssetBundles
                 AssetBundleMode = AssetBundleType.Streaming;
                 streamingBundleScenePaths = new List<string>(assetBundle.GetAllScenePaths());
                 allAssetPaths = new List<string>(streamingBundleScenePaths);
+
+                AssetBundleLoader.knownSceneBundles[AssetBundleFileName] = new LethalBundleManifest()
+                {
+                    bundleName = AssetBundleName,
+                    timestamp = File.GetLastWriteTime(AssetBundleFilePath).Ticks,
+                    sceneNames = sceneNames.ToArray(),
+                    scenePaths = streamingBundleScenePaths.ToArray()
+                };
             }
             else
             {
@@ -170,10 +194,12 @@ namespace LethalLevelLoader.AssetBundles
             }
         }
 
+        private static readonly WaitForEndOfFrame waitForEndOfFrame = new WaitForEndOfFrame();
+
         private IEnumerator UnloadBundleRequest()
         {
             bundleUnloadStopwatch = Stopwatch.StartNew();
-            yield return new WaitForSeconds(0.01f); //Might remove later but stopped unity freeze when you tried to load and unload a bundle on the same frame (Confirmed Unity bug on our version)
+            yield return waitForEndOfFrame; //Might remove later but stopped unity freeze when you tried to load and unload a bundle on the same frame (Confirmed Unity bug on our version)
             activeUnloadRequest = assetBundle.UnloadAsync(true);
             yield return activeUnloadRequest;
             if (activeUnloadRequest.isDone)
