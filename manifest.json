@@ -1,6 +1,6 @@
 {
     "name": "LethalLevelLoaderUpdated",
-    "version_number": "1.5.5",
+    "version_number": "1.5.6",
     "website_url": "https://github.com/pacoito123/LC_LethalLevelLoader",
     "description": "A Custom API to support the manual and dynamic integration of all forms of custom content in Lethal Company. (v73 Compatible)",
     "dependencies": [

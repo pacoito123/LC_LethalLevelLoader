@@ -1,6 +1,17 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.5.6</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed skipped scene AssetBundles not taking renamed bundles into account
+  * 🦆
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.5.5</summary>**
 
 **<details><summary>Features</summary>**
