@@ -3,20 +3,24 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace LethalLevelLoader.AssetBundles
 {
     public static class AssetBundleUtilities
     {
+        // Matches the name of a scene from a full scene path.
+        private static readonly Regex sceneNameRegex = new Regex(@"(?!.*[\\\/]).+(?=\.[Uu]nity)");
+
         public static string GetSceneName(string scenePath)
         {
             if (string.IsNullOrEmpty(scenePath)) return ("Invalid Scene Path");
-            if (!scenePath.Contains(".unity")) return ("Invalid Scene Path");
-            if (scenePath.Contains("\\") && !scenePath.Contains("/"))
-                return (scenePath.Substring(scenePath.LastIndexOf("\\") + 1).Replace(".unity", string.Empty));
-            else if (scenePath.Contains("/") && !scenePath.Contains("\\"))
-                return (scenePath.Substring(scenePath.LastIndexOf("/") + 1).Replace(".unity", string.Empty));
+
+            Match regexMatch = sceneNameRegex.Match(scenePath);
+            if (regexMatch.Success)
+                return regexMatch.Value;
+
             return ("Invalid Scene Path");
         }
 

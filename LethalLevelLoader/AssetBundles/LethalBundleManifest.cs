@@ -2,11 +2,12 @@ namespace LethalLevelLoader.AssetBundles
 {
     public struct LethalBundleManifest
     {
-        public static int ManifestVersion { get; } = 1;
+        public static int ManifestVersion { get; } = 2;
 
+        public string fileName;
         public string bundleName;
         public long timestamp;
-        public string[] sceneNames, scenePaths;
+        public string[] scenePaths;
 
         public LethalBundleManifest(string bundleManifest)
         {
@@ -14,9 +15,9 @@ namespace LethalLevelLoader.AssetBundles
 
             if (bundleInfo.Length > 3)
             {
-                bundleName = bundleInfo[0];
-                timestamp = long.Parse(bundleInfo[1]);
-                sceneNames = bundleInfo[2].Split(',');
+                fileName = bundleInfo[0];
+                bundleName = bundleInfo[1];
+                timestamp = long.Parse(bundleInfo[2]);
                 scenePaths = bundleInfo[3].Split(',');
             }
         }
@@ -25,7 +26,7 @@ namespace LethalLevelLoader.AssetBundles
 
         public override readonly string ToString()
         {
-            return bundleName + ';' + timestamp + ';' + string.Join(',', sceneNames) + ';' + string.Join(',', scenePaths);
+            return fileName + ';' + bundleName + ';' + timestamp + ';' + string.Join(',', scenePaths);
         }
     }
 }

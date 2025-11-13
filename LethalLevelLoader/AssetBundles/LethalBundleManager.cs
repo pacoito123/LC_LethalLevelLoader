@@ -53,7 +53,7 @@ namespace LethalLevelLoader
                 for (int i = 1; i < lines.Length; i++)
                 {
                     LethalBundleManifest parsedBundle = new LethalBundleManifest(lines[i]);
-                    AssetBundles.AssetBundleLoader.knownSceneBundles.Add(parsedBundle.bundleName, parsedBundle);
+                    AssetBundles.AssetBundleLoader.knownSceneBundles.TryAdd(parsedBundle.fileName, parsedBundle);
                 }
                 // ...
             }

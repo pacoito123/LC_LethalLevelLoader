@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.ProBuilder.MeshOperations;
@@ -97,7 +98,7 @@ namespace LethalLevelLoader.AssetBundles
                 AssetBundleMode = AssetBundleType.Streaming;
                 AssetBundleName = bundleManifest.bundleName;
 
-                sceneNames.AddRange(bundleManifest.sceneNames);
+                sceneNames = bundleManifest.scenePaths.Select(AssetBundleUtilities.GetSceneName).ToList();
                 streamingBundleScenePaths.AddRange(bundleManifest.scenePaths);
                 allAssetPaths.AddRange(bundleManifest.scenePaths);
 
@@ -115,11 +116,13 @@ namespace LethalLevelLoader.AssetBundles
 
                 AssetBundleLoader.knownSceneBundles[AssetBundleFileName] = new LethalBundleManifest()
                 {
+                    fileName = AssetBundleFilePath[(AssetBundleFilePath.LastIndexOf(Path.DirectorySeparatorChar) + 1)..],
                     bundleName = AssetBundleName,
                     timestamp = File.GetLastWriteTime(AssetBundleFilePath).Ticks,
-                    sceneNames = sceneNames.ToArray(),
                     scenePaths = streamingBundleScenePaths.ToArray()
                 };
+
+                DebugHelper.Log("Adding " + AssetBundleFileName + " to known bundles.", DebugType.Developer);
             }
             else
             {
