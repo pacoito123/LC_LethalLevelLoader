@@ -41,6 +41,9 @@ namespace LethalLevelLoader
         [field: SerializeField] public Vector2 DynamicDungeonSizeMinMax { get; set; } = new Vector2(1, 1);
         [field: SerializeField][field: Range(0, 1)] public float DynamicDungeonSizeLerpRate { get; set; } = 1f;
 
+        [field: Tooltip("Lower the kill floor of any Level this Dungeon generates on down to the lowest point of the generation.")]
+        [field: SerializeField] public bool IsDynamicOutOfBoundsTriggerEnabled { get; set; }
+
         [field: Space(5)]
         [field: Tooltip("Overrides vanilla camera Far Plane Clip Distance, The highest value between current Level and Interior will be used.")]
         [field: Range(0f, 10000f)]

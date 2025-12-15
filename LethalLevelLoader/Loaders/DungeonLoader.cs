@@ -46,6 +46,10 @@ namespace LethalLevelLoader
                 dungeonGenerator.TilePlacementBounds = new Bounds(Vector3.zero, currentExtendedDungeonFlow.OverrideRestrictedTilePlacementBounds);
             }
 
+            if (currentExtendedDungeonFlow.IsDynamicOutOfBoundsTriggerEnabled)
+            {
+                dungeonGenerator.OnGenerationStatusChanged += PatchOutOfBoundsTriggers;
+            }
 
             PatchFireEscapes(dungeonGenerator, currentExtendedLevel, SceneManager.GetSceneByName(currentExtendedLevel.SelectableLevel.sceneName));
             PatchDynamicGlobalProps(dungeonGenerator, currentExtendedDungeonFlow);
@@ -140,6 +144,21 @@ namespace LethalLevelLoader
                         globalProp.Count.Min = globalProp.Count.Min * Mathf.RoundToInt(Mathf.Lerp(1, (dungeonGenerator.LengthMultiplier / Patches.RoundManager.mapSizeMultiplier), globalPropOverride.globalPropCountScaleRate));
                         globalProp.Count.Max = globalProp.Count.Max * Mathf.RoundToInt(Mathf.Lerp(1, (dungeonGenerator.LengthMultiplier / Patches.RoundManager.mapSizeMultiplier), globalPropOverride.globalPropCountScaleRate));
                     }
+        }
+
+        public static void PatchOutOfBoundsTriggers(DungeonGenerator generator, GenerationStatus status)
+        {
+            if (status != GenerationStatus.Complete) return;
+            generator.OnGenerationStatusChanged -= PatchOutOfBoundsTriggers;
+
+            float lowestPoint = generator.CurrentDungeon.transform.TransformPoint(generator.CurrentDungeon.Bounds.min).y;
+            foreach (GameObject rootObject in SceneManager.GetSceneByName(StartOfRound.Instance.currentLevel.sceneName).GetRootGameObjects())
+                foreach (OutOfBoundsTrigger trigger in rootObject.GetComponentsInChildren<OutOfBoundsTrigger>(includeInactive: true))
+                {
+                    Vector3 position = trigger.transform.position;
+                    position.y = lowestPoint;
+                    trigger.transform.position = position;
+                }
         }
     }
 }

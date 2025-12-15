@@ -123,6 +123,8 @@ namespace LethalLevelLoader.Tools
         public ConfigEntry<float> maximumDungeonSizeMultiplier;
         public ConfigEntry<float> restrictDungeonSizeScaler;
 
+        public ConfigEntry<bool> enableDynamicOutOfBoundsTrigger;
+
         public ConfigEntry<string> dynamicLevelTags;
         public ConfigEntry<string> dynamicRoutePrices;
 
@@ -148,6 +150,8 @@ namespace LethalLevelLoader.Tools
                 description += "(Minimum, 0, Maximum: 1)";
                 restrictDungeonSizeScaler = BindValue("Restrict Dungeon Size Scaler", description, extendedDungeonFlow.DynamicDungeonSizeLerpRate);
 
+                enableDynamicOutOfBoundsTrigger = BindValue("Enable Dynamic Out Of Bounds Trigger", "Lower the kill floor of any Level this Dungeon generates on down to the lowest point of the generation.", extendedDungeonFlow.IsDynamicOutOfBoundsTriggerEnabled);
+
                 // ----- Getting -----
                 subCategory = "Dungeon Injection Settings - ";
                 manualModNames = BindValue("Manual Mod Names List", "Add this Dungeon to any Level's randomisaton pool in a specific mod based on matching Mod Names. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString(extendedDungeonFlow.LevelMatchingProperties.modNames));
@@ -166,6 +170,8 @@ namespace LethalLevelLoader.Tools
 
                     extendedDungeonFlow.DynamicDungeonSizeMinMax = new Vector2(minimumDungeonSizeMultiplier.Value, maximumDungeonSizeMultiplier.Value);
                     extendedDungeonFlow.DynamicDungeonSizeLerpRate = restrictDungeonSizeScaler.Value;
+
+                    extendedDungeonFlow.IsDynamicOutOfBoundsTriggerEnabled = enableDynamicOutOfBoundsTrigger.Value;
 
                     extendedDungeonFlow.LevelMatchingProperties.modNames = ConfigHelper.ConvertToStringWithRarityList(manualModNames.Value, new Vector2(0, 9999));
                     extendedDungeonFlow.LevelMatchingProperties.planetNames = ConfigHelper.ConvertToStringWithRarityList(manualLevelNames.Value, new Vector2(0, 9999));

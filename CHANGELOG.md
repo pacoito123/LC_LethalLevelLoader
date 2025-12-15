@@ -1,6 +1,17 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.5.7</summary>**
+
+**<details><summary>Features</summary>**
+
+* Added `enableDynamicOutOfBoundsTrigger` setting to ExtendedDungeonFlow, for dynamically lowering a moon's kill floor to the lowest point of the dungeon it generates
+  * Allows for more vertical dungeon generation without having to worry about intersecting the kill floor
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.5.6</summary>**
 
 **<details><summary>Fixes</summary>**
