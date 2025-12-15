@@ -10,6 +10,12 @@
 
 </details>
 
+**<details><summary>Fixes</summary>**
+
+* Fixed dynamic dungeon size related settings for ExtendedDungeonFlow not being applied
+
+</details>
+
 </details>
 
 **<details><summary>Version 1.5.6</summary>**

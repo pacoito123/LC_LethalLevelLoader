@@ -40,6 +40,8 @@ namespace LethalLevelLoader
         [field: SerializeField] public bool IsDynamicDungeonSizeRestrictionEnabled { get; set; }
         [field: SerializeField] public Vector2 DynamicDungeonSizeMinMax { get; set; } = new Vector2(1, 1);
         [field: SerializeField][field: Range(0, 1)] public float DynamicDungeonSizeLerpRate { get; set; } = 1f;
+        public float DynamicDungeonSizeMin => DynamicDungeonSizeMinMax.x;
+        public float DynamicDungeonSizeMax => DynamicDungeonSizeMinMax.y;
 
         [field: Tooltip("Lower the kill floor of any Level this Dungeon generates on down to the lowest point of the generation.")]
         [field: SerializeField] public bool IsDynamicOutOfBoundsTriggerEnabled { get; set; }

@@ -621,18 +621,19 @@ if (AssetBundleLoader.noBundlesFound == true)
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewFloor)), HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> GenerateNewFloorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            CodeMatcher codeMatcher = new CodeMatcher(instructions)
-                .SearchForward(instructions => instructions.Calls(AccessTools.Method(typeof(RuntimeDungeon), nameof(RuntimeDungeon.Generate))))
+            return new CodeMatcher(instructions).End()
+                .MatchBack(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(RuntimeDungeon), "Generate")))
                 .SetInstruction(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(InjectHostDungeonSizeSelection))))
-                .Advance(-1)
-                .SetInstruction(new CodeInstruction(OpCodes.Nop));
-            return (codeMatcher.InstructionEnumeration());
+                .InstructionEnumeration();
         }
 
         //Called via Transpiler.
         public static void InjectHostDungeonSizeSelection(RoundManager roundManager)
         {
-            roundManager.dungeonGenerator.Generate();
+            if (LevelManager.CurrentExtendedLevel != null)
+                LethalLevelLoaderNetworkManager.Instance.GetDungeonFlowSizeServerRpc();
+            else
+                roundManager.dungeonGenerator.Generate();
         }
 
         //Called via Transpiler.
