@@ -72,6 +72,13 @@ namespace LethalLevelLoader
         [field: Space(5)]
         [field: SerializeField] public AudioClip OverrideEclipsedMusic { get; set; }
 
+        [field: Space(5)]
+        [field: Header("Time Of Day Music Override Settings")]
+
+        [field: SerializeField] public AudioClip OverrideStartOfDayMusic { get; set; }
+        [field: SerializeField] public AudioClip OverrideMidDayMusic { get; set; }
+        [field: SerializeField] public AudioClip OverrideLateDayMusic { get; set; }
+        [field: SerializeField] public AudioClip OverrideNightMusic { get; set; }
 
         [field: Space(5)]
         [field: Header("Terminal Route Override Settings")]

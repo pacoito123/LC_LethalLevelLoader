@@ -62,6 +62,13 @@ namespace LethalLevelLoader
         internal static AudioSource eclipsedMusicSource;
         internal static AudioClip defaultEclipsedMusic;
 
+        // TimeOfDay AudioClips
+        internal static AudioClip[] timeOfDayCues;
+        internal static AudioClip defaultStartOfDayMusic;
+        internal static AudioClip defaultMidDayMusic;
+        internal static AudioClip defaultLateDayMusic;
+        internal static AudioClip defaultNightMusic;
+
         internal static FootstepSurface[] defaultFootstepSurfaces;
 
         internal static Dictionary<Collider, List<Material>> cachedLevelColliderMaterialDictionary = new Dictionary<Collider, List<Material>>();
@@ -241,6 +248,17 @@ namespace LethalLevelLoader
                 if (LevelManager.CurrentExtendedLevel != null)
                     DebugHelper.LogWarning($"Setting particle stop action to None for particle {particle.name} in {LevelManager.CurrentExtendedLevel.name} to prevent errors.", DebugType.Developer);
                 particleMain.stopAction = ParticleSystemStopAction.None;
+            }
+        }
+
+        internal static void RefreshTimeOfDayMusic(ExtendedLevel extendedLevel)
+        {
+            if (Patches.TimeOfDay.timeOfDayCues != null && Patches.TimeOfDay.timeOfDayCues.Length == 4)
+            {
+                Patches.TimeOfDay.timeOfDayCues[0] = extendedLevel.OverrideStartOfDayMusic;
+                Patches.TimeOfDay.timeOfDayCues[1] = extendedLevel.OverrideMidDayMusic;
+                Patches.TimeOfDay.timeOfDayCues[2] = extendedLevel.OverrideLateDayMusic;
+                Patches.TimeOfDay.timeOfDayCues[3] = extendedLevel.OverrideNightMusic;
             }
         }
 

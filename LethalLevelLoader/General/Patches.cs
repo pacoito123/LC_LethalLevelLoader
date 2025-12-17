@@ -345,8 +345,18 @@ if (AssetBundleLoader.noBundlesFound == true)
                     }
                 }
 
+                LevelLoader.timeOfDayCues = TimeOfDay.timeOfDayCues;
+                if (LevelLoader.timeOfDayCues != null && LevelLoader.timeOfDayCues.Length == 4)
+                {
+                    LevelLoader.defaultStartOfDayMusic = LevelLoader.timeOfDayCues[0];
+                    LevelLoader.defaultMidDayMusic = LevelLoader.timeOfDayCues[1];
+                    LevelLoader.defaultLateDayMusic = LevelLoader.timeOfDayCues[2];
+                    LevelLoader.defaultNightMusic = LevelLoader.timeOfDayCues[3];
+                }
+
                 foreach (ExtendedLevel vanillaLevel in PatchedContent.VanillaExtendedLevels)
                 {
+                    // Set default weather overrides:
                     vanillaLevel.OverrideDustStormVolumeSize = LevelLoader.defaultDustCloudFogVolumeSize;
 
                     vanillaLevel.OverrideRainAmbience = LevelLoader.defaultRainyAmbience;
@@ -361,9 +371,18 @@ if (AssetBundleLoader.noBundlesFound == true)
                     vanillaLevel.OverrideFloodedAmbience = LevelLoader.defaultFloodedAmbience;
 
                     vanillaLevel.OverrideEclipsedMusic = LevelLoader.defaultEclipsedMusic;
+                    // ...
+
+                    // Set default TimeOfDay music overrides:
+                    vanillaLevel.OverrideStartOfDayMusic = LevelLoader.defaultStartOfDayMusic;
+                    vanillaLevel.OverrideMidDayMusic = LevelLoader.defaultMidDayMusic;
+                    vanillaLevel.OverrideLateDayMusic = LevelLoader.defaultLateDayMusic;
+                    vanillaLevel.OverrideNightMusic = LevelLoader.defaultNightMusic;
+                    // ...
                 }
                 foreach (ExtendedLevel customLevel in PatchedContent.CustomExtendedLevels)
                 {
+                    // Set default weather overrides (if left blank):
                     if (customLevel.OverrideDustStormVolumeSize == Vector3.zero)
                         customLevel.OverrideDustStormVolumeSize = LevelLoader.defaultDustCloudFogVolumeSize;
 
@@ -385,6 +404,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                     if (customLevel.OverrideFloodedAmbience == null)
                         customLevel.OverrideFloodedAmbience = LevelLoader.defaultFloodedAmbience;
 
+                    // Replace references to any materials named 'Water_mat_04' with the one actually used by the game.
                     if (customLevel.OverrideFloodedPrefab != null && LevelLoader.vanillaWaterShader != null)
                         foreach (MeshRenderer renderer in customLevel.OverrideFloodedPrefab.GetComponentsInChildren<MeshRenderer>())
                             for (int i = 0; i < renderer.sharedMaterials.Length; i++)
@@ -393,6 +413,18 @@ if (AssetBundleLoader.noBundlesFound == true)
 
                     if (customLevel.OverrideEclipsedMusic == null)
                         customLevel.OverrideEclipsedMusic = LevelLoader.defaultEclipsedMusic;
+                    // ...
+
+                    // Set default TimeOfDay music overrides (if left blank):
+                    if (customLevel.OverrideStartOfDayMusic == null)
+                        customLevel.OverrideStartOfDayMusic = LevelLoader.defaultStartOfDayMusic;
+                    if (customLevel.OverrideMidDayMusic == null)
+                        customLevel.OverrideMidDayMusic = LevelLoader.defaultMidDayMusic;
+                    if (customLevel.OverrideLateDayMusic == null)
+                        customLevel.OverrideLateDayMusic = LevelLoader.defaultLateDayMusic;
+                    if (customLevel.OverrideNightMusic == null)
+                        customLevel.OverrideNightMusic = LevelLoader.defaultNightMusic;
+                    // ...
                 }
 
                 //Some Debugging.
@@ -677,6 +709,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             foreach (GameObject rootObject in SceneManager.GetSceneByName(LevelManager.CurrentExtendedLevel.SelectableLevel.sceneName).GetRootGameObjects())
                 ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
             LevelLoader.RefreshWeatherEffects(LevelManager.CurrentExtendedLevel);
+            LevelLoader.RefreshTimeOfDayMusic(LevelManager.CurrentExtendedLevel);
         }
 
         [HarmonyPatch(typeof(StartOfRound), "StartGame"), HarmonyPrefix, HarmonyPriority(priority)]

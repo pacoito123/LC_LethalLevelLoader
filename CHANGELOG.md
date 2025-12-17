@@ -11,6 +11,7 @@
   * OverrideStormyLightningStrikeSFX
   * OverrideFloodedPrefab
   * OverrideEclipsedMusic
+* Added TimeOfDay music override settings to ExtendedLevel
 * Added EnableDynamicOutOfBoundsTrigger setting to ExtendedDungeonFlow, for dynamically lowering a moon's kill floor to the lowest point of the dungeon it generates
   * Allows for more vertical dungeon generation without having to worry about intersecting the kill floor
 
