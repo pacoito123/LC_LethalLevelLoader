@@ -5,7 +5,13 @@
 
 **<details><summary>Features</summary>**
 
-* Added `enableDynamicOutOfBoundsTrigger` setting to ExtendedDungeonFlow, for dynamically lowering a moon's kill floor to the lowest point of the dungeon it generates
+* Added several additional weather effect override settings to ExtendedLevel, some of which include:
+  * OverrideRainPrefab
+  * OverrideStormyLightningStrikeExplosion
+  * OverrideStormyLightningStrikeSFX
+  * OverrideFloodedPrefab
+  * OverrideEclipsedMusic
+* Added EnableDynamicOutOfBoundsTrigger setting to ExtendedDungeonFlow, for dynamically lowering a moon's kill floor to the lowest point of the dungeon it generates
   * Allows for more vertical dungeon generation without having to worry about intersecting the kill floor
 
 </details>

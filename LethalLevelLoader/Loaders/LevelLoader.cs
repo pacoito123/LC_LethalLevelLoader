@@ -15,14 +15,52 @@ namespace LethalLevelLoader
         internal static AnimationClip defaultShipFlyToMoonClip;
         internal static AnimationClip defaultShipFlyFromMoonClip;
 
+        // Dust Clouds
+        internal static LocalVolumetricFog dustCloudFog;
         internal static Vector3 defaultDustCloudFogVolumeSize;
+
+        // Rainy
+        internal static GameObject defaultQuicksandPrefab;
+
+        internal static ParticleSystem rainParticles;
+        internal static AudioSource rainyAmbienceSource;
+        internal static AudioClip defaultRainyAmbience;
+
+        internal static GameObject rainPrefabOverrideInstance;
+
+        // Stormy
+        internal static StormyWeather stormyWeather;
+
+        internal static ParticleSystem defaultStormyLightningStrikeExplosion;
+        internal static ParticleSystem defaultStormyStaticElectricityParticle;
+        internal static AudioClip[] defaultStormyLightningStrikeSFX;
+        internal static AudioClip[] defaultStormyDistantThunderSFX;
+        internal static AudioClip defaultStormyStaticElectricitySFX;
+
+        internal static ParticleSystem stormyRainParticles;
+        internal static AudioSource stormyRainAmbienceSource;
+        internal static AudioClip defaultStormyRainAmbience;
+
+        internal static GameObject stormyRainPrefabOverrideInstance;
+
+        // Foggy
+        internal static LocalVolumetricFog foggyFog;
         internal static Vector3 defaultFoggyFogVolumeSize;
 
-        internal static LocalVolumetricFog dustCloudFog;
-        internal static LocalVolumetricFog foggyFog;
+        // Flooded
+        internal static FloodWeather floodedWeather;
+        internal static QuicksandTrigger floodedWaterTrigger;
+        internal static MeshRenderer floodedWaterRenderer;
+        internal static Material defaultFloodedWaterMaterial;
 
+        internal static AudioSource floodedAmbienceSource;
+        internal static AudioClip defaultFloodedAmbience;
 
-        internal static GameObject defaultQuicksandPrefab;
+        internal static GameObject floodedPrefabOverrideInstance;
+
+        // Eclipsed
+        internal static AudioSource eclipsedMusicSource;
+        internal static AudioClip defaultEclipsedMusic;
 
         internal static FootstepSurface[] defaultFootstepSurfaces;
 
@@ -69,12 +107,141 @@ namespace LethalLevelLoader
             shipAnimatorOverrideController["ShipLeave"] = extendedLevel.ShipFlyFromMoonClip;
         }
 
-        internal static void RefreshFogSize(ExtendedLevel extendedLevel)
+        internal static void RefreshWeatherEffects(ExtendedLevel extendedLevel)
         {
+            // Dust Clouds
             if (dustCloudFog != null)
                 dustCloudFog.parameters.size = extendedLevel.OverrideDustStormVolumeSize;
+
+            // Rainy
+            if (rainyAmbienceSource != null)
+                rainyAmbienceSource.clip = extendedLevel.OverrideRainAmbience;
+            if (extendedLevel.OverrideRainPrefab != null && rainParticles != null)
+            {
+                rainPrefabOverrideInstance = Object.Instantiate(extendedLevel.OverrideRainPrefab, rainParticles.transform.parent);
+
+                if (rainParticles != null)
+                    rainParticles.gameObject.SetActive(false);
+
+                SceneManager.sceneUnloaded += CleanupRainyOverride;
+            }
+
+            // Stormy
+            if (stormyRainAmbienceSource != null)
+                stormyRainAmbienceSource.clip = extendedLevel.OverrideStormyRainAmbience;
+            if (stormyWeather != null)
+            {
+                if (extendedLevel.OverrideStormyLightningStrikeExplosion != null)
+                {
+                    stormyWeather.explosionEffectParticle = Object.Instantiate(extendedLevel.OverrideStormyLightningStrikeExplosion, stormyWeather.transform);
+                    PreventParticleDestroy(stormyWeather.explosionEffectParticle);
+                }
+                if (extendedLevel.OverrideStormyStaticElectricityParticle != null)
+                {
+                    stormyWeather.staticElectricityParticle = Object.Instantiate(extendedLevel.OverrideStormyStaticElectricityParticle, stormyWeather.transform);
+                    PreventParticleDestroy(stormyWeather.staticElectricityParticle);
+                }
+
+                if (extendedLevel.OverrideStormyLightningStrikeSFX != null && extendedLevel.OverrideStormyLightningStrikeSFX.Length > 0)
+                    stormyWeather.strikeSFX = extendedLevel.OverrideStormyLightningStrikeSFX;
+                if (extendedLevel.OverrideStormyDistantThunderSFX != null && extendedLevel.OverrideStormyDistantThunderSFX.Length > 0)
+                    stormyWeather.distantThunderSFX = extendedLevel.OverrideStormyDistantThunderSFX;
+                if (extendedLevel.OverrideStormyStaticElectricitySFX != null)
+                    stormyWeather.staticElectricityAudio = extendedLevel.OverrideStormyStaticElectricitySFX;
+
+                if (extendedLevel.OverrideStormyRainPrefab != null)
+                    stormyRainPrefabOverrideInstance = Object.Instantiate(extendedLevel.OverrideStormyRainPrefab, stormyWeather.transform);
+
+                if (stormyRainParticles != null)
+                    stormyRainParticles.gameObject.SetActive(false);
+
+                if (extendedLevel.OverrideStormyLightningStrikeExplosion != null || extendedLevel.OverrideStormyStaticElectricityParticle != null
+                    || stormyRainPrefabOverrideInstance != null)
+                {
+                    SceneManager.sceneUnloaded += CleanupStormyOverride;
+                }
+            }
+
+            // Foggy
             if (foggyFog != null)
                 foggyFog.parameters.size = extendedLevel.OverrideFoggyVolumeSize;
+
+            // Flooded
+            if (floodedAmbienceSource != null)
+                floodedAmbienceSource.clip = extendedLevel.OverrideFloodedAmbience;
+            if (extendedLevel.OverrideFloodedPrefab != null && floodedWeather != null)
+            {
+                floodedPrefabOverrideInstance = Object.Instantiate(extendedLevel.OverrideFloodedPrefab, floodedWeather.transform);
+
+                if (floodedWaterTrigger != null)
+                    floodedWaterTrigger.gameObject.SetActive(false);
+                if (floodedWaterRenderer != null)
+                    floodedWaterRenderer.gameObject.SetActive(false);
+
+                SceneManager.sceneUnloaded += CleanupFloodedOverride;
+            }
+
+            // Eclipsed
+            if (eclipsedMusicSource != null)
+                eclipsedMusicSource.clip = extendedLevel.OverrideEclipsedMusic;
+        }
+
+        private static void CleanupRainyOverride(Scene scene)
+        {
+            SceneManager.sceneUnloaded -= CleanupRainyOverride;
+
+            if (rainPrefabOverrideInstance != null)
+                Object.Destroy(rainPrefabOverrideInstance);
+
+            if (rainParticles != null)
+                rainParticles.gameObject.SetActive(true);
+        }
+
+        private static void CleanupStormyOverride(Scene scene)
+        {
+            SceneManager.sceneUnloaded -= CleanupStormyOverride;
+
+            if (stormyWeather.explosionEffectParticle != defaultStormyLightningStrikeExplosion)
+            {
+                Object.Destroy(stormyWeather.explosionEffectParticle);
+                stormyWeather.explosionEffectParticle = defaultStormyLightningStrikeExplosion;
+            }
+
+            if (stormyWeather.staticElectricityParticle != defaultStormyStaticElectricityParticle)
+            {
+                Object.Destroy(stormyWeather.staticElectricityParticle);
+                stormyWeather.staticElectricityParticle = defaultStormyStaticElectricityParticle;
+            }
+
+            if (stormyRainPrefabOverrideInstance != null)
+                Object.Destroy(stormyRainPrefabOverrideInstance);
+
+            if (stormyRainParticles != null)
+                stormyRainParticles.gameObject.SetActive(true);
+        }
+
+        private static void CleanupFloodedOverride(Scene scene)
+        {
+            SceneManager.sceneUnloaded -= CleanupFloodedOverride;
+
+            if (floodedPrefabOverrideInstance != null)
+                Object.Destroy(floodedPrefabOverrideInstance);
+
+            if (floodedWaterTrigger != null)
+                floodedWaterTrigger.gameObject.SetActive(true);
+            if (floodedWaterRenderer != null)
+                floodedWaterRenderer.gameObject.SetActive(true);
+        }
+
+        private static void PreventParticleDestroy(ParticleSystem particle)
+        {
+            ParticleSystem.MainModule particleMain = particle.main;
+            if (particleMain.stopAction is ParticleSystemStopAction.Destroy or ParticleSystemStopAction.Disable)
+            {
+                if (LevelManager.CurrentExtendedLevel != null)
+                    DebugHelper.LogWarning($"Setting particle stop action to None for particle {particle.name} in {LevelManager.CurrentExtendedLevel.name} to prevent errors.", DebugType.Developer);
+                particleMain.stopAction = ParticleSystemStopAction.None;
+            }
         }
 
         internal static void RefreshFootstepSurfaces()
@@ -128,7 +295,7 @@ namespace LethalLevelLoader
                         allValidSceneColliders.Add(collider);
                 }
             }
-            
+
             foreach (Collider sceneCollider in allValidSceneColliders)
             {
                 if (sceneCollider.TryGetComponent(out MeshRenderer meshRenderer))

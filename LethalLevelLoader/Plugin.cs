@@ -45,11 +45,6 @@ namespace LethalLevelLoader
 
             Logger.LogInfo($"LethalLevelLoader loaded!!");
 
-            //We do this here to try and assure this doesn't accidently catch anything from any AssetBundles
-            LevelLoader.vanillaWaterShader = Shader.Find("Shader Graphs/WaterShaderHDRP");
-            if (LevelLoader.vanillaWaterShader == null)
-                DebugHelper.LogError("Could Not Find Water Shader", DebugType.User);
-
             Harmony.PatchAll(typeof(LethalLevelLoaderNetworkManager));
             Harmony.PatchAll(typeof(DungeonLoader));
 

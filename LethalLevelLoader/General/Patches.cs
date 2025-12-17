@@ -241,37 +241,158 @@ if (AssetBundleLoader.noBundlesFound == true)
                 if (DawnLibCompatibility.Enabled)
                 {
                     // Create ExtendedLevel for DawnLib moons.
-                    DawnLibCompatibility.RegisterDawnExtendedLevels(); 
+                    DawnLibCompatibility.RegisterDawnExtendedLevels();
                 }
 
                 foreach (ExtendedLevel extendedLevel in PatchedContent.CustomExtendedLevels)
                     extendedLevel.SetLevelID();
 
-                foreach (WeatherEffect weatherEffect in TimeOfDay.effects)
+                for (int i = 0; i < TimeOfDay.effects.Length; i++)
                 {
-                    if (weatherEffect.effectObject != null && weatherEffect.effectObject.name == "DustStorm")
-                        if (weatherEffect.effectObject.TryGetComponent(out LocalVolumetricFog dustFog))
-                        {
-                            LevelLoader.dustCloudFog = dustFog;
-                            LevelLoader.defaultDustCloudFogVolumeSize = dustFog.parameters.size;
-                            break;
-                        }
-                }
+                    WeatherEffect effect = TimeOfDay.effects[i];
 
-                LevelLoader.foggyFog = TimeOfDay.foggyWeather;
-                LevelLoader.defaultFoggyFogVolumeSize = TimeOfDay.foggyWeather.parameters.size;
+                    switch ((LevelWeatherType)i)
+                    {
+                        case LevelWeatherType.DustClouds:
+                            if (effect.effectObject != null && effect.effectObject.TryGetComponent(out LocalVolumetricFog dustFog))
+                            {
+                                LevelLoader.dustCloudFog = dustFog;
+                                LevelLoader.defaultDustCloudFogVolumeSize = dustFog.parameters.size;
+                            }
+                            break;
+                        case LevelWeatherType.Rainy:
+                            if (effect.effectObject != null)
+                            {
+                                LevelLoader.rainyAmbienceSource = effect.effectObject.GetComponentInChildren<AudioSource>(includeInactive: true);
+                                if (LevelLoader.rainyAmbienceSource != null)
+                                    LevelLoader.defaultRainyAmbience = LevelLoader.rainyAmbienceSource.clip;
+
+                                foreach (ParticleSystem particle in effect.effectObject.GetComponentsInChildren<ParticleSystem>(includeInactive: true))
+                                    if (particle.transform.parent == effect.effectObject)
+                                    {
+                                        LevelLoader.rainParticles = particle;
+                                        break;
+                                    }
+                            }
+                            break;
+                        case LevelWeatherType.Stormy:
+                            if (effect.effectObject != null)
+                            {
+                                LevelLoader.stormyRainAmbienceSource = effect.effectObject.GetComponentInChildren<AudioSource>(includeInactive: true);
+                                if (LevelLoader.stormyRainAmbienceSource != null)
+                                    LevelLoader.defaultStormyRainAmbience = LevelLoader.stormyRainAmbienceSource.clip;
+
+                                foreach (ParticleSystem particle in effect.effectObject.GetComponentsInChildren<ParticleSystem>(includeInactive: true))
+                                    if (particle.transform.parent == effect.effectObject)
+                                    {
+                                        LevelLoader.stormyRainParticles = particle;
+                                        break;
+                                    }
+                            }
+                            if (effect.effectPermanentObject != null && effect.effectPermanentObject.TryGetComponent(out LevelLoader.stormyWeather))
+                            {
+                                if (LevelLoader.stormyWeather.explosionEffectParticle != null)
+                                    LevelLoader.defaultStormyLightningStrikeExplosion = LevelLoader.stormyWeather.explosionEffectParticle;
+                                if (LevelLoader.stormyWeather.staticElectricityParticle != null)
+                                    LevelLoader.defaultStormyStaticElectricityParticle = LevelLoader.stormyWeather.staticElectricityParticle;
+
+                                if (LevelLoader.stormyWeather.strikeSFX != null && LevelLoader.stormyWeather.strikeSFX.Length > 0)
+                                    LevelLoader.defaultStormyLightningStrikeSFX = LevelLoader.stormyWeather.strikeSFX;
+                                if (LevelLoader.stormyWeather.distantThunderSFX != null && LevelLoader.stormyWeather.distantThunderSFX.Length > 0)
+                                    LevelLoader.defaultStormyDistantThunderSFX = LevelLoader.stormyWeather.distantThunderSFX;
+                                if (LevelLoader.stormyWeather.staticElectricityAudio != null)
+                                    LevelLoader.defaultStormyStaticElectricitySFX = LevelLoader.stormyWeather.staticElectricityAudio;
+                            }
+                            break;
+                        case LevelWeatherType.Foggy:
+                            LevelLoader.foggyFog = TimeOfDay.foggyWeather;
+                            LevelLoader.defaultFoggyFogVolumeSize = TimeOfDay.foggyWeather.parameters.size;
+                            break;
+                        case LevelWeatherType.Flooded:
+                            if (effect.effectPermanentObject != null && effect.effectPermanentObject.TryGetComponent(out LevelLoader.floodedWeather))
+                            {
+                                LevelLoader.floodedAmbienceSource = LevelLoader.floodedWeather.waterAudio;
+                                if (LevelLoader.floodedAmbienceSource != null)
+                                    LevelLoader.defaultFloodedAmbience = LevelLoader.floodedAmbienceSource.clip;
+
+                                LevelLoader.floodedWaterTrigger = LevelLoader.floodedWeather.GetComponentInChildren<QuicksandTrigger>(includeInactive: true);
+                                foreach (MeshRenderer renderer in LevelLoader.floodedWeather.GetComponentsInChildren<MeshRenderer>(includeInactive: true))
+                                    if (renderer.gameObject != LevelLoader.floodedWaterTrigger.gameObject)
+                                    {
+                                        LevelLoader.floodedWaterRenderer = renderer;
+                                        foreach (Material material in renderer.sharedMaterials)
+                                            if (material.shader.name == "Shader Graphs/WaterShaderHDRP")
+                                            {
+                                                LevelLoader.defaultFloodedWaterMaterial = material;
+                                                LevelLoader.vanillaWaterShader = material.shader;
+                                                break;
+                                            }
+                                        break;
+                                    }
+                            }
+                            break;
+                        case LevelWeatherType.Eclipsed:
+                            if (effect.effectObject != null)
+                            {
+                                LevelLoader.eclipsedMusicSource = effect.effectObject.GetComponentInChildren<AudioSource>(includeInactive: true);
+                                if (LevelLoader.eclipsedMusicSource != null)
+                                    LevelLoader.defaultEclipsedMusic = LevelLoader.eclipsedMusicSource.clip;
+                            }
+                            break;
+                        case LevelWeatherType.None:
+                        default:
+                            break;
+                    }
+                }
 
                 foreach (ExtendedLevel vanillaLevel in PatchedContent.VanillaExtendedLevels)
                 {
                     vanillaLevel.OverrideDustStormVolumeSize = LevelLoader.defaultDustCloudFogVolumeSize;
+
+                    vanillaLevel.OverrideRainAmbience = LevelLoader.defaultRainyAmbience;
+
+                    vanillaLevel.OverrideStormyLightningStrikeSFX = LevelLoader.defaultStormyLightningStrikeSFX;
+                    vanillaLevel.OverrideStormyDistantThunderSFX = LevelLoader.defaultStormyDistantThunderSFX;
+                    vanillaLevel.OverrideStormyStaticElectricitySFX = LevelLoader.defaultStormyStaticElectricitySFX;
+                    vanillaLevel.OverrideStormyRainAmbience = LevelLoader.defaultStormyRainAmbience;
+
                     vanillaLevel.OverrideFoggyVolumeSize = LevelLoader.defaultFoggyFogVolumeSize;
+
+                    vanillaLevel.OverrideFloodedAmbience = LevelLoader.defaultFloodedAmbience;
+
+                    vanillaLevel.OverrideEclipsedMusic = LevelLoader.defaultEclipsedMusic;
                 }
                 foreach (ExtendedLevel customLevel in PatchedContent.CustomExtendedLevels)
                 {
                     if (customLevel.OverrideDustStormVolumeSize == Vector3.zero)
                         customLevel.OverrideDustStormVolumeSize = LevelLoader.defaultDustCloudFogVolumeSize;
+
+                    if (customLevel.OverrideRainAmbience == null)
+                        customLevel.OverrideRainAmbience = LevelLoader.defaultRainyAmbience;
+
+                    if (customLevel.OverrideStormyLightningStrikeSFX == null || customLevel.OverrideStormyLightningStrikeSFX.Length == 0)
+                        customLevel.OverrideStormyLightningStrikeSFX = LevelLoader.defaultStormyLightningStrikeSFX;
+                    if (customLevel.OverrideStormyDistantThunderSFX == null || customLevel.OverrideStormyDistantThunderSFX.Length == 0)
+                        customLevel.OverrideStormyDistantThunderSFX = LevelLoader.defaultStormyDistantThunderSFX;
+                    if (customLevel.OverrideStormyStaticElectricitySFX == null)
+                        customLevel.OverrideStormyStaticElectricitySFX = LevelLoader.defaultStormyStaticElectricitySFX;
+                    if (customLevel.OverrideStormyRainAmbience == null)
+                        customLevel.OverrideStormyRainAmbience = LevelLoader.defaultStormyRainAmbience;
+
                     if (customLevel.OverrideFoggyVolumeSize == Vector3.zero)
                         customLevel.OverrideFoggyVolumeSize = LevelLoader.defaultFoggyFogVolumeSize;
+
+                    if (customLevel.OverrideFloodedAmbience == null)
+                        customLevel.OverrideFloodedAmbience = LevelLoader.defaultFloodedAmbience;
+
+                    if (customLevel.OverrideFloodedPrefab != null && LevelLoader.vanillaWaterShader != null)
+                        foreach (MeshRenderer renderer in customLevel.OverrideFloodedPrefab.GetComponentsInChildren<MeshRenderer>())
+                            for (int i = 0; i < renderer.sharedMaterials.Length; i++)
+                                if (renderer.sharedMaterials[i].name == LevelLoader.defaultFloodedWaterMaterial.name)
+                                    renderer.sharedMaterials[i] = LevelLoader.defaultFloodedWaterMaterial;
+
+                    if (customLevel.OverrideEclipsedMusic == null)
+                        customLevel.OverrideEclipsedMusic = LevelLoader.defaultEclipsedMusic;
                 }
 
                 //Some Debugging.
@@ -285,7 +406,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                     debugString += (PatchedContent.ExtendedDungeonFlows.IndexOf(extendedDungeonFlow) + 1) + ". " + extendedDungeonFlow.DungeonName + " (" + extendedDungeonFlow.DungeonFlow.name + ") (" + extendedDungeonFlow.ContentType + ")" + "\n";
                 DebugHelper.Log(debugString, DebugType.User);
 
-                
+
 
                 DebugStopwatch.StartStopWatch("Restore Content");
                 //Restore Custom Content References To Vanilla Content
@@ -554,10 +675,8 @@ if (AssetBundleLoader.noBundlesFound == true)
         {
             if (LevelManager.CurrentExtendedLevel == null || LevelManager.CurrentExtendedLevel.IsLevelLoaded == false) return;
             foreach (GameObject rootObject in SceneManager.GetSceneByName(LevelManager.CurrentExtendedLevel.SelectableLevel.sceneName).GetRootGameObjects())
-            {
-                LevelLoader.RefreshFogSize(LevelManager.CurrentExtendedLevel);
                 ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
-            }
+            LevelLoader.RefreshWeatherEffects(LevelManager.CurrentExtendedLevel);
         }
 
         [HarmonyPatch(typeof(StartOfRound), "StartGame"), HarmonyPrefix, HarmonyPriority(priority)]
@@ -605,7 +724,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             }
             return (false);
         }
-        
+
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> GenerateNewLevelClientRpcTranspiler(IEnumerable<CodeInstruction> instructions)
         {

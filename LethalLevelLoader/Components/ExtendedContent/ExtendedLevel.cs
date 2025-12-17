@@ -22,10 +22,6 @@ namespace LethalLevelLoader
 
         [field: Space(5)]
 
-        [field: SerializeField] public GameObject OverrideQuicksandPrefab { get; set; }
-
-        [field: Space(5)]
-
         [field: SerializeField] public bool IsRouteHidden { get; set; } = false;
         [field: SerializeField] public bool IsRouteLocked { get; set; } = false;
         public bool IsRouteRemoved { get; set; } = false;
@@ -46,10 +42,35 @@ namespace LethalLevelLoader
         [field: SerializeField] public float OverrideCameraMaxDistance = 400;
 
         [field: Space(5)]
-        [field: Header("Weather Fog Distance Override Settings")]
+        [field: Header("Weather Effect Override Settings")]
 
         [field: SerializeField] public Vector3 OverrideDustStormVolumeSize { get; set; } = Vector3.zero;
+
+        [field: Space(5)]
+        [field: SerializeField] public GameObject OverrideQuicksandPrefab { get; set; }
+        [field: SerializeField] public GameObject OverrideRainPrefab { get; set; }
+        [field: SerializeField] public AudioClip OverrideRainAmbience { get; set; }
+
+        [field: Space(5)]
+        [field: SerializeField] public ParticleSystem OverrideStormyLightningStrikeExplosion { get; set; }
+        [field: SerializeField] public ParticleSystem OverrideStormyStaticElectricityParticle { get; set; }
+        [field: SerializeField] public AudioClip[] OverrideStormyLightningStrikeSFX { get; set; }
+        [field: SerializeField] public AudioClip[] OverrideStormyDistantThunderSFX { get; set; }
+        [field: SerializeField] public AudioClip OverrideStormyStaticElectricitySFX { get; set; }
+
+        [field: Space(5)]
+        [field: SerializeField] public GameObject OverrideStormyRainPrefab { get; set; }
+        [field: SerializeField] public AudioClip OverrideStormyRainAmbience { get; set; }
+
+        [field: Space(5)]
         [field: SerializeField] public Vector3 OverrideFoggyVolumeSize { get; set; } = Vector3.zero;
+
+        [field: Space(5)]
+        [field: SerializeField] public GameObject OverrideFloodedPrefab { get; set; }
+        [field: SerializeField] public AudioClip OverrideFloodedAmbience { get; set; }
+
+        [field: Space(5)]
+        [field: SerializeField] public AudioClip OverrideEclipsedMusic { get; set; }
 
 
         [field: Space(5)]
