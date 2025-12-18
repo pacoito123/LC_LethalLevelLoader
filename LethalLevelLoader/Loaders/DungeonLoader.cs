@@ -47,9 +47,7 @@ namespace LethalLevelLoader
             }
 
             if (currentExtendedDungeonFlow.IsDynamicOutOfBoundsTriggerEnabled)
-            {
                 dungeonGenerator.OnGenerationStatusChanged += PatchOutOfBoundsTriggers;
-            }
 
             PatchFireEscapes(dungeonGenerator, currentExtendedLevel, SceneManager.GetSceneByName(currentExtendedLevel.SelectableLevel.sceneName));
             PatchDynamicGlobalProps(dungeonGenerator, currentExtendedDungeonFlow);
