@@ -121,20 +121,8 @@ namespace LethalLevelLoader
                 shipAnimator.runtimeAnimatorController = overrideController;
             }
 
-            // Only replace vanilla clips if they haven't already been changed (for some reason).
-            bool shouldReplaceShipFlyToMoon = false, shouldReplaceShipFlyFromMoon = false;
-            for (int i = 0; i < overrideController.animationClips.Length; i++)
-            {
-                if (overrideController.animationClips[i] == defaultShipFlyToMoonClip)
-                    shouldReplaceShipFlyToMoon = true;
-                else if (overrideController.animationClips[i] == defaultShipFlyFromMoonClip)
-                    shouldReplaceShipFlyFromMoon = true;
-            }
-
-            if (shouldReplaceShipFlyToMoon)
-                overrideController["HangarShipLandB"] = extendedLevel.ShipFlyToMoonClip;
-            if (shouldReplaceShipFlyFromMoon)
-                overrideController["ShipLeave"] = extendedLevel.ShipFlyFromMoonClip;
+            overrideController["HangarShipLandB"] = extendedLevel.ShipFlyToMoonClip;
+            overrideController["ShipLeave"] = extendedLevel.ShipFlyFromMoonClip;
         }
 
         internal static void RefreshWeatherEffects(ExtendedLevel extendedLevel)
