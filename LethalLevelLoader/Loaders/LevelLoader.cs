@@ -11,7 +11,6 @@ namespace LethalLevelLoader
     {
         internal static List<MeshCollider> customLevelMeshCollidersList = new List<MeshCollider>();
 
-        internal static AnimatorOverrideController shipAnimatorOverrideController;
         internal static AnimationClip defaultShipFlyToMoonClip;
         internal static AnimationClip defaultShipFlyFromMoonClip;
 
@@ -109,13 +108,39 @@ namespace LethalLevelLoader
 
         internal static void RefreshShipAnimatorClips(ExtendedLevel extendedLevel)
         {
+            // Let other content handle their own AnimatorController overrides.
+            if (extendedLevel.ContentType is ContentType.External) return;
+
             DebugHelper.Log("Refreshing Ship Animator Clips!", DebugType.Developer);
-            shipAnimatorOverrideController["HangarShipLandB"] = extendedLevel.ShipFlyToMoonClip;
-            shipAnimatorOverrideController["ShipLeave"] = extendedLevel.ShipFlyFromMoonClip;
+
+            Animator shipAnimator = Patches.StartOfRound.shipAnimator;
+            if (shipAnimator.runtimeAnimatorController is not AnimatorOverrideController overrideController)
+            {
+                // Create new AnimatorOverrideController only if not already one.
+                overrideController = new AnimatorOverrideController(shipAnimator.runtimeAnimatorController);
+                shipAnimator.runtimeAnimatorController = overrideController;
+            }
+
+            // Only replace vanilla clips if they haven't already been changed (for some reason).
+            bool shouldReplaceShipFlyToMoon = false, shouldReplaceShipFlyFromMoon = false;
+            for (int i = 0; i < overrideController.animationClips.Length; i++)
+            {
+                if (overrideController.animationClips[i] == defaultShipFlyToMoonClip)
+                    shouldReplaceShipFlyToMoon = true;
+                else if (overrideController.animationClips[i] == defaultShipFlyFromMoonClip)
+                    shouldReplaceShipFlyFromMoon = true;
+            }
+
+            if (shouldReplaceShipFlyToMoon)
+                overrideController["HangarShipLandB"] = extendedLevel.ShipFlyToMoonClip;
+            if (shouldReplaceShipFlyFromMoon)
+                overrideController["ShipLeave"] = extendedLevel.ShipFlyFromMoonClip;
         }
 
         internal static void RefreshWeatherEffects(ExtendedLevel extendedLevel)
         {
+            DebugHelper.Log("Refreshing Weather Effects!", DebugType.Developer);
+
             // Dust Clouds
             if (dustCloudFog != null)
                 dustCloudFog.parameters.size = extendedLevel.OverrideDustStormVolumeSize;

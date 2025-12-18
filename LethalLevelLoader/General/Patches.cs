@@ -218,7 +218,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                 //Terminal Specific Reference Setup
                 TerminalManager.CacheTerminalReferences();
 
-                LevelManager.InitializeShipAnimatorOverrideController();
+                LevelManager.ObtainShipAnimatorClips();
 
                 DungeonLoader.defaultKeyPrefab = RoundManager.keyPrefab;
                 LevelLoader.defaultQuicksandPrefab = RoundManager.quicksandPrefab;
@@ -708,6 +708,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             if (LevelManager.CurrentExtendedLevel == null || LevelManager.CurrentExtendedLevel.IsLevelLoaded == false) return;
             foreach (GameObject rootObject in SceneManager.GetSceneByName(LevelManager.CurrentExtendedLevel.SelectableLevel.sceneName).GetRootGameObjects())
                 ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
+            LevelLoader.RefreshShipAnimatorClips(LevelManager.CurrentExtendedLevel);
             LevelLoader.RefreshWeatherEffects(LevelManager.CurrentExtendedLevel);
             LevelLoader.RefreshTimeOfDayMusic(LevelManager.CurrentExtendedLevel);
         }

@@ -59,27 +59,23 @@ namespace LethalLevelLoader
             TerminalManager.Terminal.moonsCatalogueList = [.. Patches.StartOfRound.levels];
         }
 
-        internal static void InitializeShipAnimatorOverrideController()
+        internal static void ObtainShipAnimatorClips()
         {
             Animator shipAnimator = Patches.StartOfRound.shipAnimator;
+            RuntimeAnimatorController animatorController = shipAnimator.runtimeAnimatorController;
 
-            List<GameObject> childObjects = new List<GameObject>();
+            /* List<GameObject> childObjects = new List<GameObject>();
             foreach (Transform child in shipAnimator.GetComponentsInChildren<Transform>(includeInactive: true))
                 if (!childObjects.Contains(child.gameObject))
-                    childObjects.Add(child.gameObject);
+                    childObjects.Add(child.gameObject); */
 
-            AnimatorOverrideController overrideController = new AnimatorOverrideController(shipAnimator.runtimeAnimatorController);
-            LevelLoader.shipAnimatorOverrideController = overrideController;
-            LevelLoader.defaultShipFlyToMoonClip = overrideController["HangarShipLandB"];
-            LevelLoader.defaultShipFlyFromMoonClip = overrideController["ShipLeave"];
-
-            foreach (AnimationClip animationClip in shipAnimator.runtimeAnimatorController.animationClips)
-                overrideController[animationClip.name] = animationClip;
-
-            shipAnimator.runtimeAnimatorController = overrideController;
-            //shipAnimator.Play("Base Layer.ShipIdle", layer: 0, normalizedTime: 1.0f);
-
-            //shipAnimator.enabled = false;
+            for (int i = 0; i < animatorController.animationClips.Length; i++)
+            {
+                if (animatorController.animationClips[i].name == "HangarShipLandB")
+                    LevelLoader.defaultShipFlyToMoonClip = animatorController.animationClips[i];
+                else if (animatorController.animationClips[i].name == "ShipLeave")
+                    LevelLoader.defaultShipFlyFromMoonClip = animatorController.animationClips[i];
+            }
         }
 
         public static bool TryGetExtendedLevel(SelectableLevel selectableLevel, out ExtendedLevel returnExtendedLevel, ContentType levelType = ContentType.Any)

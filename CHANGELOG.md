@@ -19,6 +19,7 @@
 
 **<details><summary>Fixes</summary>**
 
+* Fixed ShipFlyToMoonClip & ShipFlyFromMoonClip AnimationClip overrides not being applied
 * Fixed dynamic dungeon size related settings for ExtendedDungeonFlow not being applied
 
 </details>
