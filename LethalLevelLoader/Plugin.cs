@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
-using Dawn;
 using HarmonyLib;
 using LethalLevelLoader.Tools;
 using System;
@@ -19,7 +18,7 @@ namespace LethalLevelLoader
     {
         public const string ModGUID = "imabatby.lethallevelloader";
         public const string ModName = "LethalLevelLoader";
-        public const string ModVersion = "1.5.6";
+        public const string ModVersion = "1.6.0";
 
         internal static Plugin Instance;
 

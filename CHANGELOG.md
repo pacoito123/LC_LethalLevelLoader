@@ -1,7 +1,15 @@
 **Changelog**
 --
 
-**<details><summary>Version 1.5.7</summary>**
+**<details><summary>Version 1.6.0</summary>**
+
+**<details><summary>General</summary>**
+
+* Pushed v73 branch to the main mod page!
+  * [LethalLevelLoaderUpdated](https://thunderstore.io/c/lethal-company/p/pacoito/LethalLevelLoaderUpdated) will technically still work, but is now deprecated and will not be receiving further updates
+  * It's still fine to have both in the same profile (only the intended one will be loaded), but any mods that switched their dependencies should swap back whenever possible
+
+</details>
 
 **<details><summary>Features</summary>**
 
@@ -11,11 +19,9 @@
   * OverrideStormyLightningStrikeSFX
   * OverrideFloodedPrefab
   * OverrideEclipsedMusic
-* Added TimeOfDay music override settings to ExtendedLevel
+* Added TimeOfDay music override settings to ExtendedLevel, allowing authors to optionally use their own custom music throughout the day
 * Added EnableDynamicOutOfBoundsTrigger setting to ExtendedDungeonFlow, for dynamically lowering a moon's kill floor to the lowest point of the dungeon it generates
   * Allows for more vertical dungeon generation without having to worry about intersecting the kill floor
-* Removed the dynamic font size adjusting from the Moons Catalogue display
-  * Replaced instead with a patch for Terminal scrolling that avoids skipping over moons when displaying a long list
 
 </details>
 
@@ -23,6 +29,8 @@
 
 * Fixed ShipFlyToMoonClip & ShipFlyFromMoonClip AnimationClip overrides not being applied
 * Fixed dynamic dungeon size related settings for ExtendedDungeonFlow not being applied
+* Removed the dynamic font size adjusting from the Moons Catalogue display
+  * Replaced instead with a patch for Terminal scrolling that avoids skipping over moons when displaying a long list
 
 </details>
 

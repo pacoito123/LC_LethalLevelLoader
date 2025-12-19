@@ -1,7 +1,7 @@
 **LethalLevelLoaderUpdated**
 --
 
-> **NOTE:** This is a temporary upload of [LethalLevelLoader](https://thunderstore.io/c/lethal-company/p/IAmBatby/LethalLevelLoader) ([MIT](https://raw.githubusercontent.com/IAmBatby/LethalLevelLoader/b629d1db2256f60588e96996e9702d8c7c0b034e/LICENSE.md)) updated for the latest versions of the game (`v73` and above), while the [pull request](https://github.com/IAmBatby/LethalLevelLoader/pull/190) is still under review. This package will be deprecated the moment an update is finalized and released.
+> **NOTE:** [LethalLevelLoader](https://thunderstore.io/c/lethal-company/p/IAmBatby/LethalLevelLoader) has updated! This package is no longer required.
 
 ---
 
@@ -14,7 +14,7 @@
 **Description**
 --
 
-### **1.5.6 for Lethal Company v73 Has Released!**
+### **1.6.0 for Lethal Company v73 Has Released!**
 
 **LethalLevelLoader** is a custom API to support the manual and dynamic integration of custom levels and dungeons in Lethal Company.  
 Mod Developers can provide LethalLevelLoader with their custom content via code or via automatic AssetBundle detection, and from there LethalLevelLoader will seamlessly load the content into the game.

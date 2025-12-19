@@ -407,10 +407,14 @@ if (AssetBundleLoader.noBundlesFound == true)
 
                     // Replace references to any materials named 'Water_mat_04' with the one actually used by the game.
                     if (customLevel.OverrideFloodedPrefab != null && LevelLoader.vanillaWaterShader != null)
-                        foreach (MeshRenderer renderer in customLevel.OverrideFloodedPrefab.GetComponentsInChildren<MeshRenderer>())
-                            for (int i = 0; i < renderer.sharedMaterials.Length; i++)
-                                if (renderer.sharedMaterials[i].name == LevelLoader.defaultFloodedWaterMaterial.name)
-                                    renderer.sharedMaterials[i] = LevelLoader.defaultFloodedWaterMaterial;
+                        foreach (MeshRenderer renderer in customLevel.OverrideFloodedPrefab.GetComponentsInChildren<MeshRenderer>(includeInactive: true))
+                        {
+                            Material[] materials = renderer.sharedMaterials;
+                            for (int i = 0; i < materials.Length; i++)
+                                if (materials[i].name == LevelLoader.defaultFloodedWaterMaterial.name)
+                                    materials[i] = LevelLoader.defaultFloodedWaterMaterial;
+                            renderer.sharedMaterials = materials;
+                        }
 
                     if (customLevel.OverrideEclipsedMusic == null)
                         customLevel.OverrideEclipsedMusic = LevelLoader.defaultEclipsedMusic;

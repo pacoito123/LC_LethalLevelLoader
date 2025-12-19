@@ -5,7 +5,7 @@
       <TargetFramework>netstandard2.1</TargetFramework>
       <AssemblyName>LethalLevelLoader</AssemblyName>
       <Description>A Custom API to support the manual and dynamic integration of custom levels and dungeons in Lethal Company.</Description>
-      <Version>1.5.6</Version>
+      <Version>1.6.0</Version>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
       <LangVersion>preview</LangVersion>
 
@@ -38,7 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="Evaisa.LethalLib" Version="1.1.1" PrivateAssets="all" />
-    <PackageReference Include="TeamXiaolan.DawnLib" Version="0.4.*" PrivateAssets="all" />
+    <PackageReference Include="TeamXiaolan.DawnLib" Version="0.5.*" PrivateAssets="all" />
     <PackageReference Include="MinVer" Version="4.*" PrivateAssets="all" Private="false" />
   </ItemGroup>
 
@@ -67,14 +67,14 @@
     <PackageReference Include="LethalCompany.GameLibs.Steam" Version="73.0.0-ngd.0" PrivateAssets="all" Publicize="true" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <ProjectReference Include="..\LethalLevelLoader.Patcher\LethalLevelLoader.Patcher.csproj">
       <PrivateAssets>all</PrivateAssets>
       <Project>{61D32BE1-468B-4F5F-9B30-11B4760235BE}</Project>
       <Name>LethalLevelLoader.Patcher</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-  </ItemGroup>
+  </ItemGroup> -->
 
   <Target Name="NetcodePatch" AfterTargets="PostBuildEvent">
     <Exec Command="netcode-patch -uv 2022.3.62 -nv 1.12.0 -tv 1.0.0 &quot;$(TargetPath)&quot; @(ReferencePathWithRefAssemblies->'&quot;%(Identity)&quot;', ' ')" />

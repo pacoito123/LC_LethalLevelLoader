@@ -8,13 +8,13 @@ repository = "https://thunderstore.io"
 [package]
 namespace = "pacoito"
 name = "LethalLevelLoaderUpdated"
-description = "A Custom API to support the manual and dynamic integration of all forms of custom content in Lethal Company. (v73 Compatible)"
+description = "[Deprecated] A Custom API to support the manual and dynamic integration of all forms of custom content in Lethal Company. (v73 Compatible)"
 websiteUrl = "https://github.com/pacoito123/LC_LethalLevelLoader"
 containsNsfwContent = false
 
 [package.dependencies]
-IAmBatby-LethalLevelLoader = "1.4.11"
-BepInEx-BepInExPack = "5.4.2100"
+IAmBatby-LethalLevelLoader = "1.6.0"
+BepInEx-BepInExPack = "5.4.2304"
 Evaisa-FixPluginTypesSerialization = "1.1.4"
 MaxWasUnavailable-LethalModDataLib = "1.2.2"
 
@@ -27,9 +27,9 @@ outdir = "../dist"
 source = "../LethalLevelLoader/bin/Release/netstandard2.1/LethalLevelLoader.dll"
 target = "/BepInEx/plugins/"
 
-[[build.copy]]
-source = "../LethalLevelLoader.Patcher/bin/Release/netstandard2.1/LethalLevelLoader.Patcher.dll"
-target = "/BepInEx/patchers/LethalLevelLoader/"
+# [[build.copy]]
+# source = "../LethalLevelLoader.Patcher/bin/Release/netstandard2.1/LethalLevelLoader.Patcher.dll"
+# target = "/BepInEx/patchers/LethalLevelLoader/"
 
 [[build.copy]]
 source = "../CHANGELOG.md"
