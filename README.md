@@ -1,9 +1,5 @@
-**LethalLevelLoaderUpdated**
+**LethalLevelLoader**
 --
-
-> **NOTE:** [LethalLevelLoader](https://thunderstore.io/c/lethal-company/p/IAmBatby/LethalLevelLoader) has updated! This package is no longer required.
-
----
 
 **A Custom API to support the manual and dynamic integration of all forms of custom content in Lethal Company.**
 
@@ -18,8 +14,6 @@
 
 **LethalLevelLoader** is a custom API to support the manual and dynamic integration of custom levels and dungeons in Lethal Company.  
 Mod Developers can provide LethalLevelLoader with their custom content via code or via automatic AssetBundle detection, and from there LethalLevelLoader will seamlessly load the content into the game.
-
-This Mod is Likely To Be Incompatible with **LethalExpansion**, Due To The inherit conflicts involved in changing the same systems.
 
 **How To Use (Users / Players)**
 --
@@ -42,6 +36,7 @@ This Mod is Likely To Be Incompatible with **LethalExpansion**, Due To The inher
 * Custom Moons
 * Custom Interiors
 * Custom Items (Scrap / Items)
+* Custom Unlockables (Upgrades, Furniture)
 * Custom Enemies (Enemies)
 * Custom StoryLog's
 * Custom Weather Effects (WIP)
@@ -76,4 +71,5 @@ You should be now set up, and ready compile your fork of LethalLevelLoader on yo
 * **LadyRaphtalia**, **Xu Xiaolan**, **Badhamknibbs**, **Mrov**, **sfDesat**, **AboveFire**, **Autumnis The Everchanging**, **RosiePies**, **Drako** & **Audio Knight** *(For testing development on experimental 1.2.0 builds.)*
 * **狐萝卜呀**, **tumbleweed**, **Corey**, **Ritskee**, **Altan**, **qxZap**, **Salamander**, **Chiseled Cactus**, **Phantom139**, **ImmaBawss**, **takeothewolf**, **zuzaratrust**, **Hackattack242**, **Mail Me Dabs**, **Kyros**, **SourceShard** & **Chupacabra** *(For playtesting and reporting bugs on experimental 1.2.0 builds.)*
 * **Lunxara** *(For the heavy, rapid testing throughout all the experimental 1.2.0 builds.)*
-* **Adi**, **Hamunii**, **Xu Xiaolan & **Wherget** *F(or various new contributions in the forms of direct suggestions and pull requests.)*
+* **Adi**, **Hamunii**, **Xu Xiaolan** & **Wherget** *(For various new contributions in the forms of direct suggestions and pull requests.)*
+* **pacoito** *(Active developer/maintainer. Made temporary v73 fork and various other contributions.)*

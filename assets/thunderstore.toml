@@ -6,14 +6,13 @@ schemaVersion = "0.0.1"
 repository = "https://thunderstore.io"
 
 [package]
-namespace = "pacoito"
-name = "LethalLevelLoaderUpdated"
-description = "[Deprecated] A Custom API to support the manual and dynamic integration of all forms of custom content in Lethal Company. (v73 Compatible)"
-websiteUrl = "https://github.com/pacoito123/LC_LethalLevelLoader"
+namespace = "IAmBatby"
+name = "LethalLevelLoader"
+description = "A Custom API to support the manual and dynamic integration of all forms of custom content in Lethal Company. (v73 Compatible)"
+websiteUrl = "https://github.com/IAmBatby/LethalLevelLoader"
 containsNsfwContent = false
 
 [package.dependencies]
-IAmBatby-LethalLevelLoader = "1.6.0"
 BepInEx-BepInExPack = "5.4.2304"
 Evaisa-FixPluginTypesSerialization = "1.1.4"
 MaxWasUnavailable-LethalModDataLib = "1.2.2"
