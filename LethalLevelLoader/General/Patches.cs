@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
@@ -692,7 +693,7 @@ if (AssetBundleLoader.noBundlesFound == true)
         [HarmonyPatch(typeof(Terminal), "LoadNewNode"), HarmonyPrefix, HarmonyPriority(priority)]
         internal static bool TerminalLoadNewNode_Prefix(Terminal __instance, ref TerminalNode node)
         {
-            Terminal.screenText.textComponent.fontSize = TerminalManager.defaultTerminalFontSize;
+            TerminalManager.moonsInCataloguePage = 0;
             return (TerminalManager.OnBeforeLoadNewNode(ref node));
         }
 
@@ -700,6 +701,18 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static void TerminalLoadNewNode_Postfix(Terminal __instance, ref TerminalNode node)
         {
             TerminalManager.OnLoadNewNode(ref node);
+        }
+
+        [HarmonyPatch(typeof(PlayerControllerB), "ScrollMouse_performed"), HarmonyPrefix, HarmonyPriority(priority)]
+        internal static bool TerminalScrollMouse_Prefix(PlayerControllerB __instance, InputAction.CallbackContext context)
+        {
+            if (!__instance.inTerminalMenu || TerminalManager.moonsInCataloguePage == 0) return true;
+
+            float scrollAmount = 15 / (float)TerminalManager.moonsInCataloguePage; // Scroll 15 moons at a time, instead of a third of the page.
+            float scrollDirection = context.ReadValue<float>();
+
+            __instance.terminalScrollVertical.value += scrollAmount * scrollDirection;
+            return false;
         }
 
         //Called via SceneManager event.

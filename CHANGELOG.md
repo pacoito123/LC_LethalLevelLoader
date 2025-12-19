@@ -14,6 +14,8 @@
 * Added TimeOfDay music override settings to ExtendedLevel
 * Added EnableDynamicOutOfBoundsTrigger setting to ExtendedDungeonFlow, for dynamically lowering a moon's kill floor to the lowest point of the dungeon it generates
   * Allows for more vertical dungeon generation without having to worry about intersecting the kill floor
+* Removed the dynamic font size adjusting from the Moons Catalogue display
+  * Replaced instead with a patch for Terminal scrolling that avoids skipping over moons when displaying a long list
 
 </details>
 

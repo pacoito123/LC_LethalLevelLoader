@@ -29,6 +29,7 @@ namespace LethalLevelLoader
 
         public static MoonsCataloguePage defaultMoonsCataloguePage { get; internal set; }
         public static MoonsCataloguePage currentMoonsCataloguePage { get; internal set; }
+        internal static int moonsInCataloguePage;
 
         //Cached References To Important Base-Game TerminalKeywords;
         internal static TerminalKeyword routeKeyword;
@@ -122,6 +123,12 @@ namespace LethalLevelLoader
             if (Settings.levelPreviewSortType != SortInfoType.None)
                 SortMoonsCataloguePage(currentMoonsCataloguePage);
             FilterMoonsCataloguePage(currentMoonsCataloguePage);
+
+            // Get total amount of moons displayed in the terminal listing.
+            foreach (ExtendedLevelGroup extendedLevelGroup in currentMoonsCataloguePage.ExtendedLevelGroups)
+                foreach (ExtendedLevel extendedLevel in extendedLevelGroup.extendedLevelsList)
+                    if (extendedLevel.IsRouteHidden == false)
+                        moonsInCataloguePage++;
         }
 
         internal static bool SetSimulationResultsText(ref TerminalNode currentNode, ref TerminalNode node)
@@ -215,10 +222,8 @@ namespace LethalLevelLoader
             Terminal.modifyingText = true;
             Terminal.screenText.interactable = true;
 
-
             Terminal.screenText.text = Terminal.TextPostProcess("\n" + "\n" + "\n" + GetMoonsTerminalText(), Terminal.currentNode);
-            Terminal.screenText.textComponent.fontSize = defaultTerminalFontSize - (0.1f * (currentMoonsCataloguePage.ExtendedLevels.Count - OriginalContent.MoonsCatalogue.Count));
-            Terminal.currentText = Terminal.TextPostProcess("\n" + "\n" + "\n" + GetMoonsTerminalText(), Terminal.currentNode);
+            Terminal.currentText = Terminal.screenText.text;
 
             Terminal.textAdded = 0;
 
