@@ -113,13 +113,17 @@ namespace LethalLevelLoader
 
             DebugHelper.Log("Refreshing Ship Animator Clips!", DebugType.Developer);
 
-            Animator shipAnimator = Patches.StartOfRound.shipAnimator;
+            /* Animator shipAnimator = Patches.StartOfRound.shipAnimator;
             if (shipAnimator.runtimeAnimatorController is not AnimatorOverrideController overrideController)
             {
                 // Create new AnimatorOverrideController only if not already one.
                 overrideController = new AnimatorOverrideController(shipAnimator.runtimeAnimatorController);
                 shipAnimator.runtimeAnimatorController = overrideController;
-            }
+            } */
+
+            Animator shipAnimator = Patches.StartOfRound.shipAnimator;
+            AnimatorOverrideController overrideController = new AnimatorOverrideController(shipAnimator.runtimeAnimatorController);
+            shipAnimator.runtimeAnimatorController = overrideController;
 
             overrideController["HangarShipLandB"] = extendedLevel.ShipFlyToMoonClip;
             overrideController["ShipLeave"] = extendedLevel.ShipFlyFromMoonClip;

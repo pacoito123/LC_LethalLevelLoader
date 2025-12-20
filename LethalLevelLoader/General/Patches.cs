@@ -269,7 +269,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                                     LevelLoader.defaultRainyAmbience = LevelLoader.rainyAmbienceSource.clip;
 
                                 foreach (ParticleSystem particle in effect.effectObject.GetComponentsInChildren<ParticleSystem>(includeInactive: true))
-                                    if (particle.transform.parent == effect.effectObject)
+                                    if (particle.transform.parent == effect.effectObject.transform)
                                     {
                                         LevelLoader.rainParticles = particle;
                                         break;
@@ -284,7 +284,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                                     LevelLoader.defaultStormyRainAmbience = LevelLoader.stormyRainAmbienceSource.clip;
 
                                 foreach (ParticleSystem particle in effect.effectObject.GetComponentsInChildren<ParticleSystem>(includeInactive: true))
-                                    if (particle.transform.parent == effect.effectObject)
+                                    if (particle.transform.parent == effect.effectObject.transform)
                                     {
                                         LevelLoader.stormyRainParticles = particle;
                                         break;

@@ -1,6 +1,17 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.6.1</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed rain prefab overrides (OverrideRainPrefab, OverrideStormyRainPrefab) not being applied
+* Fixed ship remaining in 'orbit' state after landing (no ladder on the side of the ship), with [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib) being present
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.0</summary>**
 
 **<details><summary>General</summary>**
