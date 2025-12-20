@@ -5,8 +5,9 @@
 
 **<details><summary>Fixes</summary>**
 
+* Fixed networking issues related to the dynamic dungeon size settings, which caused an error during generation that led to a bunch of other things happening
+* Fixed ship remaining in 'orbit' state after landing (no ladder on the side of the ship), with [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib) (and likely some other mods) being present
 * Fixed rain prefab overrides (OverrideRainPrefab, OverrideStormyRainPrefab) not being applied
-* Fixed ship remaining in 'orbit' state after landing (no ladder on the side of the ship), with [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib) being present
 
 </details>
 

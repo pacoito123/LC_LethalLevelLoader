@@ -145,14 +145,14 @@ namespace LethalLevelLoader
             LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes = cachedDungeonFlowsList.ToArray();
         }
 
-        [Rpc(SendTo.Server)]
-        public void GetDungeonFlowSizeServerRpc()
+        [Rpc(SendTo.Server, RequireOwnership = false)]
+        public void GetDungeonFlowSizeServerRpc(RpcParams rpcParams = default)
         {
-            SetDungeonFlowSizeClientRpc(DungeonLoader.GetClampedDungeonSize());
+            SetDungeonFlowSizeClientRpc(DungeonLoader.GetClampedDungeonSize(), RpcTarget.Single(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
         }
 
-        [Rpc(SendTo.ClientsAndHost)]
-        public void SetDungeonFlowSizeClientRpc(float hostSize)
+        [Rpc(SendTo.SpecifiedInParams)]
+        public void SetDungeonFlowSizeClientRpc(float hostSize, RpcParams rpcParams)
         {
             Patches.RoundManager.dungeonGenerator.Generator.LengthMultiplier = hostSize;
             Patches.RoundManager.dungeonGenerator.Generate();
