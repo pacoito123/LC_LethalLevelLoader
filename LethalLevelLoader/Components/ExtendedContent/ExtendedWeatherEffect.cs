@@ -26,7 +26,7 @@ namespace LethalLevelLoader
 
         internal static ExtendedWeatherEffect Create(LevelWeatherType levelWeatherType, WeatherEffect weatherEffect, string weatherDisplayName, ContentType newContentType)
         {
-            return (ExtendedWeatherEffect.Create(levelWeatherType, weatherEffect.effectObject, weatherEffect.effectPermanentObject, weatherDisplayName, newContentType));
+            return (ExtendedWeatherEffect.Create(levelWeatherType, weatherEffect?.effectObject, weatherEffect?.effectPermanentObject, weatherDisplayName, newContentType));
         }
 
         internal static ExtendedWeatherEffect Create(LevelWeatherType levelWeatherType, GameObject worldObject, GameObject globalObject, string newWeatherDisplayName, ContentType newContentType)

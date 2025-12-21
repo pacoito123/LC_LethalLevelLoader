@@ -623,18 +623,16 @@ namespace LethalLevelLoader
             }
         }
 
-        internal static void CreateVanillaExtendedWeatherEffects(StartOfRound startOfRound, TimeOfDay timeOfDay)
+        internal static void CreateVanillaExtendedWeatherEffects(TimeOfDay timeOfDay)
         {
-            foreach (LevelWeatherType levelWeatherType in Enum.GetValues(typeof(LevelWeatherType)))
+            for (int i = -1; i < timeOfDay.effects.Length; i++)
             {
-                ExtendedWeatherEffect newExtendedWeatherEffect;
-                if (levelWeatherType != LevelWeatherType.None)
-                    newExtendedWeatherEffect = ExtendedWeatherEffect.Create(levelWeatherType, timeOfDay.effects[(int)levelWeatherType], levelWeatherType.ToString(), ContentType.Vanilla);
-                else
-                    newExtendedWeatherEffect = ExtendedWeatherEffect.Create(levelWeatherType, null, null, levelWeatherType.ToString(), ContentType.Vanilla);
-                
-                PatchedContent.ExtendedWeatherEffects.Add(newExtendedWeatherEffect);
-                PatchedContent.VanillaMod.ExtendedWeatherEffects.Add(newExtendedWeatherEffect);
+                LevelWeatherType weatherType = (LevelWeatherType)i;
+                WeatherEffect weatherEffect = (i >= 0) ? timeOfDay.effects[i] : null;
+
+                ExtendedWeatherEffect extendedEffect = ExtendedWeatherEffect.Create(weatherType, weatherEffect, $"{weatherType}", ContentType.Vanilla);
+                PatchedContent.ExtendedWeatherEffects.Add(extendedEffect);
+                PatchedContent.VanillaMod.ExtendedWeatherEffects.Add(extendedEffect);
             }
         }
 

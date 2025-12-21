@@ -180,8 +180,15 @@ namespace LethalLevelLoader
             if (ShipFlyFromMoonClip == null)
                 ShipFlyFromMoonClip = LevelLoader.defaultShipFlyFromMoonClip;
 
-            if (OverrideQuicksandPrefab == null)
-                OverrideQuicksandPrefab = LevelLoader.defaultQuicksandPrefab;
+            if (OverrideStartOfDayMusic == null)
+                OverrideStartOfDayMusic = LevelLoader.defaultStartOfDayMusic;
+            if (OverrideMidDayMusic == null)
+                OverrideMidDayMusic = LevelLoader.defaultMidDayMusic;
+            if (OverrideLateDayMusic == null)
+                OverrideLateDayMusic = LevelLoader.defaultLateDayMusic;
+            if (OverrideNightMusic == null)
+                OverrideNightMusic = LevelLoader.defaultNightMusic;
+
 
             if (ContentType is ContentType.Custom or ContentType.External)
             {

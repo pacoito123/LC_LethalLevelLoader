@@ -59,9 +59,9 @@ namespace LethalLevelLoader
             TerminalManager.Terminal.moonsCatalogueList = [.. Patches.StartOfRound.levels];
         }
 
-        internal static void ObtainShipAnimatorClips()
+        internal static void ObtainShipAnimatorClips(StartOfRound startOfRound)
         {
-            Animator shipAnimator = Patches.StartOfRound.shipAnimator;
+            Animator shipAnimator = startOfRound.shipAnimator;
             RuntimeAnimatorController animatorController = shipAnimator.runtimeAnimatorController;
 
             /* List<GameObject> childObjects = new List<GameObject>();
@@ -75,6 +75,18 @@ namespace LethalLevelLoader
                     LevelLoader.defaultShipFlyToMoonClip = animatorController.animationClips[i];
                 else if (animatorController.animationClips[i].name == "ShipLeave")
                     LevelLoader.defaultShipFlyFromMoonClip = animatorController.animationClips[i];
+            }
+        }
+
+        internal static void ObtainTimeOfDayClips(TimeOfDay timeOfDay)
+        {
+            LevelLoader.timeOfDayCues = timeOfDay.timeOfDayCues;
+            if (LevelLoader.timeOfDayCues?.Length == 4)
+            {
+                LevelLoader.defaultStartOfDayMusic = LevelLoader.timeOfDayCues[0];
+                LevelLoader.defaultMidDayMusic = LevelLoader.timeOfDayCues[1];
+                LevelLoader.defaultLateDayMusic = LevelLoader.timeOfDayCues[2];
+                LevelLoader.defaultNightMusic = LevelLoader.timeOfDayCues[3];
             }
         }
 
@@ -200,12 +212,12 @@ namespace LethalLevelLoader
             }
 
             foreach (KeyValuePair<string, int> dynamicRiskLevelPair in new Dictionary<string, int>(dynamicRiskLevelDictionary))
-                    foreach (KeyValuePair<string, List<int>> vanillaRiskLevel in vanillaRiskLevelDictionary)
-                        if (dynamicRiskLevelPair.Key.Equals(vanillaRiskLevel.Key))
-                        {
-                            DebugHelper.Log("Setting RiskLevel " + vanillaRiskLevel.Key + " To " + (int)vanillaRiskLevel.Value.Average(), DebugType.Developer);
-                            dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key] = Mathf.RoundToInt((float)vanillaRiskLevel.Value.Average());
-                        }
+                foreach (KeyValuePair<string, List<int>> vanillaRiskLevel in vanillaRiskLevelDictionary)
+                    if (dynamicRiskLevelPair.Key.Equals(vanillaRiskLevel.Key))
+                    {
+                        DebugHelper.Log("Setting RiskLevel " + vanillaRiskLevel.Key + " To " + (int)vanillaRiskLevel.Value.Average(), DebugType.Developer);
+                        dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key] = Mathf.RoundToInt((float)vanillaRiskLevel.Value.Average());
+                    }
 
             DebugHelper.Log("Starting To Assign - and + Risk Levels", DebugType.Developer);
             int counter = 0;
