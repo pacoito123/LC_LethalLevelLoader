@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.6.2</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed vanilla rain particles being disabled during Stormy weather despite having no override set for it
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.1</summary>**
 
 **<details><summary>Fixes</summary>**

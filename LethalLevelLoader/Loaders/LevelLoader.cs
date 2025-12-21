@@ -173,11 +173,13 @@ namespace LethalLevelLoader
                 if (extendedLevel.OverrideStormyStaticElectricitySFX != null)
                     stormyWeather.staticElectricityAudio = extendedLevel.OverrideStormyStaticElectricitySFX;
 
-                if (extendedLevel.OverrideStormyRainPrefab != null)
+                if (extendedLevel.OverrideStormyRainPrefab != null && stormyRainParticles != null)
+                {
                     stormyRainPrefabOverrideInstance = Object.Instantiate(extendedLevel.OverrideStormyRainPrefab, stormyWeather.transform);
 
-                if (stormyRainParticles != null)
-                    stormyRainParticles.gameObject.SetActive(false);
+                    if (stormyRainParticles != null)
+                        stormyRainParticles.gameObject.SetActive(false);
+                }
 
                 if (extendedLevel.OverrideStormyLightningStrikeExplosion != null || extendedLevel.OverrideStormyStaticElectricityParticle != null
                     || stormyRainPrefabOverrideInstance != null)
