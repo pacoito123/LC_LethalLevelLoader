@@ -5,6 +5,7 @@
 
 **<details><summary>Fixes</summary>**
 
+* Fixed dynamic dungeon size config settings always being applied with Content Configuration enabled
 * Fixed vanilla rain particles being disabled during Stormy weather despite having no override set for it
 
 </details>

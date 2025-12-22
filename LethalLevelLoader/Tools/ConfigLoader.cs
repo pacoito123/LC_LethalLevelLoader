@@ -162,7 +162,7 @@ namespace LethalLevelLoader.Tools
 
                     DebugHelper.Log(extendedDungeonFlow.DungeonName + " enabled content configuration", DebugType.Developer);
 
-                    extendedDungeonFlow.IsDynamicDungeonSizeRestrictionEnabled = enableContentConfiguration.Value;
+                    extendedDungeonFlow.IsDynamicDungeonSizeRestrictionEnabled = enableDynamicDungeonSizeRestriction.Value;
 
                     extendedDungeonFlow.DynamicDungeonSizeMinMax = new Vector2(minimumDungeonSizeMultiplier.Value, maximumDungeonSizeMultiplier.Value);
                     extendedDungeonFlow.DynamicDungeonSizeLerpRate = restrictDungeonSizeScaler.Value;
