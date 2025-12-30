@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.6.3</summary>**
+
+**<details><summary>Features</summary>**
+
+* Added a blacklist for bundles to the general settings, to prevent specific bundles from being loaded at all
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.2</summary>**
 
 **<details><summary>Fixes</summary>**

@@ -57,7 +57,7 @@ namespace LethalLevelLoader.AssetBundles
 
         private void OnEnable()
         {
-             instance = this;
+            instance = this;
             OnBundlesFinishedProcessing.AddListener(LethalLevelLoader.AssetBundleLoader.InvokeBundlesFinishedLoading);
         }
 
@@ -130,8 +130,19 @@ namespace LethalLevelLoader.AssetBundles
 
             foreach (string filePath in Directory.GetFiles(directory.FullName, specifiedFileName + specifiedFileExtension, SearchOption.AllDirectories))
             {
+                string fileName = "UNKNOWN";
+                if (filePath.Contains(Path.DirectorySeparatorChar))
+                    fileName = filePath.Substring(filePath.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+
+                // Skip any bundles defined in the blacklist.
+                if (Settings.bundlesBlacklist?.Length > 0 && Array.IndexOf(Settings.bundlesBlacklist, fileName) != -1)
+                {
+                    DebugHelper.Log("Bundle '" + fileName + "' found in blacklist, it will not be loaded...", DebugType.User);
+                    continue;
+                }
+
                 requestedBundleCount++;
-                AssetBundleInfo newInfo = new AssetBundleInfo(Instance, filePath);
+                AssetBundleInfo newInfo = new AssetBundleInfo(Instance, filePath, fileName);
                 newInfo.OnBundleLoaded.AddListener(OnAssetBundleLoadChanged);
                 Instance.AssetBundleInfos.Add(newInfo);
             }
@@ -148,7 +159,7 @@ namespace LethalLevelLoader.AssetBundles
                         // Make sure bundles are the same (time-wise), in case there's any changes done to scenes for a different version of the mod that's loading.
                         if (bundleManifest.timestamp == File.GetLastWriteTime(info.AssetBundleFilePath).Ticks)
                         {
-                            DebugHelper.Log("Skipping streaming bundle " + bundleManifest.bundleName + ", as it will be loaded later.", DebugType.Developer);
+                            DebugHelper.Log("Skipping streaming bundle '" + bundleManifest.bundleName + "', as it will be loaded later!", DebugType.User);
                             info.Initialize(); // Initialize AssetBundleInfo fields for proper AssetBundleGroup creation.
 
                             requestedBundleCount--;
@@ -157,7 +168,7 @@ namespace LethalLevelLoader.AssetBundles
                             continue;
                         }
                         else
-                            DebugHelper.Log("Found different version of bundle " + bundleManifest.bundleName + ", it will not be skipped.", DebugType.User);
+                            DebugHelper.Log("Found different version of bundle '" + bundleManifest.bundleName + "', it will not be skipped.", DebugType.User);
                     }
 
                     info.TryLoadBundle();
@@ -237,7 +248,7 @@ namespace LethalLevelLoader.AssetBundles
                 UniqueSceneGroup sceneGroup = new UniqueSceneGroup(kvp.Key);
                 uniqueSceneGroups.Add(sceneGroup);
                 foreach (AssetBundleInfo info in kvp.Value)
-                    sceneGroup.TryAdd(info, info.GetSceneNames());           
+                    sceneGroup.TryAdd(info, info.GetSceneNames());
             }
 
             foreach (AssetBundleInfo info in Instance.AssetBundleInfos)
@@ -278,7 +289,7 @@ namespace LethalLevelLoader.AssetBundles
                         }
 
 
-                        string log = "Generated New AssetBundleGroup, Contained BundleInfos Are,\n";
+                    string log = "Generated New AssetBundleGroup, Contained BundleInfos Are,\n";
                     foreach (AssetBundleInfo bundleInfo in newGroup.GetAssetBundleInfos())
                         log += "\n" + bundleInfo.AssetBundleName;
                     DebugHelper.Log(log, DebugType.IAmBatby);

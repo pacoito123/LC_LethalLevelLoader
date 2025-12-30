@@ -19,6 +19,7 @@ namespace LethalLevelLoader
         public static DebugType debugType = DebugType.User;
         public static bool allDungeonFlowsRequireMatching = false;
         public static int moonsCatalogueSplitCount = 3;
+        public static string[] bundlesBlacklist;
 
         public static string GetOverridePreviewInfo(ExtendedLevel extendedLevel)
         {

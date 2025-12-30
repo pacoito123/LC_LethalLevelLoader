@@ -83,6 +83,8 @@ namespace LethalLevelLoader.Tools
         private ConfigEntry<int> moonsCatalogueSplitCount;
         private ConfigEntry<bool> requireMatchesOnAllDungeonFlows;
 
+        private ConfigEntry<string> bundlesBlacklist;
+
         public GeneralSettingsConfig(ConfigFile newConfigFile, string newCategory, int newSortingPriority) : base(newConfigFile, newCategory, newSortingPriority) { }
 
         public void BindConfigs()
@@ -95,8 +97,9 @@ namespace LethalLevelLoader.Tools
             simulateInfoTypeToggle = BindValue("Terminal >Simulate Results Type Default", "The format used to display odds using the >simulate Terminal keyword.", SimulateInfoType.Percentage);
 
             moonsCatalogueSplitCount = BindValue("Moons Catalogue Group Split Count", "The amount of moons that will be in each automatically generated group.", 3);
-
             requireMatchesOnAllDungeonFlows = BindValue("Require Matches On All Possible DungeonFlows", "By default any Dungeons requested by the loading level will skip the matching process and be in the possible selection pool, Set this to false to disable this feature", true);
+
+            bundlesBlacklist = BindValue("Bundle Loading Blacklist", "A list of bundles to skip from loading completely. NOTE: Not all bundles may be fine to skip, some may expect specific assets to be always loaded.", "examplebundle.lethalbundle");
 
             Settings.debugType = debugTypeToggle.Value;
             Settings.levelPreviewInfoType = previewInfoTypeToggle.Value;
@@ -106,8 +109,9 @@ namespace LethalLevelLoader.Tools
 
             if (moonsCatalogueSplitCount.Value > 0)
                 Settings.moonsCatalogueSplitCount = moonsCatalogueSplitCount.Value;
-
             Settings.allDungeonFlowsRequireMatching = requireMatchesOnAllDungeonFlows.Value;
+
+            Settings.bundlesBlacklist = ConfigHelper.SplitStringsByIndexSeperator(bundlesBlacklist.Value).ToArray();
         }
     }
 
@@ -177,7 +181,7 @@ namespace LethalLevelLoader.Tools
                         DebugHelper.Log(stringWithRarity.Name + " | " + stringWithRarity.Rarity, DebugType.Developer);
 
                     if (extendedDungeonFlow.ContentType == ContentType.Vanilla)
-                        ConfigLoader.debugDungeonsString += extendedDungeonFlow.DungeonName +  "(" + extendedDungeonFlow.DungeonFlow.name + ")" + ", ";
+                        ConfigLoader.debugDungeonsString += extendedDungeonFlow.DungeonName + "(" + extendedDungeonFlow.DungeonFlow.name + ")" + ", ";
                     else if (extendedDungeonFlow.ContentType == ContentType.Custom)
                         ConfigLoader.debugDungeonsString += extendedDungeonFlow.DungeonName + ", ";
                 }

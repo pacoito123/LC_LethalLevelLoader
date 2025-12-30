@@ -76,12 +76,12 @@ namespace LethalLevelLoader
             else
                 newAssetBundleLoaderObject.hideFlags = HideFlags.HideAndDontSave;
 
+            ConfigLoader.BindGeneralConfigs();
+
             LethalBundleManager.Start();
             //LethalBundleManager.TryLoadLethalBundles();
 
             //AssetBundleLoader.onBundlesFinishedLoading += AssetBundleLoader.LoadContentInBundles;
-
-            ConfigLoader.BindGeneralConfigs();
         }
 
         internal static void OnBeforeSetupInvoke()

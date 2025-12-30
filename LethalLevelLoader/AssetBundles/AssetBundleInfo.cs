@@ -75,12 +75,17 @@ namespace LethalLevelLoader.AssetBundles
         public ExtendedEvent<AssetBundleInfo> OnBundleLoaded = new ExtendedEvent<AssetBundleInfo>();
         public ExtendedEvent<AssetBundleInfo> OnBundeUnloaded = new ExtendedEvent<AssetBundleInfo>();
 
-        public AssetBundleInfo(MonoBehaviour newCoroutineHandler, string filePath)
+        public AssetBundleInfo(MonoBehaviour newCoroutineHandler, string filePath) : this(newCoroutineHandler, filePath, "UNKNOWN")
+        {
+            if (filePath.Contains(Path.DirectorySeparatorChar))
+                AssetBundleFileName = filePath.Substring(filePath.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+        }
+
+        public AssetBundleInfo(MonoBehaviour newCoroutineHandler, string filePath, string fileName)
         {
             coroutineHandler = newCoroutineHandler;
             AssetBundleFilePath = filePath;
-            if (filePath.Contains("\\"))
-                AssetBundleFileName = filePath.Substring(filePath.LastIndexOf("\\") + 1);
+            AssetBundleFileName = fileName;
             bundleLoadStopwatch = new Stopwatch();
             bundleUnloadStopwatch = new Stopwatch();
         }
