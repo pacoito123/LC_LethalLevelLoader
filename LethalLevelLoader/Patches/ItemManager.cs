@@ -15,7 +15,7 @@ namespace LethalLevelLoader
                 InjectCustomItemsIntoLevelViaDynamicRarity(extendedLevel);
         }
 
-        public static void InjectCustomItemsIntoLevelViaDynamicRarity(ExtendedLevel extendedLevel, bool debugResults = false)
+        public static void InjectCustomItemsIntoLevelViaDynamicRarity(ExtendedLevel extendedLevel, ExtendedDungeonFlow extendedDungeonFlow = null, bool debugResults = false)
         {
             foreach (ExtendedItem extendedItem in PatchedContent.CustomExtendedItems)
             {
@@ -24,10 +24,10 @@ namespace LethalLevelLoader
                     string debugString = string.Empty;
                     int itemIndex = extendedLevel.SelectableLevel.spawnableScrap.FindIndex(item => item.spawnableItem == extendedItem.Item);
 
-                    int returnRarity = 0;
                     int levelRarity = extendedItem.LevelMatchingProperties.GetDynamicRarity(extendedLevel);
-                    // int dungeonRarity
-                    returnRarity = levelRarity;
+                    int dungeonRarity = (extendedDungeonFlow != null) ? extendedItem.DungeonMatchingProperties.GetDynamicRarity(extendedDungeonFlow) : 0;
+
+                    int returnRarity = Math.Max(levelRarity, dungeonRarity);
 
                     if (itemIndex != -1)
                     {

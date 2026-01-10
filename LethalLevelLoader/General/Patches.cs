@@ -699,6 +699,12 @@ if (AssetBundleLoader.noBundlesFound == true)
             temporarySpawnableMapObjectList.Clear();
         }
 
+        [HarmonyPatch(typeof(RoundManager), "GeneratedFloorPostProcessing"), HarmonyPrefix, HarmonyPriority(priority)]
+        internal static void RoundManagerGeneratedFloorPostProcessing_Prefix()
+        {
+            ItemManager.InjectCustomItemsIntoLevelViaDynamicRarity(LevelManager.CurrentExtendedLevel, DungeonManager.CurrentExtendedDungeonFlow);
+        }
+
         static FootstepSurface previousFootstepSurface;
 
         [HarmonyPatch(typeof(PlayerControllerB), "GetCurrentMaterialStandingOn"), HarmonyPostfix, HarmonyPriority(priority)]

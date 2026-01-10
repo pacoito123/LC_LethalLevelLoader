@@ -12,6 +12,7 @@
 **<details><summary>Fixes</summary>**
 
 * Fixed items with zero weights being able to show up during single item days
+* Fixed DungeonMatchingProperties not being applied for ExtendedItems
 
 </details>
 
