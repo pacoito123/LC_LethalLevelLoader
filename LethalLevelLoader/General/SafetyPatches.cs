@@ -82,31 +82,6 @@ namespace LethalLevelLoader
             temporarySpawnableMapObjectList.Clear();
         }
 
-
-        /* [HarmonyPriority(harmonyPriority)]
-        [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
-        [HarmonyPrefix] */
-        internal static bool RoundManagerSpawnScrapInLevel_Prefix() => true;
-        /* {
-            List<SpawnableItemWithRarity> invalidSpawnableItemWithRarity = new List<SpawnableItemWithRarity>();
-            foreach (SpawnableItemWithRarity spawnableScrap in LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap)
-                if (spawnableScrap.spawnableItem == null || spawnableScrap.rarity == 0)
-                    invalidSpawnableItemWithRarity.Add(spawnableScrap);
-
-            if (invalidSpawnableItemWithRarity.Count != 0)
-                DebugHelper.Log("Removed: " + invalidSpawnableItemWithRarity.Count + " SpawnableItemWithRarities From CurrentLevel: " + LevelManager.CurrentExtendedLevel.NumberlessPlanetName + " Due To Having 0 Rarity.", DebugType.User);
-            foreach (SpawnableItemWithRarity invalidItem in invalidSpawnableItemWithRarity)
-                LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap.Remove(invalidItem);
-
-            if (LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap.Count == 0)
-            {
-                DebugHelper.LogError("Current ExtendedLevel: " + LevelManager.CurrentExtendedLevel.NumberlessPlanetName + " Requested 0 SpawnableScrap, Returning Early To Prevent Errors", DebugType.User);
-                return (false);
-            }
-
-            return (true);
-        } */
-
         [HarmonyPriority(harmonyPriority)]
         [HarmonyPatch(typeof(TimeOfDay), "SetWeatherBasedOnVariables")]
         [HarmonyPrefix]

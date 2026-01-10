@@ -14,6 +14,7 @@ namespace LethalLevelLoader
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
                 InjectCustomItemsIntoLevelViaDynamicRarity(extendedLevel);
         }
+
         public static void InjectCustomItemsIntoLevelViaDynamicRarity(ExtendedLevel extendedLevel, bool debugResults = false)
         {
             foreach (ExtendedItem extendedItem in PatchedContent.CustomExtendedItems)
@@ -21,38 +22,42 @@ namespace LethalLevelLoader
                 if (extendedItem.Item.isScrap)
                 {
                     string debugString = string.Empty;
-                    SpawnableItemWithRarity alreadyInjectedItem = null;
-                    foreach (SpawnableItemWithRarity spawnableItem in extendedLevel.SelectableLevel.spawnableScrap)
-                        if (spawnableItem.spawnableItem == extendedItem)
-                            alreadyInjectedItem = spawnableItem;
+                    int itemIndex = extendedLevel.SelectableLevel.spawnableScrap.FindIndex(item => item.spawnableItem == extendedItem.Item);
 
                     int returnRarity = 0;
                     int levelRarity = extendedItem.LevelMatchingProperties.GetDynamicRarity(extendedLevel);
-                    //int dungeonRarity
+                    // int dungeonRarity
                     returnRarity = levelRarity;
-                    if (alreadyInjectedItem != null)
+
+                    if (itemIndex != -1)
                     {
                         if (returnRarity > 0)
                         {
-                            alreadyInjectedItem.rarity = returnRarity;
-                            debugString = "Updated Rarity Of: " + extendedItem.Item.itemName + " To: " + returnRarity + " On Planet: " + extendedLevel.NumberlessPlanetName;
+                            extendedLevel.SelectableLevel.spawnableScrap[itemIndex].rarity = returnRarity;
+                            if (debugResults == true)
+                                debugString = "Updated Rarity Of: " + extendedItem.Item.itemName + " To: " + returnRarity + " On Planet: " + extendedLevel.NumberlessPlanetName;
                         }
                         else
                         {
-                            extendedLevel.SelectableLevel.spawnableScrap.Remove(alreadyInjectedItem);
-                            debugString = "Removed " + extendedItem.Item.itemName + " From Planet: " + extendedLevel.NumberlessPlanetName;
+                            extendedLevel.SelectableLevel.spawnableScrap.RemoveAt(itemIndex);
+                            if (debugResults == true)
+                                debugString = "Removed " + extendedItem.Item.itemName + " From Planet: " + extendedLevel.NumberlessPlanetName;
                         }
- 
                     }
-                    else
+                    else if (returnRarity > 0)
                     {
-                        SpawnableItemWithRarity newSpawnableItem = new SpawnableItemWithRarity();
-                        newSpawnableItem.spawnableItem = extendedItem.Item;
-                        newSpawnableItem.rarity = returnRarity;
+                        SpawnableItemWithRarity newSpawnableItem = new SpawnableItemWithRarity
+                        {
+                            spawnableItem = extendedItem.Item,
+                            rarity = returnRarity
+                        };
+                        itemIndex = extendedLevel.SelectableLevel.spawnableScrap.Count;
                         extendedLevel.SelectableLevel.spawnableScrap.Add(newSpawnableItem);
-                        debugString = "Added " + extendedItem.Item.itemName + " To Planet: " + extendedLevel.NumberlessPlanetName + " With A Rarity Of: " + returnRarity;
+                        if (debugResults == true)
+                            debugString = "Added " + extendedItem.Item.itemName + " To Planet: " + extendedLevel.NumberlessPlanetName + " With A Rarity Of: " + returnRarity;
                     }
-                    if (debugResults == true)
+
+                    if (debugResults == true && !string.IsNullOrEmpty(debugString))
                         DebugHelper.Log(debugString, DebugType.Developer);
                 }
             }
