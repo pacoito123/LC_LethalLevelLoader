@@ -60,7 +60,6 @@ namespace LethalLevelLoader
 
             if (availableExtendedFlowsList.Count == 0)
             {
-                DebugHelper.LogError("No ExtendedDungeonFlow's could be found! This should only happen if the Host's requireMatchesOnAllDungeonFlows is set to true!", DebugType.User);
                 DebugHelper.LogError("Loading Facility DungeonFlow to prevent infinite loading!", DebugType.User);
                 StringContainer newStringContainer = new StringContainer();
                 newStringContainer.SomeText = PatchedContent.ExtendedDungeonFlows[0].DungeonFlow.name;

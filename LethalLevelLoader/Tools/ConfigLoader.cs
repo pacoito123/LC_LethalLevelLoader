@@ -81,7 +81,7 @@ namespace LethalLevelLoader.Tools
         private ConfigEntry<DebugType> debugTypeToggle;
 
         private ConfigEntry<int> moonsCatalogueSplitCount;
-        private ConfigEntry<bool> requireMatchesOnAllDungeonFlows;
+        private ConfigEntry<bool> injectDynamicMatchingWeights;
 
         private ConfigEntry<string> bundlesBlacklist;
 
@@ -89,7 +89,6 @@ namespace LethalLevelLoader.Tools
 
         public void BindConfigs()
         {
-
             debugTypeToggle = BindValue("LethalLevelLoader Debugging Mode", "Controls what type of debug logs you recieve, If you use mods, Keep this set to User, If you create content with LethalLeveLoader, set this to Developer", DebugType.User);
             previewInfoTypeToggle = BindValue("Terminal >Moons PreviewInfo Default", "What LethalLevelLoader displays next to each moon in the >moons Terminal listing.", PreviewInfoType.Weather);
             sortInfoTypeToggle = BindValue("Terminal >Moons SortInfo Default", "How LethalLevelLoader sorts each moon in the >moons Terminal listing.", SortInfoType.None);
@@ -97,9 +96,9 @@ namespace LethalLevelLoader.Tools
             simulateInfoTypeToggle = BindValue("Terminal >Simulate Results Type Default", "The format used to display odds using the >simulate Terminal keyword.", SimulateInfoType.Percentage);
 
             moonsCatalogueSplitCount = BindValue("Moons Catalogue Group Split Count", "The amount of moons that will be in each automatically generated group.", 3);
-            requireMatchesOnAllDungeonFlows = BindValue("Require Matches On All Possible DungeonFlows", "By default any Dungeons requested by the loading level will skip the matching process and be in the possible selection pool, Set this to false to disable this feature", true);
 
             bundlesBlacklist = BindValue("Bundle Loading Blacklist", "A list of bundles to skip from loading completely. NOTE: Not all bundles may be fine to skip, some may expect specific assets to be always loaded.", "examplebundle.lethalbundle");
+            injectDynamicMatchingWeights = BindValue("Inject Dynamic Matching Weights", "Enable dynamic weights injection on every landing, based on Level & Dungeon MatchingProperties set by mod authors.", true);
 
             Settings.debugType = debugTypeToggle.Value;
             Settings.levelPreviewInfoType = previewInfoTypeToggle.Value;
@@ -109,7 +108,7 @@ namespace LethalLevelLoader.Tools
 
             if (moonsCatalogueSplitCount.Value > 0)
                 Settings.moonsCatalogueSplitCount = moonsCatalogueSplitCount.Value;
-            Settings.allDungeonFlowsRequireMatching = requireMatchesOnAllDungeonFlows.Value;
+            Settings.injectDynamicMatchingWeights = injectDynamicMatchingWeights.Value;
 
             Settings.bundlesBlacklist = ConfigHelper.SplitStringsByIndexSeperator(bundlesBlacklist.Value).ToArray();
         }

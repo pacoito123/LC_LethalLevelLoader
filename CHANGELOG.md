@@ -6,6 +6,7 @@
 **<details><summary>Features</summary>**
 
 * Added OutsideDungeonMatchingProperties and DaytimeDungeonMatchingProperties fields to ExtendedEnemyType
+* Added setting to toggle dynamic weights injection on every landing, which should be kept enabled save for a few specific compatibility cases
 
 </details>
 

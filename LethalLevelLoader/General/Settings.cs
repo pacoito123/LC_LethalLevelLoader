@@ -17,8 +17,8 @@ namespace LethalLevelLoader
         public static FilterInfoType levelPreviewFilterType = FilterInfoType.None;
         public static SimulateInfoType levelSimulateInfoType = SimulateInfoType.Percentage;
         public static DebugType debugType = DebugType.User;
-        public static bool allDungeonFlowsRequireMatching = false;
         public static int moonsCatalogueSplitCount = 3;
+        public static bool injectDynamicMatchingWeights = true;
         public static string[] bundlesBlacklist;
 
         public static string GetOverridePreviewInfo(ExtendedLevel extendedLevel)

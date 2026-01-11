@@ -702,8 +702,11 @@ if (AssetBundleLoader.noBundlesFound == true)
         [HarmonyPatch(typeof(RoundManager), "GeneratedFloorPostProcessing"), HarmonyPrefix, HarmonyPriority(priority)]
         internal static void RoundManagerGeneratedFloorPostProcessing_Prefix()
         {
-            ItemManager.InjectCustomItemsIntoLevelViaDynamicRarity(LevelManager.CurrentExtendedLevel, DungeonManager.CurrentExtendedDungeonFlow);
-            EnemyManager.InjectCustomEnemyTypesIntoLevelViaDynamicRarity(LevelManager.CurrentExtendedLevel, DungeonManager.CurrentExtendedDungeonFlow);
+            if (Settings.injectDynamicMatchingWeights)
+            {
+                ItemManager.InjectCustomItemsIntoLevelViaDynamicRarity(LevelManager.CurrentExtendedLevel, DungeonManager.CurrentExtendedDungeonFlow);
+                EnemyManager.InjectCustomEnemyTypesIntoLevelViaDynamicRarity(LevelManager.CurrentExtendedLevel, DungeonManager.CurrentExtendedDungeonFlow);
+            }
         }
 
         static FootstepSurface previousFootstepSurface;
