@@ -1,6 +1,22 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.6.4</summary>**
+
+**<details><summary>Features</summary>**
+
+* Added OutsideDungeonMatchingProperties and DaytimeDungeonMatchingProperties fields to ExtendedEnemyType
+
+</details>
+
+**<details><summary>Fixes</summary>**
+
+* Fixed DungeonMatchingProperties not being applied for ExtendedEnemyTypes
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.3</summary>**
 
 **<details><summary>Features</summary>**

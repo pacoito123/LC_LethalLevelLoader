@@ -703,6 +703,7 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static void RoundManagerGeneratedFloorPostProcessing_Prefix()
         {
             ItemManager.InjectCustomItemsIntoLevelViaDynamicRarity(LevelManager.CurrentExtendedLevel, DungeonManager.CurrentExtendedDungeonFlow);
+            EnemyManager.InjectCustomEnemyTypesIntoLevelViaDynamicRarity(LevelManager.CurrentExtendedLevel, DungeonManager.CurrentExtendedDungeonFlow);
         }
 
         static FootstepSurface previousFootstepSurface;

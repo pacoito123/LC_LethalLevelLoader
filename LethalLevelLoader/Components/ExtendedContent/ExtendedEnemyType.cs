@@ -15,7 +15,10 @@ namespace LethalLevelLoader
         [field: Header("Dynamic Injection Matching Settings")]
 
         [field: SerializeField] public LevelMatchingProperties OutsideLevelMatchingProperties { get; set; }
+        [field: SerializeField] public DungeonMatchingProperties OutsideDungeonMatchingProperties { get; set; }
+
         [field: SerializeField] public LevelMatchingProperties DaytimeLevelMatchingProperties { get; set; }
+        [field: SerializeField] public DungeonMatchingProperties DaytimeDungeonMatchingProperties { get; set; }
 
         [field: SerializeField] public LevelMatchingProperties InsideLevelMatchingProperties { get; set; }
         [field: SerializeField] public DungeonMatchingProperties InsideDungeonMatchingProperties { get; set; }
@@ -58,8 +61,12 @@ namespace LethalLevelLoader
                 InsideDungeonMatchingProperties = DungeonMatchingProperties.Create(this);
             if (OutsideLevelMatchingProperties == null)
                 OutsideLevelMatchingProperties = LevelMatchingProperties.Create(this);
+            if (OutsideDungeonMatchingProperties == null)
+                OutsideDungeonMatchingProperties = DungeonMatchingProperties.Create(this);
             if (DaytimeLevelMatchingProperties == null)
                 DaytimeLevelMatchingProperties = LevelMatchingProperties.Create(this);
+            if (DaytimeDungeonMatchingProperties == null)
+                DaytimeDungeonMatchingProperties = DungeonMatchingProperties.Create(this);
         }
     }
 }
