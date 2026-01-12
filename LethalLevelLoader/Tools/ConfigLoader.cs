@@ -110,7 +110,7 @@ namespace LethalLevelLoader.Tools
                 Settings.moonsCatalogueSplitCount = moonsCatalogueSplitCount.Value;
             Settings.injectDynamicMatchingWeights = injectDynamicMatchingWeights.Value;
 
-            Settings.bundlesBlacklist = ConfigHelper.SplitStringsByIndexSeperator(bundlesBlacklist.Value).ToArray();
+            Settings.bundlesBlacklist = ConfigHelper.SplitStringsByIndexSeparator(bundlesBlacklist.Value);
         }
     }
 
@@ -153,11 +153,11 @@ namespace LethalLevelLoader.Tools
 
                 // ----- Getting -----
                 subCategory = "Dungeon Injection Settings - ";
-                manualModNames = BindValue("Manual Mod Names List", "Add this Dungeon to any Level's randomisaton pool in a specific mod based on matching Mod Names. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString(extendedDungeonFlow.LevelMatchingProperties.modNames));
-                manualLevelNames = BindValue("Manual Level Names List", "Add this Dungeon to a Level's randomisaton pool based on matching Level Names. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString(extendedDungeonFlow.LevelMatchingProperties.planetNames));
+                manualModNames = BindValue("Manual Mod Names List", "Add this Dungeon to any Level's randomisaton pool in a specific mod based on matching Mod Names. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString(extendedDungeonFlow.LevelMatchingProperties.modNames.ToArray()));
+                manualLevelNames = BindValue("Manual Level Names List", "Add this Dungeon to a Level's randomisaton pool based on matching Level Names. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString(extendedDungeonFlow.LevelMatchingProperties.planetNames.ToArray()));
 
-                dynamicLevelTags = BindValue("Dynamic Level Tags List", "Add this Dungeon to a Level's randomisaton pool based on matching Level Tags. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString(extendedDungeonFlow.LevelMatchingProperties.levelTags));
-                dynamicRoutePrices = BindValue("Dynamic Route Price List", "Add this Dungeon to a Level's randomisaton pool based on matching Route Prices. (Minimum: 0, Maximum: 9999)", ConfigHelper.Vector2WithRaritiesToString(extendedDungeonFlow.LevelMatchingProperties.currentRoutePrice));
+                dynamicLevelTags = BindValue("Dynamic Level Tags List", "Add this Dungeon to a Level's randomisaton pool based on matching Level Tags. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString(extendedDungeonFlow.LevelMatchingProperties.levelTags.ToArray()));
+                dynamicRoutePrices = BindValue("Dynamic Route Price List", "Add this Dungeon to a Level's randomisaton pool based on matching Route Prices. (Minimum: 0, Maximum: 9999)", ConfigHelper.Vector2WithRaritiesToString(extendedDungeonFlow.LevelMatchingProperties.currentRoutePrice.ToArray()));
 
                 if (enableContentConfiguration.Value == true)
                 {
@@ -251,7 +251,7 @@ namespace LethalLevelLoader.Tools
                 maxScrapItemSpawns = BindValue("Maximum Scrap Item Spawns", "Override How Many Item's Can Spawn In This Level.", selectableLevel.maxScrap);
                 minTotalScrapValue = BindValue("Minimum Total Scrap Value", "Override How Much Total Value The Spawned Scrap Will Amount To In This Level.", selectableLevel.minTotalScrapValue);
                 maxTotalScrapValue = BindValue("Maximum Total Scrap Value", "Override How Much Total Value The Spawned Scrap Could Amount To In This Level.", selectableLevel.maxTotalScrapValue);
-                scrapOverrides = BindValue("Scrap Spawning List", "Add To Or Override The Spawnable Scrap Pool. (Minimum: 0, Maximum: 100)", ConfigHelper.SpawnableItemsWithRaritiesToString(selectableLevel.spawnableScrap));
+                scrapOverrides = BindValue("Scrap Spawning List", "Add To Or Override The Spawnable Scrap Pool. (Minimum: 0, Maximum: 100)", ConfigHelper.SpawnableItemsWithRaritiesToString(selectableLevel.spawnableScrap.ToArray()));
 
                 subCategory = "Enemy Settings - ";
 
@@ -259,9 +259,9 @@ namespace LethalLevelLoader.Tools
                 maxOutsideDaytimeEnemyPowerCount = BindValue("Maximum Outside, Daytime Enemy Power Count", "Override The Maximum Power Used To Spawn Enemies Outside During The Day.", selectableLevel.maxDaytimeEnemyPowerCount);
                 maxOutsideNighttimeEnemyPowerCount = BindValue("Maximum Outside, Nighttime Enemy Power Count", "Override The Maximum Power Used To Spawn Enemies Outside During The Night.", selectableLevel.maxOutsideEnemyPowerCount);
 
-                insideEnemiesOverrides = BindValue("Inside Enemies Spawning List", "Add To Or Override The Inside Enemy Spawn Pool. (Minimum: 0, Maximum: 100)", ConfigHelper.SpawnableEnemiesWithRaritiesToString(selectableLevel.Enemies));
-                outsideDaytimeEnemiesOverrides = BindValue("Outside Daytime Enemies Spawning List", "Add To Or Override The Outside, Daytime Enemy Spawn Pool. (Minimum: 0, Maximum: 100)", ConfigHelper.SpawnableEnemiesWithRaritiesToString(selectableLevel.DaytimeEnemies));
-                outsideNighttimeEnemiesOverrides = BindValue("Outside Nighttime Enemies Spawning List", "Add To Or Override The Outside, Nighttime Enemy Spawn Pool. (Minimum: 0, Maximum: 100)", ConfigHelper.SpawnableEnemiesWithRaritiesToString(selectableLevel.OutsideEnemies));
+                insideEnemiesOverrides = BindValue("Inside Enemies Spawning List", "Add To Or Override The Inside Enemy Spawn Pool. (Minimum: 0, Maximum: 100)", ConfigHelper.SpawnableEnemiesWithRaritiesToString(selectableLevel.Enemies.ToArray()));
+                outsideDaytimeEnemiesOverrides = BindValue("Outside Daytime Enemies Spawning List", "Add To Or Override The Outside, Daytime Enemy Spawn Pool. (Minimum: 0, Maximum: 100)", ConfigHelper.SpawnableEnemiesWithRaritiesToString(selectableLevel.DaytimeEnemies.ToArray()));
+                outsideNighttimeEnemiesOverrides = BindValue("Outside Nighttime Enemies Spawning List", "Add To Or Override The Outside, Nighttime Enemy Spawn Pool. (Minimum: 0, Maximum: 100)", ConfigHelper.SpawnableEnemiesWithRaritiesToString(selectableLevel.OutsideEnemies.ToArray()));
 
                 if (enableContentConfiguration.Value == true)
                 {

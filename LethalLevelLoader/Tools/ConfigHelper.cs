@@ -1,249 +1,221 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace LethalLevelLoader
 {
     public class ConfigHelper
     {
-        //Turns a single string into a list of StringWithRarity's, For easy config setup
-        //Example: string configString = "FirstPlanetName (Rarity: Int), SecondPlanetName (Rarity: Int)"
+        // Matches only letters
+        private static readonly Regex sanitizeRegex = new Regex(@"(\s*[^A-Z])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-        public const string indexSeperator = ",";
-        public const string keyPairSeperator = ":";
-        public const string vectorSeperator = "-";
+        public const char indexSeparator = ',';
+        public const char keyPairSeparator = ':';
+        public const char vectorSeparator = '-';
         public const string illegalCharacters = ".,?!@#$%^&*()_+-=';:'\"";
+        public const string emptyDefaultValues = "Default Values Were Empty";
 
-        public static List<StringWithRarity> ConvertToStringWithRarityList(string newInputString, Vector2 clampRarity)
+        public static List<StringWithRarity> ConvertToStringWithRarityList(string inputString, Vector2 clampRarity)
         {
-            List<StringWithRarity> returnList = new List<StringWithRarity>();
+            string[] splitStrings = SplitStringsByIndexSeparator(inputString);
+            if (splitStrings.Length == 0) return [];
 
-            List<string> stringList = SplitStringsByIndexSeperator(newInputString);
-
-            foreach (string stringString in stringList)
+            List<StringWithRarity> returnList = new List<StringWithRarity>(splitStrings.Length);
+            for (int i = 0; i < splitStrings.Length; i++)
             {
-                (string,string) splitStringData = SplitStringByKeyPairSeperator(stringString);
+                (string, string) splitStringData = SplitStringByKeyPairSeparator(splitStrings[i]);
                 string levelName = splitStringData.Item1;
-                int rarity = 0;
-                if (int.TryParse(splitStringData.Item2, out int value))
-                    rarity = value;
-
+                if (!int.TryParse(splitStringData.Item2, out int rarity)) { } // TODO: Log invalid string.
                 if (clampRarity != Vector2.zero)
                     rarity = Math.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
-
                 returnList.Add(new StringWithRarity(levelName, rarity));
             }
             return (returnList);
         }
 
-        public static List<Vector2WithRarity> ConvertToVector2WithRarityList(string newInputString, Vector2 clampRarity)
+        public static List<Vector2WithRarity> ConvertToVector2WithRarityList(string inputString, Vector2 clampRarity)
         {
-            List<Vector2WithRarity> returnList = new List<Vector2WithRarity>();
+            string[] splitStrings = SplitStringsByIndexSeparator(inputString);
+            if (splitStrings.Length == 0) return [];
 
-            List<string> stringList = SplitStringsByIndexSeperator(newInputString);
-
-            foreach (string stringString in stringList)
+            List<Vector2WithRarity> returnList = new List<Vector2WithRarity>(splitStrings.Length);
+            for (int i = 0; i < splitStrings.Length; i++)
             {
-                (string, string) splitStringData = SplitStringByKeyPairSeperator(stringString);
-                (string,string) vector2Strings = SplitStringByVectorSeperator(splitStringData.Item1);
-
-                float x = 0f;
-                float y = 0f;
-                int rarity = 0;
-                if (float.TryParse(vector2Strings.Item1, out float xValue))
-                    x = xValue;
-                if (float.TryParse(vector2Strings.Item2, out float yValue))
-                    y = yValue;
-                if (int.TryParse(splitStringData.Item2, out int value))
-                    rarity = value;
-
+                (string, string) splitStringData = SplitStringByKeyPairSeparator(splitStrings[i]);
+                (string, string) splitVectorData = SplitStringByVectorSeparator(splitStringData.Item1);
+                if (!float.TryParse(splitVectorData.Item1, out float x)) { } // TODO: Log invalid strings.
+                if (!float.TryParse(splitVectorData.Item2, out float y)) { }
+                if (!int.TryParse(splitStringData.Item2, out int rarity)) { }
                 if (clampRarity != Vector2.zero)
                     rarity = Math.Clamp(rarity, Mathf.RoundToInt(clampRarity.x), Mathf.RoundToInt(clampRarity.y));
-
-                returnList.Add(new Vector2WithRarity(new Vector2(x,y), rarity));
+                returnList.Add(new Vector2WithRarity(new Vector2(x, y), rarity));
             }
             return (returnList);
         }
 
-        public static List<SpawnableEnemyWithRarity> ConvertToSpawnableEnemyWithRarityList(string newInputString, Vector2 clampRarity)
+        public static List<SpawnableEnemyWithRarity> ConvertToSpawnableEnemyWithRarityList(string inputString, Vector2 clampRarity)
         {
-            List<StringWithRarity> stringList = ConvertToStringWithRarityList(newInputString, clampRarity);
-            List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>();
+            StringWithRarity[] splitStrings = ConvertToStringWithRarityList(inputString, clampRarity).ToArray();
+            if (splitStrings.Length == 0) return [];
 
-            foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.ExtendedEnemyTypes)
+            List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>(splitStrings.Length);
+            foreach (StringWithRarity stringWithRarity in splitStrings)
             {
-                EnemyType enemyType = extendedEnemyType.EnemyType;
-                foreach (StringWithRarity stringString in new List<StringWithRarity>(stringList))
+                foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.ExtendedEnemyTypes)
                 {
-                    if (enemyType.enemyName.ToLower().Contains(stringString.Name.ToLower()))
+                    EnemyType enemyType = extendedEnemyType.EnemyType;
+                    bool matched = false;
+
+                    if (SanitizeString(enemyType.enemyName).Contains(SanitizeString(stringWithRarity.Name))
+                        || SanitizeString(stringWithRarity.Name).Contains(SanitizeString(enemyType.enemyName)))
                     {
-                        SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
-                        newEnemy.enemyType = enemyType;
-                        newEnemy.rarity = stringString.Rarity;
-                        returnList.Add(newEnemy);
-                        stringList.Remove(stringString);
+                        matched = true;
+                    }
+                    else if (enemyType.enemyPrefab != null)
+                    {
+                        ScanNodeProperties enemyScanNode = enemyType.enemyPrefab.GetComponentInChildren<ScanNodeProperties>(includeInactive: false);
+                        if (enemyScanNode != null && (SanitizeString(enemyScanNode.headerText).Contains(SanitizeString(stringWithRarity.Name))
+                            || SanitizeString(stringWithRarity.Name).Contains(SanitizeString(enemyScanNode.headerText))))
+                        {
+                            matched = true;
+                        }
+                    }
+
+                    if (matched)
+                    {
+                        // DebugHelper.Log("Vanilla Enemy Name: " + SanitizeString(item.itemName) + " , Parsed Item Name: " + SanitizeString(stringWithRarity.Name), DebugType.Developer);
+                        returnList.Add(new SpawnableEnemyWithRarity()
+                        {
+                            enemyType = enemyType,
+                            rarity = stringWithRarity.Rarity
+                        });
+                        break;
                     }
                 }
             }
-
-            //Incase the user put in the real name (eg. Bracken) instead of the internal name (Flowerman) we go through the scannode texts which has the more updated name.
-            foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.ExtendedEnemyTypes)
-            {
-                EnemyType enemyType = extendedEnemyType.EnemyType;
-                foreach (StringWithRarity stringString in new List<StringWithRarity>(stringList))
-                {
-                    if (enemyType.enemyPrefab != null)
-                    {
-                        ScanNodeProperties enemyScanNode = enemyType.enemyPrefab.GetComponentInChildren<ScanNodeProperties>();
-                        if (enemyScanNode != null)
-                            if (enemyScanNode.headerText.ToLower().Contains(stringString.Name.ToLower()) || stringString.Name.ToLower().Contains(enemyScanNode.headerText.ToLower()))
-                            {
-                                SpawnableEnemyWithRarity newEnemy = new SpawnableEnemyWithRarity();
-                                newEnemy.enemyType = enemyType;
-                                newEnemy.rarity = stringString.Rarity;
-                                returnList.Add(newEnemy);
-                                stringList.Remove(stringString);
-                            }
-
-                    }    
-                }
-            }
-
-                    return (returnList);
-        }
-
-        public static List<SpawnableItemWithRarity> ConvertToSpawnableItemWithRarityList(string newInputString, Vector2 clampRarity)
-        {
-            List<StringWithRarity> stringList = ConvertToStringWithRarityList(newInputString, clampRarity);
-            List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>();
-
-            foreach (ExtendedItem extendedItem in PatchedContent.ExtendedItems)
-            {
-                Item item = extendedItem.Item;
-                foreach (StringWithRarity stringString in new List<StringWithRarity>(stringList))
-                {
-                    if (SanitizeString(item.itemName).Contains(SanitizeString(stringString.Name)) || SanitizeString(stringString.Name).Contains(SanitizeString(item.itemName)))
-                    {
-                        DebugHelper.Log("Vanilla Item Name: " + SanitizeString(item.itemName) + " , Parsed Item Name: " + SanitizeString(stringString.Name), DebugType.Developer);
-                        SpawnableItemWithRarity newItem = new SpawnableItemWithRarity();
-                        newItem.spawnableItem = item;
-                        newItem.rarity = stringString.Rarity;
-                        returnList.Add(newItem);
-                        stringList.Remove(stringString);
-                    }
-                }
-            }
-
             return (returnList);
         }
 
-
-        public static string SpawnableEnemiesWithRaritiesToString(List<SpawnableEnemyWithRarity> spawnableEnemiesList)
+        public static List<SpawnableItemWithRarity> ConvertToSpawnableItemWithRarityList(string inputString, Vector2 clampRarity)
         {
-            string returnString = string.Empty;
+            StringWithRarity[] splitStrings = ConvertToStringWithRarityList(inputString, clampRarity).ToArray();
+            if (splitStrings.Length == 0) return [];
 
-            foreach (SpawnableEnemyWithRarity spawnableEnemyWithRarity in spawnableEnemiesList)
-                returnString += spawnableEnemyWithRarity.enemyType.enemyName + ConfigHelper.keyPairSeperator + spawnableEnemyWithRarity.rarity.ToString() + ConfigHelper.indexSeperator;
-            if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
-                returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
-
-            if (returnString == string.Empty)
-                returnString = "Default Values Were Empty";
-            return (returnString);
-        }
-
-        public static string SpawnableItemsWithRaritiesToString(List<SpawnableItemWithRarity> spawnableItemsList)
-        {
-            string returnString = string.Empty;
-
-            foreach (SpawnableItemWithRarity spawnableItemWithRarity in spawnableItemsList)
-                returnString += spawnableItemWithRarity.spawnableItem.itemName + ConfigHelper.keyPairSeperator + spawnableItemWithRarity.rarity.ToString() + ConfigHelper.indexSeperator;
-            if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
-                returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
-
-            if (returnString == string.Empty)
-                returnString = "Default Values Were Empty";
-            return (returnString);
-        }
-
-        public static string StringWithRaritiesToString(List<StringWithRarity> names)
-        {
-            string returnString = string.Empty;
-
-            foreach (StringWithRarity name in names)
-                returnString += name.Name + ConfigHelper.keyPairSeperator + name.Rarity.ToString() + ConfigHelper.indexSeperator;
-
-            if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
-                returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
-
-            if (returnString == string.Empty)
-                returnString = "Default Values Were Empty";
-
-            return (returnString);
-        }
-
-        public static string Vector2WithRaritiesToString(List<Vector2WithRarity> values)
-        {
-            string returnString = string.Empty;
-
-            foreach (Vector2WithRarity vector2withRarity in values)
-                returnString += vector2withRarity.Min + vectorSeperator + vector2withRarity.Max + keyPairSeperator + vector2withRarity.Rarity + indexSeperator;
-
-            if (returnString.Contains(",") && returnString.LastIndexOf(",") == (returnString.Length - 1))
-                returnString = returnString.Remove(returnString.LastIndexOf(","), 1);
-
-            if (returnString == string.Empty)
-                returnString = "Default Values Were Empty";
-
-            return (returnString);
-        }
-
-        public static List<string> SplitStringsByIndexSeperator(string newInputString)
-        {
-            List<string> stringList = new List<string>();
-
-            string inputString = newInputString;
-
-            while (inputString.Contains(indexSeperator))
+            List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>(splitStrings.Length);
+            foreach (StringWithRarity stringWithRarity in splitStrings)
             {
-                string inputStringWithoutTextBeforeFirstComma = inputString.Substring(inputString.IndexOf(indexSeperator));
-                stringList.Add(inputString.Replace(inputStringWithoutTextBeforeFirstComma, ""));
-                if (inputStringWithoutTextBeforeFirstComma.Contains(indexSeperator))
-                    inputString = inputStringWithoutTextBeforeFirstComma.Substring(inputStringWithoutTextBeforeFirstComma.IndexOf(indexSeperator) + 1);
-
+                foreach (ExtendedItem extendedItem in PatchedContent.ExtendedItems)
+                {
+                    Item item = extendedItem.Item;
+                    if (SanitizeString(item.itemName).Contains(SanitizeString(stringWithRarity.Name)) || SanitizeString(stringWithRarity.Name).Contains(SanitizeString(item.itemName)))
+                    {
+                        // DebugHelper.Log("Vanilla Item Name: " + SanitizeString(item.itemName) + " , Parsed Item Name: " + SanitizeString(stringWithRarity.Name), DebugType.Developer);
+                        returnList.Add(new SpawnableItemWithRarity()
+                        {
+                            spawnableItem = item,
+                            rarity = stringWithRarity.Rarity
+                        });
+                        break;
+                    }
+                }
             }
-            stringList.Add(inputString);
-
-            return (stringList);
+            return (returnList);
         }
 
-        public static (string, string) SplitStringByKeyPairSeperator(string inputString)
+        public static string SpawnableEnemiesWithRaritiesToString(SpawnableEnemyWithRarity[] spawnableEnemies)
         {
-            return (SplitStringByCharacter(inputString, keyPairSeperator));
-        }
-
-        public static (string, string) SplitStringByVectorSeperator(string inputString)
-        {
-            return (SplitStringByCharacter(inputString, vectorSeperator));
-        }
-
-        public static (string, string) SplitStringByCharacter(string newInputString, string splitValue)
-        {
-            if (!newInputString.Contains(splitValue))
-                return ((newInputString, string.Empty));
-            else
+            if (spawnableEnemies.Length == 0) return emptyDefaultValues;
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < spawnableEnemies.Length; i++)
             {
-                string firstValue = string.Empty;
-                string secondValue = string.Empty;
-                firstValue = newInputString.Replace(newInputString.Substring(newInputString.IndexOf(splitValue)), "");
-                secondValue = newInputString.Substring(newInputString.IndexOf(splitValue) + 1);
-                return ((firstValue, secondValue));
+                SpawnableEnemyWithRarity enemy = spawnableEnemies[i];
+                str.Append(enemy.enemyType.enemyName + keyPairSeparator + enemy.rarity);
+
+                if (i != spawnableEnemies.Length - 1)
+                    str.Append(indexSeparator);
             }
+            return str.ToString();
+        }
+
+        public static string SpawnableItemsWithRaritiesToString(SpawnableItemWithRarity[] spawnableItems)
+        {
+            if (spawnableItems.Length == 0) return emptyDefaultValues;
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < spawnableItems.Length; i++)
+            {
+                SpawnableItemWithRarity item = spawnableItems[i];
+                str.Append(item.spawnableItem.itemName + keyPairSeparator + item.rarity);
+
+                if (i != spawnableItems.Length - 1)
+                    str.Append(indexSeparator);
+            }
+            return str.ToString();
+        }
+
+        public static string StringWithRaritiesToString(StringWithRarity[] names)
+        {
+            if (names.Length == 0) return emptyDefaultValues;
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < names.Length; i++)
+            {
+                StringWithRarity name = names[i];
+                str.Append(name.Name + keyPairSeparator + name.Rarity);
+
+                if (i != names.Length - 1)
+                    str.Append(indexSeparator);
+            }
+            return str.ToString();
+        }
+
+        public static string Vector2WithRaritiesToString(Vector2WithRarity[] values)
+        {
+            if (values.Length == 0) return emptyDefaultValues;
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < values.Length; i++)
+            {
+                Vector2WithRarity value = values[i];
+                str.Append(value.Min + vectorSeparator + value.Max + keyPairSeparator + value.Rarity);
+
+                if (i != values.Length - 1)
+                    str.Append(indexSeparator);
+            }
+            return str.ToString();
+        }
+
+        public static string[] SplitStringsByIndexSeparator(string inputString)
+        {
+            return SplitStringByCharacter(inputString, indexSeparator);
+        }
+
+        public static (string, string) SplitStringByKeyPairSeparator(string inputString)
+        {
+            return SplitStringPairByCharacter(inputString, keyPairSeparator);
+        }
+
+        public static (string, string) SplitStringByVectorSeparator(string inputString)
+        {
+            return SplitStringPairByCharacter(inputString, vectorSeparator);
+        }
+
+        public static (string, string) SplitStringPairByCharacter(string inputString, char separator)
+        {
+            string[] possiblePair = SplitStringByCharacter(inputString, separator);
+            return (possiblePair.Length == 2) ? (possiblePair[0], possiblePair[1]) : (inputString, string.Empty);
+        }
+
+        public static string[] SplitStringByCharacter(string inputString, char separator)
+        {
+            string[] splitString = inputString.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < splitString.Length; i++)
+                splitString[i] = splitString[i].Trim();
+            return splitString;
         }
 
         public static string SanitizeString(string inputString)
         {
-            return (inputString.SkipToLetters().RemoveWhitespace().ToLower());
+            return sanitizeRegex.Replace(inputString, string.Empty).ToLowerInvariant();
         }
     }
 }

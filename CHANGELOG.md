@@ -13,6 +13,7 @@
 **<details><summary>Fixes</summary>**
 
 * Fixed DungeonMatchingProperties not being applied for ExtendedEnemyTypes
+* Fixed bundle loading blacklist not allowing spaces between entries
 
 </details>
 
