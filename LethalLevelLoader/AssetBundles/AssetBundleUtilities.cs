@@ -1,8 +1,5 @@
-﻿using LethalLevelLoader;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -11,7 +8,7 @@ namespace LethalLevelLoader.AssetBundles
     public static class AssetBundleUtilities
     {
         // Matches the name of a scene from a full scene path.
-        private static readonly Regex sceneNameRegex = new Regex(@"(?!.*[\\\/]).+(?=\.[Uu]nity)");
+        private static readonly Regex sceneNameRegex = new Regex(@"(?!.*[\\\/]).+(?=\.unity)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         public static string GetSceneName(string scenePath)
         {
@@ -43,15 +40,15 @@ namespace LethalLevelLoader.AssetBundles
             }
             else
             {
-                    foreach (ExtendedMod mod in assetBundle.LoadAllAssets<ExtendedMod>())
-                        foreach (ExtendedLevel level in mod.ExtendedLevels)
-                        {
-                            if (level.SelectableLevel != null && !string.IsNullOrEmpty(level.SelectableLevel.sceneName))
-                                sceneNames.Add(level.SelectableLevel.sceneName);
-                            foreach (StringWithRarity sceneSelection in level.SceneSelections)
-                                if (!sceneNames.Contains(sceneSelection.Name))
-                                    sceneNames.Add(sceneSelection.Name);
-                        }
+                foreach (ExtendedMod mod in assetBundle.LoadAllAssets<ExtendedMod>())
+                    foreach (ExtendedLevel level in mod.ExtendedLevels)
+                    {
+                        if (level.SelectableLevel != null && !string.IsNullOrEmpty(level.SelectableLevel.sceneName))
+                            sceneNames.Add(level.SelectableLevel.sceneName);
+                        foreach (StringWithRarity sceneSelection in level.SceneSelections)
+                            if (!sceneNames.Contains(sceneSelection.Name))
+                                sceneNames.Add(sceneSelection.Name);
+                    }
 
 
                 foreach (ExtendedLevel level in assetBundle.LoadAllAssets<ExtendedLevel>())

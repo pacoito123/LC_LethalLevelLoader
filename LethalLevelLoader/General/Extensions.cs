@@ -4,12 +4,16 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using System.Text.RegularExpressions;
 
 namespace LethalLevelLoader
 {
     public static class Extensions
     {
+        private static readonly Regex sanitizeRegex = new Regex(@"(\s*[^A-Z])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex skipToLetterRegex = new Regex(@"(^[^A-Z]*)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex stripSpecialCharactersRegex = new Regex(@"([^A-Z\s])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
         public static List<Tile> GetTiles(this DungeonFlow dungeonFlow)
         {
             List<Tile> tilesList = new List<Tile>();
@@ -92,7 +96,7 @@ namespace LethalLevelLoader
             compatibleNoun.result = firstResult;
         }
 
-        public static void AddCompatibleNoun(this TerminalKeyword terminalKeyword, TerminalKeyword newNoun,  TerminalNode newResult)
+        public static void AddCompatibleNoun(this TerminalKeyword terminalKeyword, TerminalKeyword newNoun, TerminalNode newResult)
         {
             if (terminalKeyword.compatibleNouns == null)
                 terminalKeyword.compatibleNouns = new CompatibleNoun[0];
@@ -118,38 +122,36 @@ namespace LethalLevelLoader
             intWithRarity.rarity = rarity;
         }
 
-        public static string Sanitized(this string currentString)
+        public static bool ContainsSanitized(this string input, string comparison, bool bothWays = false)
         {
-            return new string(currentString.SkipToLetters().RemoveWhitespace().ToLowerInvariant());
+            (string, string) sanitized = (input.Sanitized(), comparison.Sanitized());
+            return sanitized.Item1.Contains(sanitized.Item2) || (bothWays && sanitized.Item2.Contains(sanitized.Item1));
+        }
+
+        public static string Sanitized(this string input, bool toLower = true)
+        {
+            string sanitizedInput = sanitizeRegex.Replace(input, string.Empty);
+            return toLower ? sanitizedInput.ToLowerInvariant() : sanitizedInput;
         }
 
         public static string RemoveWhitespace(this string input)
         {
-            return new string(input.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray());
+            return string.Join(input, input.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
         }
 
         public static string SkipToLetters(this string input)
         {
-            return new string(input.SkipWhile(c => !char.IsLetter(c)).ToArray());
+            return skipToLetterRegex.Replace(input, string.Empty);
         }
 
         public static string StripSpecialCharacters(this string input)
         {
-            string returnString = string.Empty;
-
-            foreach (char charmander in input)
-                if ((!ConfigHelper.illegalCharacters.ToCharArray().Contains(charmander) && char.IsLetterOrDigit(charmander)) || charmander.ToString() == " ")
-                    returnString += charmander;
-
-            return returnString;
+            return stripSpecialCharactersRegex.Replace(input, string.Empty);
         }
 
         public static List<DungeonFlow> GetDungeonFlows(this RoundManager roundManager)
         {
-
             return roundManager.dungeonFlowTypes.Select(i => i.dungeonFlow).ToList();
-
-            
         }
     }
 }

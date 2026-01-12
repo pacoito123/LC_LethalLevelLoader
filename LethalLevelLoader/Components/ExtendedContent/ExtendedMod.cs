@@ -86,7 +86,7 @@ namespace LethalLevelLoader
         {
             ExtendedMod newExtendedMod = ScriptableObject.CreateInstance<ExtendedMod>();
             newExtendedMod.ModName = modName;
-            newExtendedMod.name = modName.SkipToLetters().RemoveWhitespace() + "Mod";
+            newExtendedMod.name = modName.Sanitized(toLower: false) + "Mod";
             newExtendedMod.AuthorName = authorName;
             if (Plugin.Instance != null)
                 DebugHelper.Log("Created New ExtendedMod: " + newExtendedMod.ModName + " by " + authorName, DebugType.Developer);
@@ -97,7 +97,7 @@ namespace LethalLevelLoader
         {
             ExtendedMod newExtendedMod = ScriptableObject.CreateInstance<ExtendedMod>();
             newExtendedMod.ModName = modName;
-            newExtendedMod.name = modName.SkipToLetters().RemoveWhitespace() + "Mod";
+            newExtendedMod.name = modName.Sanitized(toLower: false) + "Mod";
             newExtendedMod.AuthorName = authorName;
 
             foreach (ExtendedContent extendedContent in extendedContents)

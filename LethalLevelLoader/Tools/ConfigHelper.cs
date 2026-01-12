@@ -1,20 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace LethalLevelLoader
 {
     public class ConfigHelper
     {
-        // Matches only letters
-        private static readonly Regex sanitizeRegex = new Regex(@"(\s*[^A-Z])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
         public const char indexSeparator = ',';
         public const char keyPairSeparator = ':';
         public const char vectorSeparator = '-';
-        public const string illegalCharacters = ".,?!@#$%^&*()_+-=';:'\"";
         public const string emptyDefaultValues = "Default Values Were Empty";
 
         public static List<StringWithRarity> ConvertToStringWithRarityList(string inputString, Vector2 clampRarity)
@@ -66,21 +61,12 @@ namespace LethalLevelLoader
                 foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.ExtendedEnemyTypes)
                 {
                     EnemyType enemyType = extendedEnemyType.EnemyType;
-                    bool matched = false;
+                    bool matched = stringWithRarity.Name.ContainsSanitized(enemyType.enemyName, bothWays: true);
 
-                    if (SanitizeString(enemyType.enemyName).Contains(SanitizeString(stringWithRarity.Name))
-                        || SanitizeString(stringWithRarity.Name).Contains(SanitizeString(enemyType.enemyName)))
-                    {
-                        matched = true;
-                    }
-                    else if (enemyType.enemyPrefab != null)
+                    if (!matched && enemyType.enemyPrefab != null)
                     {
                         ScanNodeProperties enemyScanNode = enemyType.enemyPrefab.GetComponentInChildren<ScanNodeProperties>(includeInactive: false);
-                        if (enemyScanNode != null && (SanitizeString(enemyScanNode.headerText).Contains(SanitizeString(stringWithRarity.Name))
-                            || SanitizeString(stringWithRarity.Name).Contains(SanitizeString(enemyScanNode.headerText))))
-                        {
-                            matched = true;
-                        }
+                        matched = (enemyScanNode != null) && stringWithRarity.Name.ContainsSanitized(enemyScanNode.headerText, bothWays: true);
                     }
 
                     if (matched)
@@ -109,7 +95,7 @@ namespace LethalLevelLoader
                 foreach (ExtendedItem extendedItem in PatchedContent.ExtendedItems)
                 {
                     Item item = extendedItem.Item;
-                    if (SanitizeString(item.itemName).Contains(SanitizeString(stringWithRarity.Name)) || SanitizeString(stringWithRarity.Name).Contains(SanitizeString(item.itemName)))
+                    if (stringWithRarity.Name.ContainsSanitized(item.itemName, bothWays: true))
                     {
                         // DebugHelper.Log("Vanilla Item Name: " + SanitizeString(item.itemName) + " , Parsed Item Name: " + SanitizeString(stringWithRarity.Name), DebugType.Developer);
                         returnList.Add(new SpawnableItemWithRarity()
@@ -211,11 +197,6 @@ namespace LethalLevelLoader
             for (int i = 0; i < splitString.Length; i++)
                 splitString[i] = splitString[i].Trim();
             return splitString;
-        }
-
-        public static string SanitizeString(string inputString)
-        {
-            return sanitizeRegex.Replace(inputString, string.Empty).ToLowerInvariant();
         }
     }
 }

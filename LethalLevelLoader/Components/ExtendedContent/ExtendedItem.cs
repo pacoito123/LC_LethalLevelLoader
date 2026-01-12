@@ -64,7 +64,7 @@ namespace LethalLevelLoader
         {
             ExtendedItem extendedItem = ScriptableObject.CreateInstance<ExtendedItem>();
             extendedItem.Item = newItem;
-            extendedItem.name = newItem.itemName.SkipToLetters().RemoveWhitespace() + "ExtendedItem";
+            extendedItem.name = newItem.itemName.Sanitized(toLower: false) + "ExtendedItem";
             extendedItem.ContentType = contentType;
             extendedMod.RegisterExtendedContent(extendedItem);
 

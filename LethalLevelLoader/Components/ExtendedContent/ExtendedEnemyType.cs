@@ -37,7 +37,7 @@ namespace LethalLevelLoader
         {
             ExtendedEnemyType extendedEnemyType = ScriptableObject.CreateInstance<ExtendedEnemyType>();
             extendedEnemyType.EnemyType = enemyType;
-            extendedEnemyType.name = enemyType.enemyName.SkipToLetters().RemoveWhitespace() + "ExtendedEnemyType";
+            extendedEnemyType.name = enemyType.enemyName.Sanitized(toLower: false) + "ExtendedEnemyType";
             extendedEnemyType.ContentType = contentType;
             extendedMod.RegisterExtendedContent(extendedEnemyType);
 

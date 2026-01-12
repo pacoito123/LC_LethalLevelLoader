@@ -39,7 +39,7 @@ namespace LethalLevelLoader
         {
             ExtendedUnlockableItem extendedUnlockableItem = ScriptableObject.CreateInstance<ExtendedUnlockableItem>();
             extendedUnlockableItem.UnlockableItem = newUnlockableItem;
-            extendedUnlockableItem.name = newUnlockableItem.unlockableName.SkipToLetters().RemoveWhitespace() + "ExtendedUnlockableItem";
+            extendedUnlockableItem.name = newUnlockableItem.unlockableName.Sanitized(toLower: false) + "ExtendedUnlockableItem";
             extendedUnlockableItem.ContentType = contentType;
             extendedMod.RegisterExtendedContent(extendedUnlockableItem);
 

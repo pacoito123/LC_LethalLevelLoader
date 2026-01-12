@@ -1,8 +1,4 @@
-﻿using JetBrains.Annotations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -35,13 +31,13 @@ namespace LethalLevelLoader
                         {
                             extendedLevel.SelectableLevel.spawnableScrap[itemIndex].rarity = returnRarity;
                             if (debugResults == true)
-                                debugString = "Updated Rarity Of: " + extendedItem.Item.itemName + " To: " + returnRarity + " On Planet: " + extendedLevel.NumberlessPlanetName;
+                                debugString = "Updated Rarity Of: " + extendedItem.Item.itemName + " To: " + returnRarity + " On Moon: " + extendedLevel.NumberlessPlanetName;
                         }
                         else
                         {
                             extendedLevel.SelectableLevel.spawnableScrap.RemoveAt(itemIndex);
                             if (debugResults == true)
-                                debugString = "Removed " + extendedItem.Item.itemName + " From Planet: " + extendedLevel.NumberlessPlanetName;
+                                debugString = "Removed " + extendedItem.Item.itemName + " From Moon: " + extendedLevel.NumberlessPlanetName;
                         }
                     }
                     else if (returnRarity > 0)
@@ -51,10 +47,9 @@ namespace LethalLevelLoader
                             spawnableItem = extendedItem.Item,
                             rarity = returnRarity
                         };
-                        itemIndex = extendedLevel.SelectableLevel.spawnableScrap.Count;
                         extendedLevel.SelectableLevel.spawnableScrap.Add(newSpawnableItem);
                         if (debugResults == true)
-                            debugString = "Added " + extendedItem.Item.itemName + " To Planet: " + extendedLevel.NumberlessPlanetName + " With A Rarity Of: " + returnRarity;
+                            debugString = "Added " + extendedItem.Item.itemName + " To Moon: " + extendedLevel.NumberlessPlanetName + " With A Rarity Of: " + returnRarity;
                     }
 
                     if (debugResults == true && !string.IsNullOrEmpty(debugString))
