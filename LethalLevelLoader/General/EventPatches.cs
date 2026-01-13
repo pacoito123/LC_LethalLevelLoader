@@ -164,7 +164,7 @@ namespace LethalLevelLoader
                 List<GameObject> mapObjects = new List<GameObject>();
                 foreach (GameObject rootObject in SceneManager.GetSceneByName(LevelManager.CurrentExtendedLevel.SelectableLevel.sceneName).GetRootGameObjects())
                     foreach (SpawnableMapObject randomMapObject in LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableMapObjects)
-                        if (rootObject.name.Sanitized().Contains(randomMapObject.prefabToSpawn.name.Sanitized())) //To ensure were only getting the Dungeon relevant objects.
+                        if (rootObject.name.ContainsSanitized(randomMapObject.prefabToSpawn.name)) //To ensure were only getting the Dungeon relevant objects.
                             mapObjects.Add(rootObject);
                 DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onSpawnedMapObjects.Invoke(mapObjects);
                 DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.Invoke(mapObjects);

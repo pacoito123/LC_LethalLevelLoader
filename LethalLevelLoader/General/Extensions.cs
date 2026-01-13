@@ -10,9 +10,9 @@ namespace LethalLevelLoader
 {
     public static class Extensions
     {
-        private static readonly Regex sanitizeRegex = new Regex(@"(\s*[^A-Z])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        private static readonly Regex skipToLetterRegex = new Regex(@"(^[^A-Z]*)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        private static readonly Regex stripSpecialCharactersRegex = new Regex(@"([^A-Z\s])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex sanitizeRegex = new Regex(@"(\s*[^\p{L}])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex skipToLetterRegex = new Regex(@"(^[^\p{L}]+)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex stripSpecialCharactersRegex = new Regex(@"([^\p{L}\d\s])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         public static List<Tile> GetTiles(this DungeonFlow dungeonFlow)
         {
@@ -146,7 +146,7 @@ namespace LethalLevelLoader
 
         public static string StripSpecialCharacters(this string input)
         {
-            return stripSpecialCharactersRegex.Replace(input, string.Empty);
+            return stripSpecialCharactersRegex.Replace(input, string.Empty).Trim();
         }
 
         public static List<DungeonFlow> GetDungeonFlows(this RoundManager roundManager)

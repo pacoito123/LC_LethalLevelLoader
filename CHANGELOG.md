@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.6.5</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed errors from parsing interiors with certain special characters in their name
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.4</summary>**
 
 **<details><summary>Features</summary>**

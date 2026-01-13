@@ -226,11 +226,11 @@ namespace LethalLevelLoader
             }
             else if (extendedContent is ExtendedBuyableVehicle extendedBuyableVehicle)
             {
-                extendedMod = GetOrCreateExtendedMod(source, extendedBuyableVehicle.name);
+                extendedMod = GetOrCreateExtendedMod(source, extendedBuyableVehicle.name.RemoveWhitespace());
             }
             else if (extendedContent is ExtendedUnlockableItem extendedUnlockableItem)
             {
-                extendedMod = GetOrCreateExtendedMod(source, extendedUnlockableItem.name);
+                extendedMod = GetOrCreateExtendedMod(source, extendedUnlockableItem.name.RemoveWhitespace());
             }
 
             if (extendedMod != null)

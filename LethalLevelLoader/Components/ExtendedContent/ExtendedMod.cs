@@ -77,7 +77,7 @@ namespace LethalLevelLoader
         {
             ExtendedMod newExtendedMod = ScriptableObject.CreateInstance<ExtendedMod>();
             newExtendedMod.ModName = modName;
-            newExtendedMod.name = modName.Sanitized() + "Mod";
+            newExtendedMod.name = modName.Sanitized(toLower: false) + "Mod";
             DebugHelper.Log("Created New ExtendedMod: " + newExtendedMod.ModName, DebugType.Developer);
             return (newExtendedMod);
         }

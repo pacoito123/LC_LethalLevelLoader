@@ -134,7 +134,7 @@ namespace LethalLevelLoader
         internal static bool SetSimulationResultsText(ref TerminalNode currentNode, ref TerminalNode node)
         {
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
-                if (node.terminalEvent.StripSpecialCharacters().Sanitized().ToLower().Contains(extendedLevel.NumberlessPlanetName.StripSpecialCharacters().Sanitized().ToLower()))
+                if (node.terminalEvent.ContainsSanitized(extendedLevel.NumberlessPlanetName))
                 {
                     node.displayText = GetSimulationResultsText(extendedLevel) + "\n" + "\n";
                     node.clearPreviousText = true;
@@ -604,7 +604,7 @@ namespace LethalLevelLoader
         {
             //Terminal Route Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
-            terminalKeyword.name = extendedLevel.NumberlessPlanetName.StripSpecialCharacters().Sanitized() + "Keyword";
+            terminalKeyword.name = extendedLevel.NumberlessPlanetName.Sanitized() + "Keyword";
             terminalKeyword.word = extendedLevel.TerminalNoun;
             terminalKeyword.defaultVerb = routeKeyword;
 
@@ -615,7 +615,7 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeRoute = CreateNewTerminalNode();
-                terminalNodeRoute.name = extendedLevel.NumberlessPlanetName.StripSpecialCharacters().Sanitized() + "Route";
+                terminalNodeRoute.name = extendedLevel.NumberlessPlanetName.Sanitized() + "Route";
                 if (extendedLevel.OverrideRouteNodeDescription != string.Empty)
                     terminalNodeRoute.displayText = extendedLevel.OverrideRouteNodeDescription;
                 else
@@ -637,7 +637,7 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeRouteConfirm = CreateNewTerminalNode();
-                terminalNodeRouteConfirm.name = extendedLevel.NumberlessPlanetName.StripSpecialCharacters().Sanitized() + "RouteConfirm";
+                terminalNodeRouteConfirm.name = extendedLevel.NumberlessPlanetName.Sanitized() + "RouteConfirm";
                 if (extendedLevel.OverrideRouteConfirmNodeDescription != string.Empty)
                     terminalNodeRouteConfirm.displayText = extendedLevel.OverrideRouteConfirmNodeDescription;
                 else
@@ -654,7 +654,7 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeInfo = CreateNewTerminalNode();
-                terminalNodeInfo.name = extendedLevel.NumberlessPlanetName.StripSpecialCharacters().Sanitized() + "Info";
+                terminalNodeInfo.name = extendedLevel.NumberlessPlanetName.Sanitized() + "Info";
                 terminalNodeInfo.clearPreviousText = true;
                 terminalNodeInfo.maxCharactersToType = 35;
                 string infoString;
@@ -729,8 +729,8 @@ namespace LethalLevelLoader
 
             //Terminal Buy Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
-            terminalKeyword.name = extendedItem.Item.itemName.StripSpecialCharacters().Sanitized() + "Keyword";
-            terminalKeyword.word = extendedItem.Item.itemName.StripSpecialCharacters().Sanitized();
+            terminalKeyword.name = extendedItem.Item.itemName.Sanitized() + "Keyword";
+            terminalKeyword.word = extendedItem.Item.itemName.Sanitized();
             terminalKeyword.defaultVerb = buyKeyword;
 
             //Terminal Buy Keyword
@@ -740,7 +740,7 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeBuy = CreateNewTerminalNode();
-                terminalNodeBuy.name = extendedItem.Item.itemName.StripSpecialCharacters().Sanitized() + "Buy";
+                terminalNodeBuy.name = extendedItem.Item.itemName.Sanitized() + "Buy";
                 if (extendedItem.OverrideBuyNodeDescription != string.Empty)
                     terminalNodeBuy.displayText = extendedItem.OverrideBuyNodeDescription;
                 else
@@ -767,7 +767,7 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeBuyConfirm = CreateNewTerminalNode();
-                terminalNodeBuyConfirm.name = extendedItem.Item.itemName.StripSpecialCharacters().Sanitized() + "BuyConfirm";
+                terminalNodeBuyConfirm.name = extendedItem.Item.itemName.Sanitized() + "BuyConfirm";
                 if (extendedItem.OverrideBuyConfirmNodeDescription != string.Empty)
                     terminalNodeBuyConfirm.displayText = extendedItem.OverrideBuyConfirmNodeDescription;
                 else
@@ -795,7 +795,7 @@ namespace LethalLevelLoader
                 else
                 {
                     terminalNodeInfo = CreateNewTerminalNode();
-                    terminalNodeInfo.name = extendedItem.Item.itemName.StripSpecialCharacters().Sanitized() + "Info";
+                    terminalNodeInfo.name = extendedItem.Item.itemName.Sanitized() + "Info";
                     terminalNodeInfo.clearPreviousText = true;
                     terminalNodeInfo.maxCharactersToType = 25;
                     terminalNodeInfo.displayText = "\n" + extendedItem.OverrideInfoNodeDescription;
@@ -895,8 +895,8 @@ namespace LethalLevelLoader
         {
             //Terminal Buy Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
-            terminalKeyword.name = extendedUnlockableItem.UnlockableItem.unlockableName.StripSpecialCharacters().Sanitized() + "Keyword";
-            terminalKeyword.word = extendedUnlockableItem.UnlockableItem.unlockableName.StripSpecialCharacters().Sanitized();
+            terminalKeyword.name = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized() + "Keyword";
+            terminalKeyword.word = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized();
             terminalKeyword.defaultVerb = buyKeyword;
 
             //Terminal Buy Keyword
@@ -906,7 +906,7 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeBuy = CreateNewTerminalNode();
-                terminalNodeBuy.name = extendedUnlockableItem.UnlockableItem.unlockableName.StripSpecialCharacters().Sanitized() + "Buy";
+                terminalNodeBuy.name = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized() + "Buy";
                 terminalNodeBuy.itemCost = extendedUnlockableItem.ItemCost;
                 terminalNodeBuy.isConfirmationNode = false;
                 terminalNodeBuy.overrideOptions = true;
@@ -931,7 +931,7 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeBuyConfirm = CreateNewTerminalNode();
-                terminalNodeBuyConfirm.name = extendedUnlockableItem.UnlockableItem.unlockableName.StripSpecialCharacters().Sanitized() + "BuyConfirm";
+                terminalNodeBuyConfirm.name = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized() + "BuyConfirm";
                 terminalNodeBuyConfirm.itemCost = extendedUnlockableItem.ItemCost;
                 terminalNodeBuyConfirm.isConfirmationNode = false;
                 terminalNodeBuyConfirm.clearPreviousText = true;
@@ -958,7 +958,7 @@ namespace LethalLevelLoader
                 else
                 {
                     terminalNodeInfo = CreateNewTerminalNode();
-                    terminalNodeInfo.name = extendedUnlockableItem.UnlockableItem.unlockableName.StripSpecialCharacters().Sanitized() + "Info";
+                    terminalNodeInfo.name = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized() + "Info";
                     terminalNodeInfo.clearPreviousText = true;
                     terminalNodeInfo.maxCharactersToType = 25;
                     terminalNodeInfo.displayText = "\n" + extendedUnlockableItem.OverrideInfoNodeDescription;

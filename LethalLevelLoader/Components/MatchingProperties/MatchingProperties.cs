@@ -62,7 +62,7 @@ namespace LethalLevelLoader
             foreach (StringWithRarity stringWithRarity in matchingStrings)
                 foreach (string comparingString in new List<string>(comparingStrings))
                     if (stringWithRarity.Rarity >= returnInt)
-                        if (stringWithRarity.Name.Sanitized().Contains(comparingString.Sanitized()) || comparingString.Sanitized().Contains(stringWithRarity.Name.Sanitized()))
+                        if (stringWithRarity.Name.ContainsSanitized(comparingString, bothWays: true))
                             returnInt = stringWithRarity.Rarity;
             return (returnInt);
         }
