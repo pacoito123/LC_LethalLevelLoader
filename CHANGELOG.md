@@ -1,6 +1,17 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.6.6</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed ExtendedLevel random scene selection causing some issues in multiplayer
+* Fixed ExtendedLevel random scene selection using the map seed for the previous round (or 0) before selecting a scene
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.5</summary>**
 
 **<details><summary>Fixes</summary>**
