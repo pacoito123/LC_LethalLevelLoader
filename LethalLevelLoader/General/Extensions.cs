@@ -136,7 +136,7 @@ namespace LethalLevelLoader
 
         public static string RemoveWhitespace(this string input)
         {
-            return string.Join(input, input.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
+            return string.Join("", input.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
         }
 
         public static string SkipToLetters(this string input)

@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.6.7</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed ExtendedLevel Terminal keywords for moons with spaces not being correct
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.6</summary>**
 
 **<details><summary>Features</summary>**
