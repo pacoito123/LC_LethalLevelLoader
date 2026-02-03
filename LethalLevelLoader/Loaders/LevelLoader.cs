@@ -108,9 +108,6 @@ namespace LethalLevelLoader
 
         internal static void RefreshShipAnimatorClips(ExtendedLevel extendedLevel)
         {
-            // Let other content handle their own AnimatorController overrides.
-            if (extendedLevel.ContentType is ContentType.External) return;
-
             DebugHelper.Log("Refreshing Ship Animator Clips!", DebugType.Developer);
 
             /* Animator shipAnimator = Patches.StartOfRound.shipAnimator;

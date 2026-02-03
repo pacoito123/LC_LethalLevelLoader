@@ -13,6 +13,7 @@
 
 * Fixed ExtendedLevel random scene selection causing some issues in multiplayer
 * Fixed ExtendedLevel random scene selection using the map seed for the previous round (or 0) before selecting a scene
+* Fixed ExtendedLevel overrides being applied to moons registered outside LLL
 
 </details>
 

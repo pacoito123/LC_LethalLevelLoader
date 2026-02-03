@@ -537,12 +537,13 @@ if (AssetBundleLoader.noBundlesFound == true)
         //Called via SceneManager event.
         internal static void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
         {
-            if (LevelManager.CurrentExtendedLevel == null || LevelManager.CurrentExtendedLevel.IsLevelLoaded == false) return;
-            foreach (GameObject rootObject in SceneManager.GetSceneByName(LevelManager.CurrentExtendedLevel.SelectableLevel.sceneName).GetRootGameObjects())
+            ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
+            if (currentLevel == null || currentLevel.IsLevelLoaded == false || currentLevel.ContentType is ContentType.External) return;
+            foreach (GameObject rootObject in SceneManager.GetSceneByName(currentLevel.SelectableLevel.sceneName).GetRootGameObjects())
                 ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
-            LevelLoader.RefreshShipAnimatorClips(LevelManager.CurrentExtendedLevel);
-            LevelLoader.RefreshWeatherEffects(LevelManager.CurrentExtendedLevel);
-            LevelLoader.RefreshTimeOfDayMusic(LevelManager.CurrentExtendedLevel);
+            LevelLoader.RefreshShipAnimatorClips(currentLevel);
+            LevelLoader.RefreshWeatherEffects(currentLevel);
+            LevelLoader.RefreshTimeOfDayMusic(currentLevel);
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.StartGame)), HarmonyTranspiler, HarmonyPriority(priority)]
