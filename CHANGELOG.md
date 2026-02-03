@@ -16,6 +16,8 @@
 * Fixed ExtendedLevel random scene selection causing some issues in multiplayer
 * Fixed ExtendedLevel random scene selection using the map seed for the previous round (or 0) before selecting a scene
 * Fixed ExtendedLevel overrides being applied to moons registered outside LLL
+* Fixed ExtendedLevel Terminal keywords not including any numbers present in the moon's name
+* Fixed Moons Catalogue grouping moons in numbers lower than the set split amount, due to hidden moons
 
 </details>
 

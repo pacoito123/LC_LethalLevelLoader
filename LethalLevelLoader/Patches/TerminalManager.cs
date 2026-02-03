@@ -519,6 +519,8 @@ namespace LethalLevelLoader
             List<ExtendedLevel> currentExtendedLevelsBatch = new List<ExtendedLevel>();
             foreach (ExtendedLevel extendedLevel in new List<ExtendedLevel>(newExtendedLevels))
             {
+                if (extendedLevel.IsRouteHidden) continue;
+
                 currentExtendedLevelsBatch.Add(extendedLevel);
                 levelsAdded++;
                 counter++;

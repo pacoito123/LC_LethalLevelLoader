@@ -129,7 +129,7 @@ namespace LethalLevelLoader
             }
         }
 
-        public string TerminalNoun => string.IsNullOrEmpty(OverrideRouteNoun) ? NumberlessPlanetName.Sanitized() : OverrideRouteNoun.Sanitized();
+        public string TerminalNoun => string.IsNullOrEmpty(OverrideRouteNoun) ? NumberlessPlanetName.StripSpecialCharacters().RemoveWhitespace().ToLowerInvariant() : OverrideRouteNoun.StripSpecialCharacters().RemoveWhitespace().ToLowerInvariant();
 
         public string NumberlessPlanetName => GetNumberlessPlanetName(SelectableLevel);
         public int CalculatedDifficultyRating => LevelManager.CalculateExtendedLevelDifficultyRating(this);
