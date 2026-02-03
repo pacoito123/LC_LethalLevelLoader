@@ -90,20 +90,25 @@ namespace LethalLevelLoader
         //Called by StartOfRound.ChangeLevel.Postfix
         internal void Refresh()
         {
-            List<AssetBundleGroup> newGroups = GetRouteGroups(LevelManager.CurrentExtendedLevel);
+            ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
+
+            List<AssetBundleGroup> newGroups = GetRouteGroups(currentLevel);
             List<AssetBundleGroup> previousGroups = new List<AssetBundleGroup>();
             if (currentRouteRequestor != null)
                 previousGroups = GetRouteGroups(currentRouteRequestor);
 
             // Only unload when about to load a different level.
-            if (LevelManager.CurrentExtendedLevel != null && currentRouteRequestor != LevelManager.CurrentExtendedLevel)
+            if (currentLevel != null && currentRouteRequestor != currentLevel)
             {
                 foreach (AssetBundleGroup bundleGroup in previousGroups)
                     if (!newGroups.Contains(bundleGroup))
                         bundleGroup.TryUnloadGroup();
 
-                currentRouteRequestor = LevelManager.CurrentExtendedLevel;
+                currentRouteRequestor = currentLevel;
             }
+
+            if (currentLevel != null)
+                TerminalManager.simulateKeyword.specialKeywordResult = currentLevel.SimulateNode;
 
             foreach (AssetBundleGroup bundleGroup in newGroups)
                 if (!previousGroups.Contains(bundleGroup))

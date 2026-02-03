@@ -19,7 +19,7 @@ namespace LethalLevelLoader
             get
             {
                 if (_terminal == null)
-                    _terminal = UnityObjectType.FindObjectOfType<Terminal>();
+                    _terminal = UnityEngine.Object.FindFirstObjectByType<Terminal>(FindObjectsInactive.Exclude);
 
                 return _terminal;
             }
@@ -42,6 +42,12 @@ namespace LethalLevelLoader
         internal static TerminalNode cancelRouteNode;
         internal static TerminalNode cancelPurchaseNode;
 
+        //Cached References To LLL TerminalKeywords;
+        internal static TerminalKeyword previewKeyword;
+        internal static TerminalKeyword sortKeyword;
+        internal static TerminalKeyword filterKeyword;
+        internal static TerminalKeyword simulateKeyword;
+
         internal static string currentTagFilter;
 
         public static float defaultTerminalFontSize;
@@ -53,7 +59,7 @@ namespace LethalLevelLoader
 
         //internal static Dictionary<TerminalNode, Action<TerminalNode, TerminalNode>> terminalNodeRegisteredEventDictionary = new Dictionary<TerminalNode, Action<TerminalNode, TerminalNode>>();
 
-        public enum LoadNodeActionType { Before,  After }
+        public enum LoadNodeActionType { Before, After }
         public delegate bool LoadNodeAction(ref TerminalNode currentNode, ref TerminalNode loadNode);
 
         internal static Dictionary<TerminalNode, LoadNodeAction> onBeforeLoadNewNodeRegisteredEventsDictionary = new Dictionary<TerminalNode, LoadNodeAction>();
@@ -115,7 +121,7 @@ namespace LethalLevelLoader
 
             terminalNode = lockedNode;
         }
-        
+
         internal static void RefreshExtendedLevelGroups()
         {
             currentMoonsCataloguePage.ExtendedLevelGroups.Clear();
@@ -530,7 +536,7 @@ namespace LethalLevelLoader
 
         internal static void CreateExtendedLevelGroups()
         {
-            List<ExtendedLevel> hiddenVanillaLevels = new List<ExtendedLevel>();    
+            List<ExtendedLevel> hiddenVanillaLevels = new List<ExtendedLevel>();
             foreach (ExtendedLevel extendedLevel in PatchedContent.VanillaExtendedLevels)
             {
                 if (!moonsKeyword.specialKeywordResult.displayText.Contains(extendedLevel.NumberlessPlanetName))
@@ -557,7 +563,7 @@ namespace LethalLevelLoader
                 if (extendedLevelsContentSourceNameDictionary.TryGetValue(customExtendedLevel.ModName, out List<ExtendedLevel> extendedLevels))
                     extendedLevels.Add(customExtendedLevel);
                 else
-                    extendedLevelsContentSourceNameDictionary.Add(customExtendedLevel.ModName, new List<ExtendedLevel> { customExtendedLevel });                 
+                    extendedLevelsContentSourceNameDictionary.Add(customExtendedLevel.ModName, new List<ExtendedLevel> { customExtendedLevel });
             }
 
             List<ExtendedLevelGroup> defaultVanillaExtendedLevelGroups = new List<ExtendedLevelGroup>() { vanillaGroupA, vanillaGroupB, vanillaGroupC, vanillaGroupD };
@@ -863,8 +869,8 @@ namespace LethalLevelLoader
                 "You have requested to order the " + extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName + "." + "\n" +
                 "[warranty] Total cost of items: [totalCost]." + "\n\n" +
                 "Please CONFIRM or DENY." + "\n\n";
-                
-            
+
+
 
 
             TerminalNode newVehicleBuyConfirmNode = CreateNewTerminalNode();
@@ -992,14 +998,20 @@ namespace LethalLevelLoader
         internal static void CreateMoonsFilterTerminalAssets()
         {
             //Preview & Sort Keywords
+            int previewIndex = Terminal.terminalNodes.allKeywords.Length;
             foreach (TerminalNode previewNode in CreateTerminalEventNodes("preview", new List<Enum>() { PreviewInfoType.Price, PreviewInfoType.Difficulty, PreviewInfoType.Weather, PreviewInfoType.History, PreviewInfoType.All, PreviewInfoType.None }))
                 AddTerminalNodeEventListener(previewNode, TryRefreshMoonsCataloguePage, LoadNodeActionType.Before);
+            previewKeyword = Terminal.terminalNodes.allKeywords[previewIndex];
 
+            int sortIndex = Terminal.terminalNodes.allKeywords.Length;
             foreach (TerminalNode sortNode in CreateTerminalEventNodes("sort", new List<Enum>() { SortInfoType.Price, SortInfoType.Difficulty, SortInfoType.None }))
                 AddTerminalNodeEventListener(sortNode, TryRefreshMoonsCataloguePage, LoadNodeActionType.Before);
+            sortKeyword = Terminal.terminalNodes.allKeywords[sortIndex];
 
+            int filterIndex = Terminal.terminalNodes.allKeywords.Length;
             foreach (TerminalNode filterNode in CreateTerminalEventNodes("filter", new List<Enum>() { FilterInfoType.Price, FilterInfoType.Weather, FilterInfoType.None }))
                 AddTerminalNodeEventListener(filterNode, TryRefreshMoonsCataloguePage, LoadNodeActionType.Before);
+            filterKeyword = Terminal.terminalNodes.allKeywords[filterIndex];
 
             //Tag Keywords
             List<string> tagMoonWordsList = new List<string>();
@@ -1030,6 +1042,7 @@ namespace LethalLevelLoader
                 PatchedContent.ExtendedLevels[counter].SimulateNode = simulateNode;
                 counter++;
             }
+            simulateKeyword = Terminal.terminalNodes.allKeywords[^++counter];
         }
 
         internal static List<TerminalNode> CreateTerminalEventNodes(string newVerbKeywordWord, List<Enum> terminalEventEnumStrings)
@@ -1050,7 +1063,7 @@ namespace LethalLevelLoader
             else
                 foreach (TerminalKeyword terminalKeyword in Terminal.terminalNodes.allKeywords)
                     if (terminalKeyword.isVerb == true && terminalKeyword.word == newVerbKeywordWord.ToLower())
-                        verbKeyword = terminalKeyword;  
+                        verbKeyword = terminalKeyword;
             verbKeyword.word = newVerbKeywordWord.ToLower();
             verbKeyword.name = newVerbKeywordWord.ToLower() + "Keyword";
             verbKeyword.isVerb = true;
@@ -1059,7 +1072,7 @@ namespace LethalLevelLoader
                 terminalEventStrings = nounWords;
 
             foreach (string newNode in nounWords)
-                    newTerminalNodes.Add(CreateTerminalEventNode(verbKeyword, newNode, terminalEventStrings[nounWords.IndexOf(newNode)]));
+                newTerminalNodes.Add(CreateTerminalEventNode(verbKeyword, newNode, terminalEventStrings[nounWords.IndexOf(newNode)]));
 
             return (newTerminalNodes);
         }

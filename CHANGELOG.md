@@ -3,6 +3,12 @@
 
 **<details><summary>Version 1.6.6</summary>**
 
+**<details><summary>Features</summary>**
+
+* Made `simulate` Terminal command default to the currently-routed moon, if no level is provided
+
+</details>
+
 **<details><summary>Fixes</summary>**
 
 * Fixed ExtendedLevel random scene selection causing some issues in multiplayer
