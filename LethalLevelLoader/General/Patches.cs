@@ -7,6 +7,7 @@ using MonoMod.Cil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using Unity.Netcode;
 using UnityEngine;
@@ -168,9 +169,9 @@ if (AssetBundleLoader.noBundlesFound == true)
             Plugin.OnBeforeSetupInvoke();
             //Reference Setup
             StartOfRound = __instance;
-            RoundManager = UnityEngine.Object.FindFirstObjectByType<RoundManager>();
-            Terminal = UnityEngine.Object.FindFirstObjectByType<Terminal>();
-            TimeOfDay = UnityEngine.Object.FindFirstObjectByType<TimeOfDay>();
+            RoundManager = UnityEngine.Object.FindFirstObjectByType<RoundManager>(FindObjectsInactive.Exclude);
+            Terminal = UnityEngine.Object.FindFirstObjectByType<Terminal>(FindObjectsInactive.Exclude);
+            TimeOfDay = UnityEngine.Object.FindFirstObjectByType<TimeOfDay>(FindObjectsInactive.Exclude);
 
             SceneManager.sceneLoaded += OnSceneLoaded;
             SceneManager.sceneLoaded += EventPatches.OnSceneLoaded;
@@ -550,17 +551,17 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static IEnumerable<CodeInstruction> StartOfRoundStartGame_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             return new CodeMatcher(instructions).MatchForward(useEnd: false,
-                new(OpCodes.Call, AccessTools.Method(typeof(NetworkManager), "get_NetworkManager")),
-                new(OpCodes.Callvirt, AccessTools.Method(typeof(NetworkSceneManager), "get_SceneManager")),
+                new(OpCodes.Call, typeof(NetworkBehaviour).GetProperty(nameof(NetworkBehaviour.NetworkManager), BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty).GetGetMethod()),
+                new(OpCodes.Callvirt, typeof(NetworkManager).GetProperty(nameof(NetworkManager.SceneManager), BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty).GetGetMethod()),
                 new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(StartOfRound), nameof(StartOfRound.currentLevel))),
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(SelectableLevel), nameof(SelectableLevel.sceneName))),
+                new(OpCodes.Ldfld, typeof(StartOfRound).GetField(nameof(StartOfRound.currentLevel))),
+                new(OpCodes.Ldfld, typeof(SelectableLevel).GetField(nameof(SelectableLevel.sceneName))),
                 new(OpCodes.Ldc_I4_1),
-                new(OpCodes.Callvirt, AccessTools.Method(typeof(NetworkSceneManager), nameof(NetworkSceneManager.LoadScene))),
+                new(OpCodes.Callvirt, typeof(NetworkSceneManager).GetMethod(nameof(NetworkSceneManager.LoadScene), BindingFlags.Public)),
                 new(OpCodes.Pop))
             .Insert( // Insert call to select a random scene immediately before the current scene begins to load, and after generating the seed for the current round.
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(StartOfRound), nameof(StartOfRound.randomMapSeed))),
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(PerformSceneSelection))),
+                new(OpCodes.Ldfld, typeof(StartOfRound).GetField(nameof(StartOfRound.randomMapSeed))),
+                new(OpCodes.Call, typeof(Patches).GetMethod(nameof(PerformSceneSelection), BindingFlags.Static | BindingFlags.NonPublic)),
                 new(OpCodes.Ldarg_0))
             .InstructionEnumeration();
         }
@@ -625,22 +626,24 @@ if (AssetBundleLoader.noBundlesFound == true)
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> GenerateNewLevelClientRpcTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            CodeMatcher codeMatcher = new CodeMatcher(instructions)
-                .SearchForward(instructions => instructions.Calls(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.GenerateNewFloor))))
-                .SetInstruction(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(InjectHostDungeonFlowSelection))))
-                .Advance(-1)
-                .SetInstruction(new CodeInstruction(OpCodes.Nop));
-            return (codeMatcher.InstructionEnumeration());
+            return new CodeMatcher(instructions).End()
+            .MatchBack(useEnd: true,
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Call, typeof(RoundManager).GetMethod(nameof(RoundManager.GenerateNewFloor), BindingFlags.Instance | BindingFlags.Public)))
+            .SetInstruction(new(OpCodes.Call, typeof(Patches).GetMethod(nameof(InjectHostDungeonFlowSelection), BindingFlags.Static | BindingFlags.NonPublic)))
+            .InstructionEnumeration();
         }
-
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewFloor)), HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> GenerateNewFloorTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             return new CodeMatcher(instructions).End()
-                .MatchBack(false, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(RuntimeDungeon), "Generate")))
-                .SetInstruction(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(InjectHostDungeonSizeSelection))))
-                .InstructionEnumeration();
+            .MatchBack(useEnd: true,
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, typeof(RoundManager).GetField(nameof(RoundManager.dungeonGenerator), BindingFlags.Instance | BindingFlags.Public)),
+                new(OpCodes.Callvirt, typeof(RuntimeDungeon).GetMethod(nameof(RuntimeDungeon.Generate), BindingFlags.Instance | BindingFlags.Public)))
+            .SetInstruction(new(OpCodes.Call, typeof(Patches).GetMethod(nameof(InjectHostDungeonSizeSelection), BindingFlags.Static | BindingFlags.Public)))
+            .InstructionEnumeration();
         }
 
         //Called via Transpiler.
@@ -653,12 +656,12 @@ if (AssetBundleLoader.noBundlesFound == true)
         }
 
         //Called via Transpiler.
-        internal static void InjectHostDungeonFlowSelection()
+        internal static void InjectHostDungeonFlowSelection(RoundManager roundManager)
         {
             if (LevelManager.CurrentExtendedLevel != null)
                 DungeonLoader.SelectDungeon();
             else
-                Patches.RoundManager.GenerateNewFloor();
+                roundManager.GenerateNewFloor();
         }
 
         [HarmonyPatch(typeof(RoundManager), "SetLockedDoors"), HarmonyPrefix, HarmonyPriority(priority)]
@@ -776,22 +779,22 @@ if (AssetBundleLoader.noBundlesFound == true)
         [HarmonyPatch(typeof(StartMatchLever), nameof(StartMatchLever.Update)), HarmonyTranspiler, HarmonyPriority(priority)]
         internal static IEnumerable<CodeInstruction> StartMatchLever_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            CodeMatch[] matches = [new(OpCodes.Call, AccessTools.Method(typeof(GameNetworkManager), "get_Instance")),
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(GameNetworkManager), nameof(GameNetworkManager.gameHasStarted)))];
+            CodeMatch[] matches = [new(OpCodes.Call, typeof(GameNetworkManager).GetProperty(nameof(GameNetworkManager.Instance), BindingFlags.Static | BindingFlags.Public).GetGetMethod()),
+                new(OpCodes.Ldfld, typeof(GameNetworkManager).GetField(nameof(GameNetworkManager.gameHasStarted), BindingFlags.Instance | BindingFlags.Public))];
 
             return new CodeMatcher(instructions, generator).MatchForward(false, matches)
             .Advance(3)
             .InsertAndAdvance( // Set lever as uninteractable for clients while the game hasn't started yet.
                 new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(StartMatchLever), nameof(StartMatchLever.triggerScript))),
+                new(OpCodes.Ldfld, typeof(StartMatchLever).GetField(nameof(StartMatchLever.triggerScript), BindingFlags.Instance | BindingFlags.Public)),
                 new(OpCodes.Ldc_I4_0),
-                new(OpCodes.Stfld, AccessTools.Field(typeof(InteractTrigger), nameof(InteractTrigger.interactable))))
+                new(OpCodes.Stfld, typeof(InteractTrigger).GetField(nameof(InteractTrigger.interactable), BindingFlags.Instance | BindingFlags.Public)))
             .MatchForward(false, matches)
             .CreateLabel(out Label readyTarget)
             .Insert(
                 new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld, AccessTools.Field(typeof(StartMatchLever), nameof(StartMatchLever.triggerScript))),
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(CheckLever))),
+                new(OpCodes.Ldfld, typeof(StartMatchLever).GetField(nameof(StartMatchLever.triggerScript), BindingFlags.Instance | BindingFlags.Public)),
+                new(OpCodes.Call, typeof(Patches).GetMethod(nameof(CheckLever), BindingFlags.Static | BindingFlags.NonPublic)),
                 new(OpCodes.Brtrue, readyTarget),
                 new(OpCodes.Ret)) // Return early to avoid tooltip being replaced with "Start game/Land ship", if bundle is not yet loaded.
             .InstructionEnumeration();
