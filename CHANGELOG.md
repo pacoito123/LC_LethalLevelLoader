@@ -5,6 +5,7 @@
 
 **<details><summary>Fixes</summary>**
 
+* Fixed scene selection patch not matching the correct IL instructions and causing issues
 * Fixed ExtendedLevel Terminal keywords for moons with spaces not being correct
 
 </details>

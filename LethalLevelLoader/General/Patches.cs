@@ -550,27 +550,28 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static IEnumerable<CodeInstruction> StartOfRoundStartGame_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             return new CodeMatcher(instructions).MatchForward(useEnd: false,
-                new(OpCodes.Ldarg_0),
                 new(OpCodes.Call, AccessTools.Method(typeof(NetworkManager), "get_NetworkManager")),
                 new(OpCodes.Callvirt, AccessTools.Method(typeof(NetworkSceneManager), "get_SceneManager")),
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldfld, AccessTools.Field(typeof(StartOfRound), nameof(StartOfRound.currentLevel))),
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(SelectableLevel), nameof(SelectableLevel.sceneName))),
                 new(OpCodes.Ldc_I4_1),
                 new(OpCodes.Callvirt, AccessTools.Method(typeof(NetworkSceneManager), nameof(NetworkSceneManager.LoadScene))),
                 new(OpCodes.Pop))
             .Insert( // Insert call to select a random scene immediately before the current scene begins to load, and after generating the seed for the current round.
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(PerformSceneSelection))))
+                new(OpCodes.Ldfld, AccessTools.Field(typeof(StartOfRound), nameof(StartOfRound.randomMapSeed))),
+                new(OpCodes.Call, AccessTools.Method(typeof(Patches), nameof(PerformSceneSelection))),
+                new(OpCodes.Ldarg_0))
             .InstructionEnumeration();
         }
 
-        private static void PerformSceneSelection()
+        private static void PerformSceneSelection(int randomMapSeed)
         {
             ExtendedLevel extendedLevel = LevelManager.CurrentExtendedLevel;
             if (!IsServer || extendedLevel == null) return;
 
             extendedLevel.SelectableLevel.sceneName = string.Empty;
-            System.Random levelRandom = new(StartOfRound.randomMapSeed);
+            System.Random levelRandom = new(randomMapSeed);
 
             int counter = 1;
             foreach (StringWithRarity sceneSelection in extendedLevel.SceneSelections)
