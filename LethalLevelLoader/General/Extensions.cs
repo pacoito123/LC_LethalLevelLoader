@@ -149,6 +149,12 @@ namespace LethalLevelLoader
             return stripSpecialCharactersRegex.Replace(input, string.Empty).Trim();
         }
 
+        public static string Truncate(this string input, int length)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+            return (input.Length <= length) ? input : input[..length];
+        }
+
         public static List<DungeonFlow> GetDungeonFlows(this RoundManager roundManager)
         {
             return roundManager.dungeonFlowTypes.Select(i => i.dungeonFlow).ToList();

@@ -6,6 +6,8 @@
 **<details><summary>Features</summary>**
 
 * Made `simulate` Terminal command default to the currently-routed moon, if no level is provided
+* Added 'All' as an available info type for the `simulate` Terminal command config, which displays both interior weights and percentages
+  * Reformatted `simulate` page to look a bit neater, too
 
 </details>
 

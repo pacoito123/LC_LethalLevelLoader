@@ -3,6 +3,7 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http.Headers;
 using Unity.Netcode;
@@ -437,7 +438,6 @@ namespace LethalLevelLoader
             return (terminalEventString);
         }
 
-
         public static string GetSimulationResultsText(ExtendedLevel extendedLevel)
         {
             List<ExtendedDungeonFlowWithRarity> availableExtendedFlowsList = new List<ExtendedDungeonFlowWithRarity>(DungeonManager.GetValidExtendedDungeonFlows(extendedLevel, true).OrderBy(o => -(o.rarity)).ToList());
@@ -446,7 +446,7 @@ namespace LethalLevelLoader
             foreach (ExtendedDungeonFlowWithRarity extendedDungeonFlowResult in availableExtendedFlowsList)
                 totalRarityPool += extendedDungeonFlowResult.rarity;
             foreach (ExtendedDungeonFlowWithRarity extendedDungeonFlowResult in availableExtendedFlowsList)
-                overrideString += "* " + extendedDungeonFlowResult.extendedDungeonFlow.DungeonName + "  //  Chance: " + GetSimulationDataText(extendedDungeonFlowResult.rarity, totalRarityPool) + "\n";
+                overrideString += "* " + extendedDungeonFlowResult.extendedDungeonFlow.DungeonName.PadRight(22).Truncate(22) + " //   " + GetSimulationDataText(extendedDungeonFlowResult.rarity, totalRarityPool) + '\n';
 
             return (overrideString);
         }
@@ -455,10 +455,12 @@ namespace LethalLevelLoader
         {
             string returnString = string.Empty;
             if (Settings.levelSimulateInfoType == SimulateInfoType.Percentage)
-                returnString = (((float)rarity / (float)totalRarity * 100).ToString("F2") + "%");
+                returnString = "Chance: " + (rarity / (float)totalRarity * 100).ToString("#0.00", CultureInfo.InvariantCulture).PadLeft(5) + '%';
             else if (Settings.levelSimulateInfoType == SimulateInfoType.Rarity)
-                returnString = (rarity + " // " + totalRarity);
-            return (returnString);
+                returnString = "Weight: " + $"{rarity}".PadLeft(4) + " / " + totalRarity;
+            else if (Settings.levelSimulateInfoType == SimulateInfoType.All)
+                returnString = "Weight: " + $"{rarity}".PadRight(5) + (rarity / (float)totalRarity * 100).ToString("\\(#0.0#", CultureInfo.InvariantCulture).PadLeft(6) + "%)";
+            return (returnString).PadLeft(5).Truncate(25);
         }
 
         public static string GetOffsetExtendedLevelName(ExtendedLevel extendedLevel)
@@ -480,7 +482,7 @@ namespace LethalLevelLoader
 
         internal static TerminalKeyword TryFindAlternativeNoun(Terminal terminal, TerminalKeyword foundKeyword, string playerInput)
         {
-            if (foundKeyword != null & terminal.hasGottenVerb == false && foundKeyword.isVerb == true)
+            if (foundKeyword != null && terminal.hasGottenVerb == false && foundKeyword.isVerb == true)
                 lastParsedVerbKeyword = foundKeyword;
 
             if (foundKeyword != null && foundKeyword.isVerb == false && terminal.hasGottenVerb == true && lastParsedVerbKeyword != null)

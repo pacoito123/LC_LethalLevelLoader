@@ -7,7 +7,7 @@ namespace LethalLevelLoader
     public enum PreviewInfoType { Price, Difficulty, Weather, History, All, None, Vanilla, Override };
     public enum SortInfoType { Price, Difficulty, Tag, LastTraveled, None }
     public enum FilterInfoType { Price, Weather, Tag, TraveledThisQuota, TraveledThisRun, None}
-    public enum SimulateInfoType { Percentage, Rarity }
+    public enum SimulateInfoType { Percentage, Rarity, All }
     public enum DebugType { User, Developer, IAmBatby, All }
 
     public static class Settings
