@@ -342,18 +342,25 @@ namespace LethalLevelLoader
         {
             string returnString = string.Empty;
 
+            int groupCounter = 0;
             foreach (ExtendedLevelGroup extendedLevelGroup in currentMoonsCataloguePage.ExtendedLevelGroups)
             {
                 string groupString = string.Empty;
                 foreach (ExtendedLevel extendedLevel in extendedLevelGroup.extendedLevelsList)
                     if (extendedLevel.IsRouteHidden == false)
-                        groupString += "* " + extendedLevel.NumberlessPlanetName + " " + GetExtendedLevelPreviewInfo(extendedLevel) + "\n";
+                    {
+                        groupString += "* " + extendedLevel.NumberlessPlanetName + ' ' + GetExtendedLevelPreviewInfo(extendedLevel) + '\n';
+                        if (++groupCounter == Settings.moonsCatalogueSplitCount)
+                        {
+                            groupString += '\n';
+                            groupCounter = 0;
+                        }
+                    }
                 if (!string.IsNullOrEmpty(groupString))
-                    returnString += groupString + "\n";
-
+                    returnString += groupString;
             }
-            if (returnString.Contains("\n"))
-                returnString.Replace(returnString.Substring(returnString.LastIndexOf("\n")), "");
+            if (returnString.Contains('\n'))
+                returnString.Replace(returnString.Substring(returnString.LastIndexOf('\n')), string.Empty);
 
             string tagString = Settings.levelPreviewFilterType.ToString().ToUpper();
             if (Settings.levelPreviewFilterType == FilterInfoType.Tag)
@@ -519,8 +526,6 @@ namespace LethalLevelLoader
             List<ExtendedLevel> currentExtendedLevelsBatch = new List<ExtendedLevel>();
             foreach (ExtendedLevel extendedLevel in new List<ExtendedLevel>(newExtendedLevels))
             {
-                if (extendedLevel.IsRouteHidden) continue;
-
                 currentExtendedLevelsBatch.Add(extendedLevel);
                 levelsAdded++;
                 counter++;
