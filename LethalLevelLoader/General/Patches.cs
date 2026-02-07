@@ -593,7 +593,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             ExtendedLevel extendedLevel = LevelManager.CurrentExtendedLevel;
             if (extendedLevel == null || extendedLevel.SelectableLevel.sceneName == sceneName) return;
 
-            if (extendedLevel.SceneSelections.Select(scene => sceneName).Contains(sceneName)) // Check if a valid scene loaded.
+            if (extendedLevel.SceneSelections.Select(scene => scene.Name).Contains(sceneName)) // Check if a valid scene loaded.
                 extendedLevel.SelectableLevel.sceneName = sceneName; // Update current level's scene name, so the round can end properly.
             else
                 DebugHelper.LogError($"Critical Failure! Scene '{sceneName}' has no selection entry for ExtendedLevel {extendedLevel.NumberlessPlanetName}!", DebugType.User);
