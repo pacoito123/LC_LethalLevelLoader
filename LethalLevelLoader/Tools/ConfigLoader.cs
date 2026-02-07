@@ -137,7 +137,7 @@ namespace LethalLevelLoader.Tools
         {
             if (extendedDungeonFlow.GenerateAutomaticConfigurationOptions == true)
             {
-                enableContentConfiguration = BindValue("Enable Content Configuration", "Enable This To Utilise Any Of The Configuration Options Below.", false);
+                enableContentConfiguration = BindValue("Enable Content Configuration", $"Enable This To Utilise Any Of The Configuration Options For '{extendedDungeonFlow.DungeonFlow.name}'", false);
 
                 subCategory = "General Settings - ";
                 enableDynamicDungeonSizeRestriction = BindValue("Enable Dynamic Dungeon Size Restriction", "Enable this to allow the following three settings to function.", extendedDungeonFlow.IsDynamicDungeonSizeRestrictionEnabled);
@@ -234,7 +234,7 @@ namespace LethalLevelLoader.Tools
             {
                 // ----- Getting ----- //
 
-                enableContentConfiguration = BindValue("Enable Content Configuration", "Enable This To Utilise Any Of The Configuration Options Below.", false);
+                enableContentConfiguration = BindValue("Enable Content Configuration", $"Enable This To Utilise Any Of The Configuration Options For '{extendedLevel.NumberlessPlanetName}'", false);
 
                 subCategory = "General Settings - ";
 

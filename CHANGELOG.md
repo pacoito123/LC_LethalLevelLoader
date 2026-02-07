@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.6.8</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed "Waiting for crew..." getting stuck being displayed to the host until landing the ship, upon clients joining the lobby
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.7</summary>**
 
 **<details><summary>Fixes</summary>**
