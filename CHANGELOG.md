@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.6.9</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed not being able to generate a Dungeon in the Editor with LethalLevelLoader enabled in the project
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.8</summary>**
 
 **<details><summary>Fixes</summary>**

@@ -606,7 +606,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                 DungeonLoader.PrepareDungeon();
             LevelManager.LogDayHistory();
 
-            if (Patches.RoundManager.dungeonGenerator.Generator.DungeonFlow == null)
+            if (RoundManager != null && (RoundManager.dungeonGenerator == null || RoundManager.dungeonGenerator.Generator?.DungeonFlow == null))
                 DebugHelper.LogError("Critical Failure! DungeonGenerator DungeonFlow Is Null!", DebugType.User);
         }
 
