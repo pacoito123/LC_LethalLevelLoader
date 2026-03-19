@@ -12,7 +12,7 @@ namespace LethalLevelLoader.Tools
 {
     internal static class ContentRestorer
     {
-        internal static List<Object> objectsToDestroy = new List<Object>();
+        internal static readonly HashSet<Object> objectsToDestroy = [];
 
         internal static void RestoreVanillaDungeonAssetReferences(ExtendedDungeonFlow extendedDungeonFlow)
         {
@@ -104,7 +104,7 @@ namespace LethalLevelLoader.Tools
                         if (reverbPreset != null && reverbPreset.name != null && audioReverbTrigger.reverbPreset.name == reverbPreset.name)
                         {
                             DebugHelper.Log("Restoring ReverbPreset: " + audioReverbTrigger.reverbPreset.name + " In AudioReverbTrigger: " + audioReverbTrigger.gameObject.name, DebugType.Developer);
-                            audioReverbTrigger.reverbPreset = RestoreAsset(audioReverbTrigger.reverbPreset, reverbPreset, debugAction: false);
+                            audioReverbTrigger.reverbPreset = RestoreAsset(audioReverbTrigger.reverbPreset, reverbPreset);
                         }
                 }
                 foreach (switchToAudio audioChange in audioReverbTrigger.audioChanges)
@@ -140,9 +140,9 @@ namespace LethalLevelLoader.Tools
             if (restoredMixerGroup != null && restoredMixer != null)
             {
                 //if (audioSource.clip != null)
-                    //DebugHelper.Log("Restoring Audio Assets On AudioSource: " + audioSource.gameObject.name + ", AudioSource contained AudioClip: " + audioSource.clip.name);
+                //DebugHelper.Log("Restoring Audio Assets On AudioSource: " + audioSource.gameObject.name + ", AudioSource contained AudioClip: " + audioSource.clip.name);
                 //else
-                    //DebugHelper.Log("Restoring Audio Assets On AudioSource: " + audioSource.gameObject.name);
+                //DebugHelper.Log("Restoring Audio Assets On AudioSource: " + audioSource.gameObject.name);
                 audioSource.outputAudioMixerGroup = restoredMixerGroup;
             }
         }
@@ -151,9 +151,10 @@ namespace LethalLevelLoader.Tools
         {
             foreach (Object objectToDestroy in objectsToDestroy)
             {
+                if (objectToDestroy == null) continue;
                 if (debugAction == true)
                     DebugHelper.Log("Destroying: " + objectToDestroy.name, DebugType.Developer);
-                UnityEngine.Object.DestroyImmediate(objectToDestroy);
+                Object.DestroyImmediate(objectToDestroy);
             }
             objectsToDestroy.Clear();
         }
@@ -176,22 +177,22 @@ namespace LethalLevelLoader.Tools
             }
         }
 
-
-        internal static T RestoreAsset<T>(UnityEngine.Object currentAsset, T newAsset, bool debugAction = false, bool destroyOnReplace = true)
+        internal static T RestoreAsset<T>(Object currentAsset, T newAsset, bool debugAction = false, bool destroyOnReplace = true) where T : Object
         {
             if (currentAsset != null && newAsset != null)
             {
-                if (debugAction == true && currentAsset.name != null)
+                if (currentAsset == newAsset)
+                    return newAsset;
+
+                if (debugAction == true)
                     DebugHelper.Log("Restoring " + currentAsset.GetType().ToString() + ": Old Asset Name: " + currentAsset.name + " , New Asset Name: ", DebugType.Developer);
 
                 if (destroyOnReplace == true)
-                    if (!objectsToDestroy.Contains(currentAsset))
-                        objectsToDestroy.Add(currentAsset);
+                    objectsToDestroy.Add(currentAsset);
             }
             else
                 DebugHelper.LogWarning("Asset Restoration Failed, Null Reference Found!", DebugType.Developer);
             return (newAsset);
         }
-
     }
 }

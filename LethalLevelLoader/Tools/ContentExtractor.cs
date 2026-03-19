@@ -40,6 +40,7 @@ namespace LethalLevelLoader
                     OriginalContent.UnlockableItems.Add(item);
 
         }
+
         internal static void TryScrapeVanillaContent(StartOfRound startOfRound, RoundManager roundManager)
         {
             if (Plugin.IsSetupComplete == false)
@@ -96,6 +97,7 @@ namespace LethalLevelLoader
                 //BAD BAD BAD
                 foreach (ReverbPreset reverbPreset in Resources.FindObjectsOfTypeAll<ReverbPreset>())
                     TryAddReference(OriginalContent.ReverbPresets, reverbPreset);
+                OriginalContent.ReverbPresets.Reverse(); // Vanilla reverb presets are at the end of the list, due to interiors loading theirs first.
 
                 OriginalContent.SelectableLevels = new List<SelectableLevel>(startOfRound.levels.ToList());
                 OriginalContent.MoonsCatalogue = new List<SelectableLevel>(TerminalManager.Terminal.moonsCatalogueList.ToList());
@@ -144,14 +146,13 @@ namespace LethalLevelLoader
                 {
                     RedLocustBees beesEnemy = enemyType.enemyPrefab.GetComponent<RedLocustBees>();
                     if (beesEnemy != null)
-                        OriginalContent.Items.Add(beesEnemy.hivePrefab.GetComponent<GrabbableObject>().itemProperties); 
+                        OriginalContent.Items.Add(beesEnemy.hivePrefab.GetComponent<GrabbableObject>().itemProperties);
                 }
             }
         }
 
         internal static void ExtractMemoryLoadedAudioMixerGroups()
         {
-
             foreach (AudioMixer audioMixer in Resources.FindObjectsOfTypeAll(typeof(AudioMixer)))
             {
                 if (!OriginalContent.AudioMixers.Contains(audioMixer))
