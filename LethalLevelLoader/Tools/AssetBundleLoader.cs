@@ -710,7 +710,7 @@ namespace LethalLevelLoader
             HashSet<string> registeredPrefabs = new HashSet<string>();
             HashSet<string> restoredPrefabs = new HashSet<string>();
 
-            foreach (SpawnSyncedObject spawnSyncedObject in extendedDungeonFlow.DungeonFlow.GetSpawnSyncedObjects())
+            foreach (SpawnSyncedObject spawnSyncedObject in extendedDungeonFlow.DungeonFlow.GetSpawnSyncedObjects(extendedDungeonFlow.AllTiles))
             {
                 if (spawnSyncedObject == null || spawnSyncedObject.spawnPrefab == null || registeredPrefabs.Contains(spawnSyncedObject.spawnPrefab.name))
                     continue;

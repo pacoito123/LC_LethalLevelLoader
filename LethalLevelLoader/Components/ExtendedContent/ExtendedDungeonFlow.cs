@@ -1,4 +1,5 @@
-﻿using DunGen.Graph;
+﻿using DunGen;
+using DunGen.Graph;
 using GameNetcodeStuff;
 using System;
 using System.Collections;
@@ -52,7 +53,8 @@ namespace LethalLevelLoader
         [field: SerializeField] public float OverrideCameraMaxDistance = 400;
 
 
-        [field: Space(10)][field: Header("Misc. Settings")]
+        [field: Space(10)]
+        [field: Header("Misc. Settings")]
         [field: SerializeField] public bool GenerateAutomaticConfigurationOptions { get; set; } = true;
 
         [Space(25)]
@@ -78,6 +80,16 @@ namespace LethalLevelLoader
         public int DungeonID { get; internal set; }
         public bool IsCurrentDungeon => (DungeonManager.CurrentExtendedDungeonFlow == this);
         [HideInInspector] public DungeonEvents DungeonEvents { get; internal set; } = new DungeonEvents();
+
+        [HideInInspector]
+        public Tile[] AllTiles
+        {
+            get
+            {
+                field ??= [.. DungeonFlow.GetTiles()];
+                return field;
+            }
+        }
 
         internal static ExtendedDungeonFlow Create(DungeonFlow newDungeonFlow, AudioClip newFirstTimeDungeonAudio)
         {
@@ -140,7 +152,7 @@ namespace LethalLevelLoader
                 DungeonName = dungeonDisplayName;
                 dungeonDisplayName = string.Empty;
             }
-            if (FirstTimeDungeonAudio == null &&  dungeonFirstTimeAudio != null)
+            if (FirstTimeDungeonAudio == null && dungeonFirstTimeAudio != null)
             {
                 DebugHelper.LogWarning("ExtendedDungeonFlow.dungeonFirstTimeAudio is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.FirstTimeDungeonAudio instead.", DebugType.Developer);
                 FirstTimeDungeonAudio = dungeonFirstTimeAudio;
@@ -177,7 +189,7 @@ namespace LethalLevelLoader
     public class GlobalPropCountOverride
     {
         public int globalPropID;
-        [Range(0,1)] public float globalPropCountScaleRate = 0;
+        [Range(0, 1)] public float globalPropCountScaleRate = 0;
     }
 
     [System.Serializable]

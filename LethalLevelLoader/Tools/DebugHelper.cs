@@ -475,7 +475,7 @@ namespace LethalLevelLoader
         public static void DebugExtendedDungeonSpawnSyncedObjects(ExtendedDungeonFlow extendedDungeonFlow)
         {
             string debugString = "Logging All SpawnSyncedObjects In DungeonFlow: " + extendedDungeonFlow.DungeonName + "\n";
-            foreach (SpawnSyncedObject spawnSyncedObject in extendedDungeonFlow.DungeonFlow.GetSpawnSyncedObjects())
+            foreach (SpawnSyncedObject spawnSyncedObject in extendedDungeonFlow.DungeonFlow.GetSpawnSyncedObjects(extendedDungeonFlow.AllTiles))
                 debugString += spawnSyncedObject.gameObject.name + " | " + spawnSyncedObject.spawnPrefab.gameObject.name + "\n";
             DebugHelper.Log(debugString, DebugType.Developer);
         }
@@ -483,7 +483,7 @@ namespace LethalLevelLoader
         public static void DebugExtendedDungeonFlowRandomMapObjects(ExtendedDungeonFlow extendedDungeonFlow)
         {
             string debugString = "Logging All RandomMapObjects In DungeonFlow: " + extendedDungeonFlow.DungeonName + "\n";
-            foreach (RandomMapObject randomMapObjectObject in extendedDungeonFlow.DungeonFlow.GetRandomMapObjects())
+            foreach (RandomMapObject randomMapObjectObject in extendedDungeonFlow.DungeonFlow.GetRandomMapObjects(extendedDungeonFlow.AllTiles))
                 debugString += randomMapObjectObject.gameObject.name + " | " + randomMapObjectObject.spawnablePrefabs[0].gameObject.name + "\n";
             DebugHelper.Log(debugString, DebugType.Developer);
         }

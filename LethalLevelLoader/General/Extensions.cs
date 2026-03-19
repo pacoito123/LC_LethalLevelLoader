@@ -14,79 +14,90 @@ namespace LethalLevelLoader
         private static readonly Regex skipToLetterRegex = new Regex(@"(^[^\p{L}]+)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
         private static readonly Regex stripSpecialCharactersRegex = new Regex(@"([^\p{L}\d\s])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-        public static List<Tile> GetTiles(this DungeonFlow dungeonFlow)
+        public static IEnumerable<Tile> GetTiles(this DungeonFlow dungeonFlow)
         {
-            List<Tile> tilesList = new List<Tile>();
+            HashSet<Tile> tilesList = new HashSet<Tile>();
+            HashSet<TileSet> tileSetsList = new HashSet<TileSet>();
 
             foreach (GraphNode dungeonNode in dungeonFlow.Nodes)
-                foreach (TileSet dungeonTileSet in dungeonNode.TileSets)
-                    if (dungeonTileSet != null)
-                        tilesList.AddRange(GetTilesInTileSet(dungeonTileSet));
+                foreach (TileSet dungeonTileSet in dungeonNode?.TileSets)
+                    if (dungeonTileSet != null && tileSetsList.Add(dungeonTileSet))
+                        tilesList.UnionWith(GetTilesInTileSet(dungeonTileSet));
 
             foreach (TileInjectionRule tileInjectionRule in dungeonFlow.TileInjectionRules)
-                tilesList.AddRange(GetTilesInTileSet(tileInjectionRule.TileSet));
+                if (tileInjectionRule?.TileSet != null && tileSetsList.Add(tileInjectionRule.TileSet))
+                    tilesList.UnionWith(GetTilesInTileSet(tileInjectionRule.TileSet));
 
             foreach (GraphLine dungeonLine in dungeonFlow.Lines)
-                foreach (DungeonArchetype dungeonArchetype in dungeonLine.DungeonArchetypes)
+                foreach (DungeonArchetype dungeonArchetype in dungeonLine?.DungeonArchetypes)
                 {
-                    foreach (TileSet dungeonTileSet in dungeonArchetype.BranchCapTileSets)
-                        tilesList.AddRange(GetTilesInTileSet(dungeonTileSet));
+                    HashSet<TileSet> archetypeTileSets = [.. dungeonArchetype.TileSets];
+                    archetypeTileSets.UnionWith(dungeonArchetype.BranchCapTileSets);
 
-                    foreach (TileSet dungeonTileSet in dungeonArchetype.TileSets)
-                        tilesList.AddRange(GetTilesInTileSet(dungeonTileSet));
+                    foreach (TileSet dungeonTileSet in archetypeTileSets)
+                        if (dungeonTileSet != null && tileSetsList.Add(dungeonTileSet))
+                            tilesList.UnionWith(GetTilesInTileSet(dungeonTileSet));
                 }
 
-            foreach (Tile tile in new List<Tile>(tilesList))
-                if (tile == null)
-                    tilesList.Remove(tile);
-
             return (tilesList);
         }
 
-        public static List<Tile> GetTilesInTileSet(TileSet tileSet)
+        public static IEnumerable<Tile> GetTilesInTileSet(this TileSet tileSet)
         {
-            List<Tile> tilesList = new List<Tile>();
+            HashSet<Tile> tilesList = new HashSet<Tile>();
+
             if (tileSet.TileWeights != null && tileSet.TileWeights.Weights != null)
                 foreach (GameObjectChance dungeonTileWeight in tileSet.TileWeights.Weights)
-                    foreach (Tile dungeonTile in dungeonTileWeight.Value.GetComponentsInChildren<Tile>())
-                        tilesList.Add(dungeonTile);
+                    if (dungeonTileWeight != null && dungeonTileWeight.Value != null)
+                    {
+                        Tile tile = dungeonTileWeight.Value.GetComponentInChildren<Tile>(includeInactive: false);
+                        if (tile != null)
+                            tilesList.Add(tile);
+                    }
+
             return (tilesList);
         }
 
-        public static List<RandomMapObject> GetRandomMapObjects(this DungeonFlow dungeonFlow)
+        public static IEnumerable<RandomMapObject> GetRandomMapObjects(this DungeonFlow dungeonFlow)
+        {
+            return dungeonFlow.GetRandomMapObjects(dungeonFlow.GetTiles());
+        }
+
+        public static IEnumerable<RandomMapObject> GetRandomMapObjects(this DungeonFlow _, IEnumerable<Tile> allTiles)
         {
             List<RandomMapObject> returnList = new List<RandomMapObject>();
 
-            foreach (Tile dungeonTile in dungeonFlow.GetTiles())
-                foreach (RandomMapObject randomMapObject in dungeonTile.gameObject.GetComponentsInChildren<RandomMapObject>())
-                    returnList.Add(randomMapObject);
+            List<RandomMapObject> tileRandomMapObjects = new List<RandomMapObject>();
+            foreach (Tile dungeonTile in allTiles)
+            {
+                dungeonTile.GetComponentsInChildren(includeInactive: true, tileRandomMapObjects);
+                returnList.AddRange(tileRandomMapObjects);
+            }
 
             return (returnList);
         }
 
-        public static List<SpawnSyncedObject> GetSpawnSyncedObjects(this DungeonFlow dungeonFlow)
+        public static IEnumerable<SpawnSyncedObject> GetSpawnSyncedObjects(this DungeonFlow dungeonFlow)
         {
-            List<SpawnSyncedObject> returnList = new List<SpawnSyncedObject>();
+            return dungeonFlow.GetSpawnSyncedObjects(dungeonFlow.GetTiles());
+        }
 
-            foreach (Tile dungeonTile in dungeonFlow.GetTiles())
+        public static IEnumerable<SpawnSyncedObject> GetSpawnSyncedObjects(this DungeonFlow _, IEnumerable<Tile> allTiles)
+        {
+            HashSet<SpawnSyncedObject> returnList = new HashSet<SpawnSyncedObject>();
+
+            foreach (Tile dungeonTile in allTiles)
             {
                 foreach (Doorway dungeonDoorway in dungeonTile.gameObject.GetComponentsInChildren<Doorway>())
                 {
                     foreach (GameObjectWeight doorwayTileWeight in dungeonDoorway.ConnectorPrefabWeights)
-                        foreach (SpawnSyncedObject spawnSyncedObject in doorwayTileWeight.GameObject.GetComponentsInChildren<SpawnSyncedObject>())
-                            if (!returnList.Contains(spawnSyncedObject))
-                                returnList.Add(spawnSyncedObject);
-
+                        returnList.UnionWith(doorwayTileWeight.GameObject.GetComponentsInChildren<SpawnSyncedObject>());
                     foreach (GameObjectWeight doorwayTileWeight in dungeonDoorway.BlockerPrefabWeights)
-                        foreach (SpawnSyncedObject spawnSyncedObject in doorwayTileWeight.GameObject.GetComponentsInChildren<SpawnSyncedObject>())
-                            if (!returnList.Contains(spawnSyncedObject))
-                                returnList.Add(spawnSyncedObject);
+                        returnList.UnionWith(doorwayTileWeight.GameObject.GetComponentsInChildren<SpawnSyncedObject>());
                 }
-
-                foreach (SpawnSyncedObject spawnSyncedObject in dungeonTile.gameObject.GetComponentsInChildren<SpawnSyncedObject>())
-                    if (!returnList.Contains(spawnSyncedObject))
-                        returnList.Add(spawnSyncedObject);
+                returnList.UnionWith(dungeonTile.gameObject.GetComponentsInChildren<SpawnSyncedObject>());
             }
+
             return (returnList);
         }
 

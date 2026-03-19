@@ -23,28 +23,43 @@ namespace LethalLevelLoader.Tools
             }
             if (extendedDungeonFlow.DungeonFlow == null)
             {
-                DebugHelper.LogError("Tried To Restore Null Vanilla ExtendedDungeonFlow " + extendedDungeonFlow.DungeonName +  " But DungeonFlow Was Null! Returning!", DebugType.User);
+                DebugHelper.LogError("Tried To Restore Null Vanilla ExtendedDungeonFlow " + extendedDungeonFlow.DungeonName + " But DungeonFlow Was Null! Returning!", DebugType.User);
                 return;
             }
 
-            foreach (Tile tile in extendedDungeonFlow.DungeonFlow.GetTiles())
+            List<RandomScrapSpawn> tileScrapSpawns = [];
+            foreach (Tile tile in extendedDungeonFlow.AllTiles)
             {
-                foreach (RandomScrapSpawn randomScrapSpawn in tile.gameObject.GetComponentsInChildren<RandomScrapSpawn>())
-                    foreach (ItemGroup vanillaItemGroup in OriginalContent.ItemGroups)
+                tile.GetComponentsInChildren(includeInactive: true, tileScrapSpawns);
+                foreach (RandomScrapSpawn randomScrapSpawn in tileScrapSpawns)
+                {
+                    if (randomScrapSpawn.spawnableItems != null && randomScrapSpawn.spawnableItems.name != null)
+                    {
+                        ItemGroup vanillaItemGroup = OriginalContent.ItemGroups.Find(itemGroup => itemGroup.name == randomScrapSpawn.spawnableItems.name);
                         if (vanillaItemGroup != null)
-                            if (randomScrapSpawn.spawnableItems != null && randomScrapSpawn.spawnableItems.name != null)
-                                if (vanillaItemGroup.name != null && randomScrapSpawn.spawnableItems.name == vanillaItemGroup.name)
-                                    randomScrapSpawn.spawnableItems = RestoreAsset(randomScrapSpawn.spawnableItems, vanillaItemGroup, destroyOnReplace: false);
-            }
-            foreach (RandomMapObject randomMapObject in extendedDungeonFlow.DungeonFlow.GetRandomMapObjects())
-            {
-                foreach (GameObject spawnablePrefab in new List<GameObject>(randomMapObject.spawnablePrefabs))
-                    foreach (GameObject vanillaPrefab in OriginalContent.SpawnableMapObjects)
-                        if (vanillaPrefab != null && spawnablePrefab != null && spawnablePrefab.name != null &&  vanillaPrefab.name != null && spawnablePrefab.name == vanillaPrefab.name)
-                            randomMapObject.spawnablePrefabs[randomMapObject.spawnablePrefabs.IndexOf(spawnablePrefab)] = RestoreAsset(randomMapObject.spawnablePrefabs[randomMapObject.spawnablePrefabs.IndexOf(spawnablePrefab)], vanillaPrefab, destroyOnReplace: false);
-            }
-            foreach (Tile tile in extendedDungeonFlow.DungeonFlow.GetTiles())
+                            randomScrapSpawn.spawnableItems = RestoreAsset(randomScrapSpawn.spawnableItems, vanillaItemGroup, destroyOnReplace: false);
+                    }
+                }
                 RestoreAudioAssetReferencesInParent(tile.gameObject);
+            }
+
+            foreach (RandomMapObject randomMapObject in extendedDungeonFlow.DungeonFlow.GetRandomMapObjects(extendedDungeonFlow.AllTiles))
+            {
+                for (int i = 0; i < randomMapObject.spawnablePrefabs?.Count; i++)
+                {
+                    GameObject spawnablePrefab = randomMapObject.spawnablePrefabs[i];
+                    if (spawnablePrefab == null)
+                    {
+                        DebugHelper.LogWarning("Map Object Restoration Warning: " + randomMapObject.gameObject.name + " Has Missing RandomMapObject", DebugType.Developer);
+                        randomMapObject.spawnablePrefabs.RemoveAt(i--);
+                        continue;
+                    }
+
+                    GameObject vanillaPrefab = OriginalContent.SpawnableMapObjects.Find(prefab => prefab != null && prefab.name == spawnablePrefab.name);
+                    if (vanillaPrefab != null)
+                        randomMapObject.spawnablePrefabs[i] = RestoreAsset(spawnablePrefab, vanillaPrefab, destroyOnReplace: false);
+                }
+            }
         }
 
         internal static void RestoreVanillaLevelAssetReferences(ExtendedLevel extendedLevel)
