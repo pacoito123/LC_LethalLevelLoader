@@ -47,11 +47,14 @@ namespace LethalLevelLoader.Tools
                 newConfig.BindConfigs(extendedLevel);
             }
 
-            if (debugLevelsString.Contains(", ") && debugLevelsString.LastIndexOf(", ") == (debugLevelsString.Length - 2))
+            configFile.SaveOnConfigSet = true;
+            configFile.Save();
+
+            /* if (debugLevelsString.Contains(", ") && debugLevelsString.LastIndexOf(", ") == (debugLevelsString.Length - 2))
                 debugLevelsString = debugLevelsString.Remove(debugLevelsString.LastIndexOf(", "), 2);
 
             if (debugDungeonsString.Contains(", ") && debugDungeonsString.LastIndexOf(", ") == (debugDungeonsString.Length - 2))
-                debugDungeonsString = debugDungeonsString.Remove(debugDungeonsString.LastIndexOf(", "), 2);
+                debugDungeonsString = debugDungeonsString.Remove(debugDungeonsString.LastIndexOf(", "), 2); */
 
             debugLevelsString = string.Empty;
             debugDungeonsString = string.Empty;
@@ -59,7 +62,7 @@ namespace LethalLevelLoader.Tools
 
         internal static void BindGeneralConfigs()
         {
-            configFile = new ConfigFile(Path.Combine(Paths.ConfigPath, "LethalLevelLoader.cfg"), false);
+            configFile = new ConfigFile(Path.Combine(Paths.ConfigPath, "LethalLevelLoader.cfg"), false) { SaveOnConfigSet = false };
 
             GeneralSettingsConfig newGeneralSettingsConfig = new GeneralSettingsConfig(configFile, " - LethalLevelLoader Settings -", 5);
             newGeneralSettingsConfig.BindConfigs();

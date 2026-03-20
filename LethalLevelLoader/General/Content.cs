@@ -327,19 +327,18 @@ namespace LethalLevelLoader
             TryAdd(UniqueIdentifiersDictionary, extendedContent.UniqueIdentificationName, extendedContent);
         }
 
-        internal static bool TryAdd<T1,T2>(Dictionary<T1, T2> dict, T1 key, T2 value)
+        internal static bool TryAdd<T1, T2>(Dictionary<T1, T2> dict, T1 key, T2 value) where T2 : ExtendedContent
         {
-            if (!dict.ContainsKey(key))
+            if (dict.TryAdd(key, value))
             {
-                dict.Add(key, value);
                 return (true);
             }
             else
             {
-                DebugHelper.LogError("Could not add " + key.ToString() + " to dictionary.", DebugType.Developer);
+                if (value.ExtendedMod != VanillaMod)
+                    DebugHelper.LogError("Could not add " + key.ToString() + " to dictionary.", DebugType.Developer);
                 return (false);
             }
-
         }
 
         public static bool TryGetExtendedContent(SelectableLevel selectableLevel, out ExtendedLevel extendedLevel)
@@ -387,7 +386,7 @@ namespace LethalLevelLoader
         public static RoundManager RoundManager => Patches.RoundManager;
         public static Terminal Terminal => Patches.Terminal;
         public static TimeOfDay TimeOfDay => Patches.TimeOfDay;
-        
+
         //Levels
 
         public static List<SelectableLevel> SelectableLevels { get; internal set; } = new List<SelectableLevel>();

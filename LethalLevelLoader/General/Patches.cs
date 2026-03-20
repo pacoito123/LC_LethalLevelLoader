@@ -595,7 +595,7 @@ if (AssetBundleLoader.noBundlesFound == true)
 
             if (extendedLevel.SceneSelections.Select(scene => scene.Name).Contains(sceneName)) // Check if a valid scene loaded.
                 extendedLevel.SelectableLevel.sceneName = sceneName; // Update current level's scene name, so the round can end properly.
-            else
+            else if (sceneName != "SampleSceneRelay")
                 DebugHelper.LogError($"Critical Failure! Scene '{sceneName}' has no selection entry for ExtendedLevel {extendedLevel.NumberlessPlanetName}!", DebugType.User);
         }
 
