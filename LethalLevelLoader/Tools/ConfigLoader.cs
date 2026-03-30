@@ -1,11 +1,7 @@
 ﻿using BepInEx.Configuration;
 using BepInEx;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Linq;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace LethalLevelLoader.Tools

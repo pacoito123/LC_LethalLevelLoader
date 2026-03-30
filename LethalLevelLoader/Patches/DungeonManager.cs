@@ -29,11 +29,7 @@ namespace LethalLevelLoader
             foreach (ExtendedDungeonFlow extendedDungeonFlow in PatchedContent.CustomExtendedDungeonFlows)
             {
                 extendedDungeonFlow.DungeonID = Patches.RoundManager.dungeonFlowTypes.Length;
-                IndoorMapType newIndoorMapType = new IndoorMapType();
-                newIndoorMapType.dungeonFlow = extendedDungeonFlow.DungeonFlow;
-                newIndoorMapType.MapTileSize = extendedDungeonFlow.MapTileSize;
-                if (extendedDungeonFlow.FirstTimeDungeonAudio != null)
-                    newIndoorMapType.firstTimeAudio = extendedDungeonFlow.FirstTimeDungeonAudio;
+                IndoorMapType newIndoorMapType = new IndoorMapType(extendedDungeonFlow.DungeonFlow, extendedDungeonFlow.MapTileSize, extendedDungeonFlow.FirstTimeDungeonAudio);
                 Patches.RoundManager.dungeonFlowTypes = Patches.RoundManager.dungeonFlowTypes.AddItem(newIndoorMapType).ToArray();
                 if (extendedDungeonFlow.FirstTimeDungeonAudio != null)
                     Patches.RoundManager.firstTimeDungeonAudios = Patches.RoundManager.firstTimeDungeonAudios.AddItem(extendedDungeonFlow.FirstTimeDungeonAudio).ToArray();
@@ -97,7 +93,7 @@ namespace LethalLevelLoader
         internal static void RefreshDungeonFlowIDs()
         {
             //DebugHelper.Log("Re-Adjusting DungeonFlowTypes Array For Late Arriving Vanilla DungeonFlow", DebugType.User);
-            
+
             List<DungeonFlow> cachedDungeonFlowTypes = new List<DungeonFlow>();
             List<IndoorMapType> indoorMapTypes = new List<IndoorMapType>();
             foreach (ExtendedDungeonFlow vanillaDungeonFlow in PatchedContent.VanillaExtendedDungeonFlows)
@@ -113,9 +109,7 @@ namespace LethalLevelLoader
 
             foreach (DungeonFlow dungeonFlow in cachedDungeonFlowTypes)
             {
-                IndoorMapType newIndoorMapType = new IndoorMapType();
-                newIndoorMapType.dungeonFlow = dungeonFlow;
-                newIndoorMapType.MapTileSize = 1f;
+                IndoorMapType newIndoorMapType = new IndoorMapType(dungeonFlow, 1f, null);
                 indoorMapTypes.Add(newIndoorMapType);
             }
             Patches.RoundManager.dungeonFlowTypes = indoorMapTypes.ToArray();

@@ -1,4 +1,5 @@
 ﻿using DunGen;
+using DunGen.Adapters;
 using GameNetcodeStuff;
 using HarmonyLib;
 using LethalLevelLoader.Compatibility;
@@ -542,9 +543,42 @@ if (AssetBundleLoader.noBundlesFound == true)
             if (currentLevel == null || currentLevel.IsLevelLoaded == false || currentLevel.ContentType is ContentType.External) return;
             foreach (GameObject rootObject in SceneManager.GetSceneByName(currentLevel.SelectableLevel.sceneName).GetRootGameObjects())
                 ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
-            LevelLoader.RefreshShipAnimatorClips(currentLevel);
+            /* LevelLoader.RefreshShipAnimatorClips(currentLevel);
             LevelLoader.RefreshWeatherEffects(currentLevel);
-            LevelLoader.RefreshTimeOfDayMusic(currentLevel);
+            LevelLoader.RefreshTimeOfDayMusic(currentLevel); */
+        }
+
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), HarmonyPrefix, HarmonyPriority(priority)]
+        internal static void GenerateNewLevelClientRpc_Prefix(RoundManager __instance)
+        {
+            // Don't run on the server.
+            if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Send)
+            {
+                return;
+            }
+
+            RestoreRuntimeDungeon();
+        }
+
+        private static void RestoreRuntimeDungeon()
+        {
+            GameObject dungeonGeneratorContainer = GameObject.FindGameObjectWithTag("DungeonGenerator");
+            if (!dungeonGeneratorContainer.TryGetComponent(out RuntimeDungeon _))
+            {
+                RuntimeDungeon dungeon = dungeonGeneratorContainer.AddComponent<RuntimeDungeon>();
+                UnityNavMeshAdapter navMeshAdapter = dungeon.gameObject.AddComponent<UnityNavMeshAdapter>();
+
+                Transform dungeonGeneratorRoot = dungeon.transform.GetParent().GetChild(1);
+                if (dungeonGeneratorRoot == null) return; // Messed with LevelGeneration hierarchy -> Cooked...
+                dungeon.Root = dungeonGeneratorRoot.gameObject;
+
+                navMeshAdapter.BakeMode = UnityNavMeshAdapter.RuntimeNavMeshBakeMode.FullDungeonBake;
+                navMeshAdapter.LayerMask = LayerMask.GetMask("Default", "Room", "Colliders", "NavigationSurface"); // 35072
+
+                DungeonGenerator dungeonGenerator = dungeon.Generator;
+                dungeonGenerator.AllowTilePooling = true; // Yippee!
+                dungeonGenerator.GenerateAsynchronously = true;
+            }
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.StartGame)), HarmonyTranspiler, HarmonyPriority(priority)]
@@ -749,7 +783,17 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static void PlayerControllerBGetCurrentMaterialStandingOn_Postfix(PlayerControllerB __instance)
         {
             if (LevelLoader.TryGetFootstepSurface(__instance.hit.collider, out FootstepSurface footstepSurface))
-                __instance.currentFootstepSurfaceIndex = StartOfRound.footstepSurfaces.IndexOf(footstepSurface);
+            {
+                for (int i = 0; i < StartOfRound.footstepSurfaces.Length; i++)
+                {
+                    FootstepSurface surface = StartOfRound.footstepSurfaces[i];
+                    if (surface != null && surface == footstepSurface)
+                    {
+                        __instance.currentFootstepSurfaceIndex = i;
+                        break;
+                    }
+                }
+            }
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnClientConnect)), HarmonyPostfix, HarmonyPriority(priority)]

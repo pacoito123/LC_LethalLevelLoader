@@ -75,11 +75,7 @@ namespace LethalLevelLoader
             }
             else if (returnRarity > 0)
             {
-                SpawnableEnemyWithRarity newSpawnableEnemy = new SpawnableEnemyWithRarity
-                {
-                    enemyType = extendedEnemy.EnemyType,
-                    rarity = returnRarity
-                };
+                SpawnableEnemyWithRarity newSpawnableEnemy = new SpawnableEnemyWithRarity(extendedEnemy.EnemyType, returnRarity);
                 enemyPool.Add(newSpawnableEnemy);
                 if (debugResults == true)
                     debugString = "Added " + spawnableEnemyType + " ExtendedEnemyType: " + extendedEnemy.EnemyType.enemyName + " To Moon: " + extendedLevel.NumberlessPlanetName + " With A Rarity Of: " + returnRarity;
@@ -128,9 +124,7 @@ namespace LethalLevelLoader
             {
                 foreach (ExtendedEnemyType customEnemyType in PatchedContent.CustomExtendedEnemyTypes)
                 {
-                    SpawnableEnemyWithRarity spawnableEnemyWithRarity = new SpawnableEnemyWithRarity();
-                    spawnableEnemyWithRarity.enemyType = customEnemyType.EnemyType;
-                    spawnableEnemyWithRarity.rarity = 300;
+                    SpawnableEnemyWithRarity spawnableEnemyWithRarity = new SpawnableEnemyWithRarity(customEnemyType.EnemyType, 300);
                     quickMenuManager.testAllEnemiesLevel.Enemies.Add(spawnableEnemyWithRarity);
                     quickMenuManager.testAllEnemiesLevel.OutsideEnemies.Add(spawnableEnemyWithRarity);
                     quickMenuManager.testAllEnemiesLevel.DaytimeEnemies.Add(spawnableEnemyWithRarity);

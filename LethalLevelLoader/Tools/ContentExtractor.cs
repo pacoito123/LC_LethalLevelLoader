@@ -187,8 +187,8 @@ namespace LethalLevelLoader
             foreach (SpawnableEnemyWithRarity enemyWithRarity in selectableLevel.DaytimeEnemies)
                 TryAddReference(OriginalContent.Enemies, enemyWithRarity.enemyType);
 
-            foreach (SpawnableMapObject spawnableMapObject in selectableLevel.spawnableMapObjects)
-                TryAddReference(OriginalContent.SpawnableMapObjects, spawnableMapObject.prefabToSpawn);
+            foreach (IndoorMapHazard indoorMapHazard in selectableLevel.indoorMapHazards)
+                TryAddReference(OriginalContent.IndoorMapHazards, indoorMapHazard.hazardType);
 
             foreach (SpawnableOutsideObjectWithRarity spawnableOutsideObject in selectableLevel.spawnableOutsideObjects)
                 TryAddReference(OriginalContent.SpawnableOutsideObjects, spawnableOutsideObject.spawnableObject);

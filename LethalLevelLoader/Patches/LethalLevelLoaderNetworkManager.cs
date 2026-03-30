@@ -134,8 +134,7 @@ namespace LethalLevelLoader
             }    
             for (int i = 0; i < dungeonFlowNames.Length; i++)
             {
-                IntWithRarity intWithRarity = new IntWithRarity();
-                intWithRarity.Add(dungeonFlowIds[dungeonFlowNames[i].SomeText], rarities[i]);
+                IntWithRarity intWithRarity = new IntWithRarity(dungeonFlowIds[dungeonFlowNames[i].SomeText], rarities[i], null);
                 dungeonFlowsList.Add(intWithRarity);
             }
             cachedDungeonFlowsList = new List<IntWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.ToList());

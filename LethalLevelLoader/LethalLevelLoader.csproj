@@ -2,33 +2,33 @@
 
   <PropertyGroup>
 
-      <TargetFramework>netstandard2.1</TargetFramework>
-      <AssemblyName>LethalLevelLoader</AssemblyName>
-      <Description>A Custom API to support the manual and dynamic integration of custom levels and dungeons in Lethal Company.</Description>
-      <Version>1.6.8</Version>
-      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-      <LangVersion>preview</LangVersion>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>LethalLevelLoader</AssemblyName>
+    <Description>A Custom API to support the manual and dynamic integration of custom levels and dungeons in Lethal Company.</Description>
+    <Version>1.6.8</Version>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>preview</LangVersion>
 
-      <PackageId>IAmBatby.$(AssemblyName)</PackageId>
-      <PackageReadmeFile>README.md</PackageReadmeFile>
-      <IsPackable>true</IsPackable>
+    <PackageId>IAmBatby.$(AssemblyName)</PackageId>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
 
-      <RootNamespace>$(AssemblyName)</RootNamespace>
-      <PackageIcon>icon.png</PackageIcon>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <PackageIcon>icon.png</PackageIcon>
 
-      <PackageLicenseExpression>MIT</PackageLicenseExpression>
-      <RepositoryUrl>https://github.com/IAmBatby/LethalLevelLoader/</RepositoryUrl>
-      <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
-      <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/IAmBatby/LethalLevelLoader/</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
 
-      <DebugSymbols>true</DebugSymbols>
-      <DebugType>embedded</DebugType>
-      <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
 
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-      <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,7 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="Evaisa.LethalLib" Version="1.1.1" PrivateAssets="all" />
-    <PackageReference Include="TeamXiaolan.DawnLib" Version="0.5.*" PrivateAssets="all" />
+    <PackageReference Include="TeamXiaolan.DawnLib" Version="0.8.*" PrivateAssets="all" />
     <PackageReference Include="MinVer" Version="4.*" PrivateAssets="all" Private="false" />
   </ItemGroup>
 
@@ -64,7 +64,67 @@
 
   <ItemGroup>
     <PackageReference Include="MaxWasUnavailable.LethalModDataLib" Version="1.2.2" PrivateAssets="all" />
-    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="73.0.0-ngd.0" PrivateAssets="all" Publicize="true" />
+    <!-- <PackageReference Include="LethalCompany.GameLibs.Steam" Version="73.0.0-ngd.0" PrivateAssets="all" Publicize="true" /> -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <PrivateAssets>all</PrivateAssets>
+      <Publicize>true</Publicize>
+      <HintPath>managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <PrivateAssets>all</PrivateAssets>
+      <Publicize>true</Publicize>
+      <HintPath>managed\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="DunGen">
+      <PrivateAssets>all</PrivateAssets>
+      <Publicize>true</Publicize>
+      <HintPath>managed\DunGen.dll</HintPath>
+    </Reference>
+    <Reference Include="DunGen.Integration.UnityNav">
+      <PrivateAssets>all</PrivateAssets>
+      <Publicize>true</Publicize>
+      <HintPath>managed\DunGen.Integration.UnityNav.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.AI.Navigation">
+      <PrivateAssets>all</PrivateAssets>
+      <HintPath>managed\Unity.AI.Navigation.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <PrivateAssets>all</PrivateAssets>
+      <HintPath>managed\Unity.InputSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Netcode.Runtime">
+      <PrivateAssets>all</PrivateAssets>
+      <Publicize>true</Publicize>
+      <HintPath>managed\Unity.Netcode.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.ProBuilder">
+      <PrivateAssets>all</PrivateAssets>
+      <HintPath>managed\Unity.ProBuilder.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.HighDefinition.Runtime">
+      <PrivateAssets>all</PrivateAssets>
+      <HintPath>managed\Unity.RenderPipelines.HighDefinition.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <PrivateAssets>all</PrivateAssets>
+      <HintPath>managed\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <PrivateAssets>all</PrivateAssets>
+      <HintPath>managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <PrivateAssets>all</PrivateAssets>
+      <HintPath>managed\UnityEngine.InputModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <PrivateAssets>all</PrivateAssets>
+      <HintPath>managed\UnityEngine.UI.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <!-- <ItemGroup>
@@ -87,10 +147,10 @@
   </PropertyGroup>
 
   <Target Name="SetPluginVersion" BeforeTargets="AddGeneratedFile" DependsOnTargets="MinVer">
-      <PropertyGroup>
-          <PlainVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</PlainVersion>
-          <BepInExPluginVersion>$(PlainVersion)</BepInExPluginVersion>
-      </PropertyGroup>
+    <PropertyGroup>
+      <PlainVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</PlainVersion>
+      <BepInExPluginVersion>$(PlainVersion)</BepInExPluginVersion>
+    </PropertyGroup>
   </Target>
 
   <Target Name="SaveVersionAndNameToFiles" DependsOnTargets="SetPluginVersion">
@@ -106,17 +166,17 @@
 
   </Target>
 
-      <!-- thunderstore publish -->
+  <!-- thunderstore publish -->
   <Target Name="PublishThunderstore" DependsOnTargets="SetPluginVersion;SaveVersionAndNameToFiles">
-      <Exec Command="dotnet tcli publish --config-path &quot;$(ProjectDir)../assets/thunderstore.toml&quot; --file &quot;$(ProjectDir)dist/*-$(MinVerVersion).zip&quot;" />
+    <Exec Command="dotnet tcli publish --config-path &quot;$(ProjectDir)../assets/thunderstore.toml&quot; --file &quot;$(ProjectDir)dist/*-$(MinVerVersion).zip&quot;" />
   </Target>
 
-    <!-- zipping the .dll alone for curseforge release -->
+  <!-- zipping the .dll alone for curseforge release -->
   <Target Name="ZipCurseForge" AfterTargets="PackThunderstore">
     <MakeDir Directories="$(ProjectDir)dist/output/" Condition="!Exists('$(ProjectDir)dist/output/')" />
     <Copy SourceFiles="$(ProjectDir)bin/Release/netstandard2.1/$(AssemblyName).dll" DestinationFiles="$(ProjectDir)dist/output/$(AssemblyName).dll" />
 
     <ZipDirectory SourceDirectory="$(ProjectDir)dist/output/" DestinationFile="$(ProjectDir)dist/curseforge.zip" Overwrite="true" />
   </Target>
-  
+
 </Project>

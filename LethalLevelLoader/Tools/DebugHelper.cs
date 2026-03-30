@@ -183,7 +183,7 @@ namespace LethalLevelLoader
 
             Log("Obtained (" + OriginalContent.SpawnableOutsideObjects.Count + " / 11) Vanilla Outside Object References", DebugType.Developer);
 
-            Log("Obtained (" + OriginalContent.SpawnableMapObjects.Count + " / 2) Vanilla Inside Object References", DebugType.Developer);
+            Log("Obtained (" + OriginalContent.IndoorMapHazards.Count + " / 3) Vanilla Inside Object References", DebugType.Developer);
 
             Log("Obtained (" + OriginalContent.AudioMixers.Count + " / 2) Vanilla Audio Mixer References", DebugType.Developer);
 

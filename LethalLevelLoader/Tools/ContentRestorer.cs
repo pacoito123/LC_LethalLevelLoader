@@ -55,9 +55,9 @@ namespace LethalLevelLoader.Tools
                         continue;
                     }
 
-                    GameObject vanillaPrefab = OriginalContent.SpawnableMapObjects.Find(prefab => prefab != null && prefab.name == spawnablePrefab.name);
-                    if (vanillaPrefab != null)
-                        randomMapObject.spawnablePrefabs[i] = RestoreAsset(spawnablePrefab, vanillaPrefab, destroyOnReplace: false);
+                    IndoorMapHazardType vanillaHazardType = OriginalContent.IndoorMapHazards.Find(hazardType => hazardType != null && hazardType.prefabToSpawn != null && hazardType.prefabToSpawn.name == spawnablePrefab.name);
+                    if (vanillaHazardType != null)
+                        randomMapObject.spawnablePrefabs[i] = RestoreAsset(spawnablePrefab, vanillaHazardType.prefabToSpawn, destroyOnReplace: false);
                 }
             }
         }
@@ -79,10 +79,33 @@ namespace LethalLevelLoader.Tools
                     if (enemyRarityPair.enemyType != null && !string.IsNullOrEmpty(enemyRarityPair.enemyType.name) && enemyRarityPair.enemyType.name == vanillaEnemyType.name)
                         enemyRarityPair.enemyType = RestoreAsset(enemyRarityPair.enemyType, vanillaEnemyType);
 
-            foreach (SpawnableMapObject spawnableMapObject in extendedLevel.SelectableLevel.spawnableMapObjects)
-                foreach (GameObject vanillaSpawnableMapObject in OriginalContent.SpawnableMapObjects)
-                    if (spawnableMapObject.prefabToSpawn != null && spawnableMapObject.prefabToSpawn.name == vanillaSpawnableMapObject.name)
-                        spawnableMapObject.prefabToSpawn = RestoreAsset(spawnableMapObject.prefabToSpawn, vanillaSpawnableMapObject);
+            if (extendedLevel.SelectableLevel.indoorMapHazards == null || extendedLevel.SelectableLevel.indoorMapHazards.Length == 0) // Pre-v80
+            {
+                List<IndoorMapHazard> mapHazards = new(extendedLevel.SelectableLevel.spawnableMapObjects.Length);
+                foreach (SpawnableMapObject spawnableMapObject in extendedLevel.SelectableLevel.spawnableMapObjects)
+                    foreach (IndoorMapHazardType vanillaHazardType in OriginalContent.IndoorMapHazards)
+                        if (spawnableMapObject.prefabToSpawn != null && vanillaHazardType != null && vanillaHazardType.prefabToSpawn != null
+                            && spawnableMapObject.prefabToSpawn.name == vanillaHazardType.prefabToSpawn.name)
+                        {
+                            IndoorMapHazard indoorMapHazard = new()
+                            {
+                                hazardType = vanillaHazardType,
+                                numberToSpawn = spawnableMapObject.numberToSpawn
+                            };
+                            mapHazards.Add(indoorMapHazard);
+                        }
+                extendedLevel.SelectableLevel.indoorMapHazards = [.. mapHazards];
+            }
+            else
+            {
+                foreach (IndoorMapHazard indoorMapHazard in extendedLevel.SelectableLevel.indoorMapHazards)
+                    foreach (IndoorMapHazardType vanillaHazardType in OriginalContent.IndoorMapHazards)
+                        if (indoorMapHazard.hazardType != null && vanillaHazardType != null && indoorMapHazard.hazardType.name == vanillaHazardType.name)
+                        {
+                            indoorMapHazard.hazardType = vanillaHazardType;
+                            break;
+                        }
+            }
 
             foreach (SpawnableOutsideObjectWithRarity spawnableOutsideObject in extendedLevel.SelectableLevel.spawnableOutsideObjects)
                 foreach (SpawnableOutsideObject vanillaSpawnableOutsideObject in OriginalContent.SpawnableOutsideObjects)

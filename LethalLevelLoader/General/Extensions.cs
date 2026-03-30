@@ -111,20 +111,16 @@ namespace LethalLevelLoader
         {
             if (terminalKeyword.compatibleNouns == null)
                 terminalKeyword.compatibleNouns = new CompatibleNoun[0];
-            CompatibleNoun newCompataibleNoun = new CompatibleNoun();
-            newCompataibleNoun.noun = newNoun;
-            newCompataibleNoun.result = newResult;
-            terminalKeyword.compatibleNouns = terminalKeyword.compatibleNouns.AddItem(newCompataibleNoun).ToArray();
+            CompatibleNoun newCompatibleNoun = new CompatibleNoun(newNoun, newResult);
+            terminalKeyword.compatibleNouns = terminalKeyword.compatibleNouns.AddItem(newCompatibleNoun).ToArray();
         }
 
         public static void AddCompatibleNoun(this TerminalNode terminalNode, TerminalKeyword newNoun, TerminalNode newResult)
         {
             if (terminalNode.terminalOptions == null)
                 terminalNode.terminalOptions = new CompatibleNoun[0];
-            CompatibleNoun newCompataibleNoun = new CompatibleNoun();
-            newCompataibleNoun.noun = newNoun;
-            newCompataibleNoun.result = newResult;
-            terminalNode.terminalOptions = terminalNode.terminalOptions.AddItem(newCompataibleNoun).ToArray();
+            CompatibleNoun newCompatibleNoun = new CompatibleNoun(newNoun, newResult);
+            terminalNode.terminalOptions = terminalNode.terminalOptions.AddItem(newCompatibleNoun).ToArray();
         }
 
         public static void Add(this IntWithRarity intWithRarity, int id, int rarity)

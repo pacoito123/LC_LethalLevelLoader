@@ -42,11 +42,7 @@ namespace LethalLevelLoader
                     }
                     else if (returnRarity > 0)
                     {
-                        SpawnableItemWithRarity newSpawnableItem = new SpawnableItemWithRarity
-                        {
-                            spawnableItem = extendedItem.Item,
-                            rarity = returnRarity
-                        };
+                        SpawnableItemWithRarity newSpawnableItem = new SpawnableItemWithRarity(extendedItem.Item, returnRarity);
                         extendedLevel.SelectableLevel.spawnableScrap.Add(newSpawnableItem);
                         if (debugResults == true)
                             debugString = "Added " + extendedItem.Item.itemName + " To Moon: " + extendedLevel.NumberlessPlanetName + " With A Rarity Of: " + returnRarity;

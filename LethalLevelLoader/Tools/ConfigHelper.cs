@@ -72,11 +72,7 @@ namespace LethalLevelLoader
                     if (matched)
                     {
                         // DebugHelper.Log("Vanilla Enemy Name: " + SanitizeString(item.itemName) + " , Parsed Item Name: " + SanitizeString(stringWithRarity.Name), DebugType.Developer);
-                        returnList.Add(new SpawnableEnemyWithRarity()
-                        {
-                            enemyType = enemyType,
-                            rarity = stringWithRarity.Rarity
-                        });
+                        returnList.Add(new SpawnableEnemyWithRarity(enemyType, stringWithRarity.Rarity));
                         break;
                     }
                 }
@@ -98,11 +94,7 @@ namespace LethalLevelLoader
                     if (stringWithRarity.Name.ContainsSanitized(item.itemName, bothWays: true))
                     {
                         // DebugHelper.Log("Vanilla Item Name: " + SanitizeString(item.itemName) + " , Parsed Item Name: " + SanitizeString(stringWithRarity.Name), DebugType.Developer);
-                        returnList.Add(new SpawnableItemWithRarity()
-                        {
-                            spawnableItem = item,
-                            rarity = stringWithRarity.Rarity
-                        });
+                        returnList.Add(new SpawnableItemWithRarity(item, stringWithRarity.Rarity));
                         break;
                     }
                 }

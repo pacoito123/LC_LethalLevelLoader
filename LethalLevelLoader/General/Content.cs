@@ -415,7 +415,7 @@ namespace LethalLevelLoader
 
         public static List<SpawnableOutsideObject> SpawnableOutsideObjects { get; internal set; } = new List<SpawnableOutsideObject>();
 
-        public static List<GameObject> SpawnableMapObjects { get; internal set; } = new List<GameObject>();
+        public static List<IndoorMapHazardType> IndoorMapHazards { get; internal set; } = new List<IndoorMapHazardType>();
 
         //Audio
 
