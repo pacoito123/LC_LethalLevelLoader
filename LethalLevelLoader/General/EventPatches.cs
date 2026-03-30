@@ -4,6 +4,7 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -210,11 +211,17 @@ namespace LethalLevelLoader
         [HarmonyPrefix]
         internal static void EntranceTeleportTeleportPlayerServerRpc_Prefix(EntranceTeleport __instance, int playerObj)
         {
-            if (__instance.IsHost == false) return;
+            // Only run on the player calling the ServerRpc.
+            if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Send)
+            {
+                return;
+            }
+
+            PlayerControllerB player = Patches.StartOfRound.allPlayerScripts[playerObj];
+            if (player == null || !player.IsOwner) return;
 
             if (DungeonManager.CurrentExtendedDungeonFlow != null)
             {
-                PlayerControllerB player = Patches.StartOfRound.allPlayerScripts[playerObj];
                 if (__instance.isEntranceToBuilding == true)
                 {
                     DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onPlayerEnterDungeon.Invoke((__instance, player));
@@ -229,12 +236,10 @@ namespace LethalLevelLoader
 
             if (LevelManager.CurrentExtendedLevel != null)
             {
-                PlayerControllerB player = Patches.StartOfRound.allPlayerScripts[playerObj];
                 if (__instance.isEntranceToBuilding == true)
                 {
                     LevelManager.CurrentExtendedLevel.LevelEvents.onPlayerEnterDungeon.Invoke((__instance, player));
                     LevelManager.GlobalLevelEvents.onPlayerEnterDungeon.Invoke((__instance, player));
-
                 }
                 else
                 {
@@ -272,7 +277,7 @@ namespace LethalLevelLoader
             if (previousDayMode == DayMode.None || previousDayMode != __result)
             {
                 LevelManager.CurrentExtendedLevel.LevelEvents.onDayModeToggle.Invoke(__result);
-                LevelManager.GlobalLevelEvents.onDayModeToggle.Invoke (__result);
+                LevelManager.GlobalLevelEvents.onDayModeToggle.Invoke(__result);
             }
 
             previousDayMode = __result;

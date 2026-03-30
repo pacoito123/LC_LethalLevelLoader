@@ -8,6 +8,7 @@
 * Fixed not being able to generate a Dungeon in the Editor with LethalLevelLoader enabled in the project
 * Fixed custom interior ReverbPresets taking priority over vanilla ones, if they shared the same name
   * They are also no longer destroyed if they _don't_ have a vanilla name
+* Fixed `onPlayerEnterDungeon` only being called for the host, and twice.
 
 </details>
 
