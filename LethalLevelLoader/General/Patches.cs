@@ -551,7 +551,7 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static void GenerateNewLevelClientRpc_Prefix(RoundManager __instance)
         {
             // Don't run on the server.
-            if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Send)
+            if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
             {
                 return;
             }
@@ -748,6 +748,7 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static void RoundManagerSpawnMapObjects_Prefix(SelectableLevel ___currentLevel)
         {
             temporaryIndoorMapHazards.UnionWith(DungeonManager.CurrentExtendedDungeonFlow.IndoorMapHazards);
+            ___currentLevel.indoorMapHazards ??= [];
             ___currentLevel.indoorMapHazards = [.. ___currentLevel.indoorMapHazards, .. temporaryIndoorMapHazards];
         }
 

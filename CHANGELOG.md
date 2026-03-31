@@ -3,6 +3,13 @@
 
 **<details><summary>Version 1.6.9</summary>**
 
+**<details><summary>General</summary>**
+
+* Updated mod for Lethal Company version 80
+  * **NOTE:** Interiors that have not been explicitly rebundled for v80 will _not_ be able to load, but moons and other stuff should be fine for the most part
+
+</details>
+
 **<details><summary>Fixes</summary>**
 
 * Fixed not being able to generate a Dungeon in the Editor with LethalLevelLoader enabled in the project
