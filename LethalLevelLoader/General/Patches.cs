@@ -4,7 +4,6 @@ using GameNetcodeStuff;
 using HarmonyLib;
 using LethalLevelLoader.Compatibility;
 using LethalLevelLoader.Tools;
-using MonoMod.Cil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -744,27 +743,19 @@ if (AssetBundleLoader.noBundlesFound == true)
                 }
         }
 
-        static List<SpawnableMapObject> temporarySpawnableMapObjectList = new List<SpawnableMapObject>();
-        [HarmonyPatch(typeof(RoundManager), "SpawnMapObjects"), HarmonyPrefix, HarmonyPriority(priority)]
-        internal static void RoundManagerSpawnMapObjects_Prefix()
+        private static readonly HashSet<IndoorMapHazard> temporaryIndoorMapHazards = [];
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnMapObjects)), HarmonyPrefix, HarmonyPriority(priority)]
+        internal static void RoundManagerSpawnMapObjects_Prefix(SelectableLevel ___currentLevel)
         {
-            List<SpawnableMapObject> spawnableMapObjects = new List<SpawnableMapObject>(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableMapObjects);
-            foreach (SpawnableMapObject newRandomMapObject in DungeonManager.CurrentExtendedDungeonFlow.SpawnableMapObjects)
-            {
-                spawnableMapObjects.Add(newRandomMapObject);
-                temporarySpawnableMapObjectList.Add(newRandomMapObject);
-            }
-            LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableMapObjects = spawnableMapObjects.ToArray();
+            temporaryIndoorMapHazards.UnionWith(DungeonManager.CurrentExtendedDungeonFlow.IndoorMapHazards);
+            ___currentLevel.indoorMapHazards = [.. ___currentLevel.indoorMapHazards, .. temporaryIndoorMapHazards];
         }
 
-        [HarmonyPatch(typeof(RoundManager), "SpawnMapObjects"), HarmonyPostfix, HarmonyPriority(priority)]
-        internal static void RoundManagerSpawnMapObjects_Postfix()
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnMapObjects)), HarmonyPostfix, HarmonyPriority(priority)]
+        internal static void RoundManagerSpawnMapObjects_Postfix(SelectableLevel ___currentLevel)
         {
-            List<SpawnableMapObject> spawnableMapObjects = new List<SpawnableMapObject>(LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableMapObjects);
-            foreach (SpawnableMapObject spawnableMapObject in temporarySpawnableMapObjectList)
-                spawnableMapObjects.Remove(spawnableMapObject);
-            LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableMapObjects = spawnableMapObjects.ToArray();
-            temporarySpawnableMapObjectList.Clear();
+            ___currentLevel.indoorMapHazards = Array.FindAll(___currentLevel.indoorMapHazards, mapHazard => !temporaryIndoorMapHazards.Contains(mapHazard));
+            temporaryIndoorMapHazards.Clear();
         }
 
         [HarmonyPatch(typeof(RoundManager), "GeneratedFloorPostProcessing"), HarmonyPrefix, HarmonyPriority(priority)]
@@ -858,8 +849,8 @@ if (AssetBundleLoader.noBundlesFound == true)
             return true;
         }
 
-        //DunGen Optimization Patches (Credit To LadyRaphtalia, Author Of Scarlet Devil Mansion)
-        [HarmonyPatch(typeof(DoorwayPairFinder), "GetDoorwayPairs"), HarmonyPrefix, HarmonyPriority(priority)]
+        /* //DunGen Optimization Patches (Credit To LadyRaphtalia, Author Of Scarlet Devil Mansion)
+        [HarmonyPatch(typeof(DoorwayPairFinder), "GetDoorwayPairs"), HarmonyPrefix, HarmonyPriority(priority)] // TODO: Check if still needed
         public static bool GetDoorwayPairsPatch(ref DoorwayPairFinder __instance, int? maxCount, ref Queue<DoorwayPair> __result)
         {
 
@@ -893,47 +884,33 @@ if (AssetBundleLoader.noBundlesFound == true)
         private static IEnumerable<DoorwayPair> OrderDoorwayPairs(IEnumerable<DoorwayPair> list, int num)
         {
             return list.OrderBy(x => x, new DoorwayPairComparer()).Take(num);
-        }
+        } */
 
-        //IL Hook stuff to replace Mold related save data references to a Level's ID to instead the Level's Name. Credit to Hamunii.
-        private static readonly HookHelper.DisposableHookCollection monomodHooks = new();
-        internal static void InitMonoModHooks()
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.LoadPlanetsMoldSpreadData))]
+        [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.ResetSavedGameValues))]
+        [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.SaveGameValues))]
+        [HarmonyPatch(typeof(MoldSpreadManager), nameof(MoldSpreadManager.Start)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> MoldSaveData_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            monomodHooks.ILHook<GameNetworkManager>(nameof(GameNetworkManager.SaveGameValues), ReplaceSavedMoldLevelIDsWithLevelNames_ILHook);
-            monomodHooks.ILHook<GameNetworkManager>(nameof(GameNetworkManager.ResetSavedGameValues), ReplaceSavedMoldLevelIDsWithLevelNames_ILHook);
-            monomodHooks.ILHook<StartOfRound>(nameof(StartOfRound.LoadPlanetsMoldSpreadData), ReplaceSavedMoldLevelIDsWithLevelNames_ILHook);
-            monomodHooks.ILHook<MoldSpreadManager>(nameof(MoldSpreadManager.Start), ReplaceSavedMoldLevelIDsWithLevelNames_ILHook);
-        }
+            MethodInfo gameObjectGetter = typeof(GameObject).GetProperty(nameof(GameObject.gameObject), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            MethodInfo objectNameGetter = typeof(UnityEngine.Object).GetProperty(nameof(UnityEngine.Object.name), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            FieldInfo levelIDInfo = typeof(SelectableLevel).GetField(nameof(SelectableLevel.levelID), BindingFlags.Instance | BindingFlags.Public);
 
-        private static void ReplaceSavedMoldLevelIDsWithLevelNames_ILHook(ILContext il)
-        {
-            int dbgModificationsAmount = 0;
-            string dbgMatchedStr = "";
-
-            ILCursor c = new(il);
-            while (
-                c.TryGotoNext(MoveType.After,
-                    x => x.MatchLdstr(out dbgMatchedStr) && dbgMatchedStr.Contains("Mold"), // The save file key, e.g. "Level{0}Mold"
-                    x => true   // game has various ways of referencing StartOfRound, listed here purely for reference:
-                        || x.MatchLdloc(out _)                                                  // via local variable
-                        || x.MatchLdarg(0)                                                      // via 'this'
-                        || x.MatchCall<StartOfRound>("get_" + nameof(StartOfRound.Instance)),   // via StartOfRound.Instance
-                    x => x.MatchLdfld<StartOfRound>(nameof(StartOfRound.levels)),
-                    x => x.MatchLdloc(out _),
-                    x => x.MatchLdelemRef(),
-                    x => x.MatchLdfld<SelectableLevel>(nameof(SelectableLevel.levelID)),
-                    x => x.MatchBox<Int32>()
-                )
-            )
-            {
-                c.Index -= 2;
-                c.RemoveRange(2);
-                c.EmitDelegate<Func<SelectableLevel, object>>(selectableLevel =>
-                    { return selectableLevel.name; }
-                );
-                dbgModificationsAmount++;
-            }
-            DebugHelper.Log($"Modified {dbgModificationsAmount} save data level IDs to level names", DebugType.Developer);
+            return new CodeMatcher(instructions).MatchForward(useEnd: true,
+                new CodeMatch(OpCodes.Ldstr))
+            .Repeat(matcher =>
+                {
+                    string saveKey = $"{matcher.Operand}";
+                    if (saveKey.StartsWith("Level{0}"))
+                    {
+                        matcher.SearchForward(ci => ci.Is(OpCodes.Ldfld, levelIDInfo)) // Skip to `SelectableLevel.levelID`.
+                            .SetAndAdvance(OpCodes.Callvirt, gameObjectGetter)
+                            .SetAndAdvance(OpCodes.Callvirt, objectNameGetter);
+                        return;
+                    }
+                    matcher.Advance(1);
+                })
+            .InstructionEnumeration();
         }
     }
 }

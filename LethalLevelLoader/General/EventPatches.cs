@@ -326,7 +326,17 @@ namespace LethalLevelLoader
         public virtual int Listeners => listeners.Count;
         private List<Action> listeners = new List<Action>();
 
-        public void Invoke() { onEvent?.Invoke(); }
+        public void Invoke()
+        {
+            try
+            {
+                onEvent?.Invoke();
+            }
+            catch (Exception e) // Got a TypeLoadException on something calling this that broke everything...
+            {
+                DebugHelper.LogWarning(e.Message, DebugType.User);
+            }
+        }
 
         public void AddListener(Action listener)
         {

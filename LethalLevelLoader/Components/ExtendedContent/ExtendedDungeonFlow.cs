@@ -2,13 +2,9 @@
 using DunGen.Graph;
 using GameNetcodeStuff;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using static LethalLevelLoader.DungeonEvents;
 
 namespace LethalLevelLoader
 {
@@ -33,7 +29,7 @@ namespace LethalLevelLoader
         public bool OverrideTilePlacementBounds => (OverrideRestrictedTilePlacementBounds.sqrMagnitude > 1f);
 
         [field: SerializeField] public GameObject OverrideKeyPrefab { get; set; }
-        [field: SerializeField] public List<SpawnableMapObject> SpawnableMapObjects { get; set; } = new List<SpawnableMapObject>();
+        [field: SerializeField] public List<IndoorMapHazard> IndoorMapHazards { get; set; } = new List<IndoorMapHazard>();
         [field: SerializeField] public List<GlobalPropCountOverride> GlobalPropCountOverridesList { get; set; } = new List<GlobalPropCountOverride>();
 
         [field: Space(5)]
@@ -75,6 +71,7 @@ namespace LethalLevelLoader
         [Obsolete] public List<StringWithRarity> manualPlanetNameReferenceList = new List<StringWithRarity>();
         [Obsolete] public List<StringWithRarity> manualContentSourceNameReferenceList = new List<StringWithRarity>();
         [Obsolete][HideInInspector] public int dungeonDefaultRarity;
+        [Obsolete][HideInInspector][field: SerializeField] public List<SpawnableMapObject> SpawnableMapObjects { get; set; } = new List<SpawnableMapObject>();
 
         // HideInInspector
         public int DungeonID { get; internal set; }
@@ -100,6 +97,11 @@ namespace LethalLevelLoader
             if (newExtendedDungeonFlow.LevelMatchingProperties == null)
                 newExtendedDungeonFlow.LevelMatchingProperties = LevelMatchingProperties.Create(newExtendedDungeonFlow);
             return (newExtendedDungeonFlow);
+        }
+
+        internal void Reset()
+        {
+            ConvertObsoleteValues();
         }
 
         internal void Initialize()
@@ -182,6 +184,26 @@ namespace LethalLevelLoader
                 DebugHelper.LogWarning("ExtendedDungeonFlow.generateAutomaticConfigurationOptions Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.GenerateAutomaticConfigurationOptions instead.", DebugType.Developer);
                 GenerateAutomaticConfigurationOptions = generateAutomaticConfigurationOptions;
             }
+            foreach (SpawnableMapObject spawnableMapObject in SpawnableMapObjects)
+            {
+                IndoorMapHazardType mapHazardType = CreateInstance<IndoorMapHazardType>();
+                mapHazardType.prefabToSpawn = spawnableMapObject.prefabToSpawn;
+                mapHazardType.spawnFacingAwayFromWall = spawnableMapObject.spawnFacingAwayFromWall;
+                mapHazardType.spawnFacingWall = spawnableMapObject.spawnFacingWall;
+                mapHazardType.spawnWithBackToWall = spawnableMapObject.spawnWithBackToWall;
+                mapHazardType.spawnWithBackFlushAgainstWall = spawnableMapObject.spawnWithBackFlushAgainstWall;
+                mapHazardType.requireDistanceBetweenSpawns = spawnableMapObject.requireDistanceBetweenSpawns;
+                mapHazardType.disallowSpawningNearEntrances = spawnableMapObject.disallowSpawningNearEntrances;
+
+                IndoorMapHazard mapHazard = new()
+                {
+                    hazardType = mapHazardType,
+                    numberToSpawn = spawnableMapObject.numberToSpawn
+                };
+                IndoorMapHazards.Add(mapHazard);
+            }
+            if (Application.isEditor)
+                SpawnableMapObjects.Clear();
         }
     }
 

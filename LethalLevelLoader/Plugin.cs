@@ -54,7 +54,6 @@ namespace LethalLevelLoader
             TrySoftPatch(LethalLib.Plugin.ModGUID, typeof(LethalLibPatches));
 
             NetworkScenePatcher.Patch();
-            Patches.InitMonoModHooks();
 
             // Allow using NetworkVariables with bool types:
             NetworkVariableSerializationTypes.InitializeSerializer_UnmanagedByMemcpy<bool>();

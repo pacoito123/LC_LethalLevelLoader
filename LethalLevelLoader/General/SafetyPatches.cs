@@ -22,9 +22,9 @@ namespace LethalLevelLoader
             }*/
         }
 
-        static List<SpawnableMapObject> temporarySpawnableMapObjectList = new List<SpawnableMapObject>();
+        // static List<SpawnableMapObject> temporarySpawnableMapObjectList = new List<SpawnableMapObject>();
 
-        [HarmonyPriority(harmonyPriority)]
+        /* [HarmonyPriority(harmonyPriority)]
         [HarmonyPatch(typeof(RoundManager), "SpawnMapObjects")]
         [HarmonyPrefix]
         internal static bool RoundManagerSpawnMapObjects_Prefix()
@@ -68,9 +68,9 @@ namespace LethalLevelLoader
             LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableMapObjects = spawnableMapObjects.ToArray();
 
             return (true);
-        }
+        } */
 
-        [HarmonyPriority(harmonyPriority)]
+        /* [HarmonyPriority(harmonyPriority)]
         [HarmonyPatch(typeof(RoundManager), "SpawnMapObjects")]
         [HarmonyPostfix]
         internal static void RoundManagerSpawnMapObjects_Postfix()
@@ -80,7 +80,7 @@ namespace LethalLevelLoader
                 spawnableMapObjects.Remove(spawnableMapObject);
             LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableMapObjects = spawnableMapObjects.ToArray();
             temporarySpawnableMapObjectList.Clear();
-        }
+        } */
 
         [HarmonyPriority(harmonyPriority)]
         [HarmonyPatch(typeof(TimeOfDay), "SetWeatherBasedOnVariables")]
