@@ -561,22 +561,49 @@ if (AssetBundleLoader.noBundlesFound == true)
 
         private static void RestoreRuntimeDungeon()
         {
-            GameObject dungeonGeneratorContainer = GameObject.FindGameObjectWithTag("DungeonGenerator");
-            if (!dungeonGeneratorContainer.TryGetComponent(out RuntimeDungeon _))
+            GameObject dungeonGenerator = GameObject.FindGameObjectWithTag("DungeonGenerator");
+            if (dungeonGenerator == null)
             {
-                RuntimeDungeon dungeon = dungeonGeneratorContainer.AddComponent<RuntimeDungeon>();
-                UnityNavMeshAdapter navMeshAdapter = dungeon.gameObject.AddComponent<UnityNavMeshAdapter>();
+                DebugHelper.LogFatal("Could not find a GameObject with a DungeonGenerator tag in the current moon!", DebugType.User);
+                return;
+            }
 
-                Transform dungeonGeneratorRoot = dungeon.transform.GetParent().GetChild(1);
-                if (dungeonGeneratorRoot == null) return; // Messed with LevelGeneration hierarchy -> Cooked...
-                dungeon.Root = dungeonGeneratorRoot.gameObject;
+            Transform levelGenerationContainer = dungeonGenerator.transform.GetParent();
+            if (!dungeonGenerator.TryGetComponent(out RuntimeDungeon _))
+            {
+                DebugHelper.LogWarning("RuntimeDungeon component missing! Creating a replacement to allow landing...", DebugType.User);
+
+                RuntimeDungeon dungeon = dungeonGenerator.AddComponent<RuntimeDungeon>();
+                UnityNavMeshAdapter navMeshAdapter = dungeonGenerator.AddComponent<UnityNavMeshAdapter>();
+
+                for (int i = 0; i < levelGenerationContainer.childCount; i++)
+                {
+                    // Try to find LevelGenerationRoot in the hierarchy.
+                    if (levelGenerationContainer.GetChild(i).name.Contains("Root", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        dungeon.Root = levelGenerationContainer.GetChild(i).gameObject;
+                        break;
+                    }
+                }
+
+                if (dungeon.Root == null)
+                {
+                    DebugHelper.LogWarning("Could not locate LevelGenerationRoot GameObject, creating one as well...", DebugType.User);
+
+                    Transform newDungeonRoot = new GameObject("LevelGenerationRoot").transform;
+                    newDungeonRoot.SetParent(levelGenerationContainer, worldPositionStays: false);
+                    newDungeonRoot.localPosition = new(12, -218, 12);
+
+                    dungeon.Root = newDungeonRoot.gameObject;
+                }
 
                 navMeshAdapter.BakeMode = UnityNavMeshAdapter.RuntimeNavMeshBakeMode.FullDungeonBake;
                 navMeshAdapter.LayerMask = LayerMask.GetMask("Default", "Room", "Colliders", "NavigationSurface"); // 35072
 
-                DungeonGenerator dungeonGenerator = dungeon.Generator;
-                dungeonGenerator.AllowTilePooling = true; // Yippee!
-                dungeonGenerator.GenerateAsynchronously = true;
+                dungeon.Generator.AllowTilePooling = true; // Yippee!
+                dungeon.Generator.GenerateAsynchronously = true;
+
+                DebugHelper.Log("RuntimeDungeon created, proceeding as usual!", DebugType.User);
             }
         }
 
@@ -629,7 +656,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             if (extendedLevel.SceneSelections.Select(scene => scene.Name).Contains(sceneName)) // Check if a valid scene loaded.
                 extendedLevel.SelectableLevel.sceneName = sceneName; // Update current level's scene name, so the round can end properly.
             else if (sceneName != "SampleSceneRelay")
-                DebugHelper.LogError($"Critical Failure! Scene '{sceneName}' has no selection entry for ExtendedLevel {extendedLevel.NumberlessPlanetName}!", DebugType.User);
+                DebugHelper.LogFatal($"Critical Failure! Scene '{sceneName}' has no selection entry for ExtendedLevel {extendedLevel.NumberlessPlanetName}!", DebugType.User);
         }
 
         [HarmonyPatch(typeof(DungeonGenerator), "Generate"), HarmonyPrefix, HarmonyPriority(priority)]
@@ -640,7 +667,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             LevelManager.LogDayHistory();
 
             if (RoundManager != null && (RoundManager.dungeonGenerator == null || RoundManager.dungeonGenerator.Generator?.DungeonFlow == null))
-                DebugHelper.LogError("Critical Failure! DungeonGenerator DungeonFlow Is Null!", DebugType.User);
+                DebugHelper.LogFatal("Critical Failure! DungeonGenerator DungeonFlow Is Null!", DebugType.User);
         }
 
         //Base game has a bug where it stops listening before it gets the Complete call, so this is just a fixed version of the base game function.

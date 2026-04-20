@@ -6,13 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.SceneManagement;
 using Random = System.Random;
-using Log = UnityEngine.Debug;
 
 namespace LethalLevelLoader
 {
@@ -67,6 +63,29 @@ namespace LethalLevelLoader
                     Plugin.logger.LogError(exception);
                 else
                     UnityEngine.Debug.LogError("LethalLevelLoader Fallback Logger: " + exception);
+            }
+        }
+
+        public static void LogFatal(string log, DebugType debugType)
+        {
+            if (!string.IsNullOrEmpty(log) && (int)Settings.debugType >= (int)debugType)
+            {
+                string logString = log;
+                if (Plugin.logger != null)
+                    Plugin.logger.LogFatal(logString);
+                else
+                    UnityEngine.Debug.LogError("(FATAL!) LethalLevelLoader Fallback Logger: " + logString);
+            }
+        }
+
+        public static void LogFatal(Exception exception, DebugType debugType)
+        {
+            if (exception != null && (int)Settings.debugType >= (int)debugType)
+            {
+                if (Plugin.logger != null)
+                    Plugin.logger.LogFatal(exception);
+                else
+                    UnityEngine.Debug.LogError("(FATAL!) LethalLevelLoader Fallback Logger: " + exception);
             }
         }
 
@@ -672,7 +691,7 @@ namespace LethalLevelLoader
             debugString = "Cached Level Material-Collider Data" + "\n\n";
 
             foreach (KeyValuePair<string, List<Collider>> kvp in LevelLoader.cachedLevelMaterialColliderDictionary)
-                debugString += "\n" + kvp.Key+ " (" + kvp.Value.Count + ")";
+                debugString += "\n" + kvp.Key + " (" + kvp.Value.Count + ")";
 
             DebugHelper.Log(debugString, DebugType.User);
 
@@ -699,7 +718,8 @@ namespace LethalLevelLoader
 
         class CodeInstructionFormatter
         {
-            public CodeInstructionFormatter(int instructionCount) {
+            public CodeInstructionFormatter(int instructionCount)
+            {
                 _instructionIndexPadLength = instructionCount.ToString().Length;
             }
 
