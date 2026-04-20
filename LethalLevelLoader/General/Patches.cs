@@ -542,19 +542,16 @@ if (AssetBundleLoader.noBundlesFound == true)
             if (currentLevel == null || currentLevel.IsLevelLoaded == false || currentLevel.ContentType is ContentType.External) return;
             foreach (GameObject rootObject in SceneManager.GetSceneByName(currentLevel.SelectableLevel.sceneName).GetRootGameObjects())
                 ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
-            /* LevelLoader.RefreshShipAnimatorClips(currentLevel);
+            LevelLoader.RefreshShipAnimatorClips(currentLevel);
             LevelLoader.RefreshWeatherEffects(currentLevel);
-            LevelLoader.RefreshTimeOfDayMusic(currentLevel); */
+            LevelLoader.RefreshTimeOfDayMusic(currentLevel);
         }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static void GenerateNewLevelClientRpc_Prefix(RoundManager __instance)
         {
             // Don't run on the server.
-            if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute)
-            {
-                return;
-            }
+            if (__instance.__rpc_exec_stage is not NetworkBehaviour.__RpcExecStage.Execute) return;
 
             RestoreRuntimeDungeon();
         }
@@ -670,21 +667,23 @@ if (AssetBundleLoader.noBundlesFound == true)
                 DebugHelper.LogFatal("Critical Failure! DungeonGenerator DungeonFlow Is Null!", DebugType.User);
         }
 
-        //Base game has a bug where it stops listening before it gets the Complete call, so this is just a fixed version of the base game function.
-        [HarmonyPatch(typeof(RoundManager), "Generator_OnGenerationStatusChanged"), HarmonyPrefix, HarmonyPriority(priority)]
-        internal static bool OnGenerationStatusChanged_Prefix(RoundManager __instance, GenerationStatus status)
+        // Base game has a bug where it stops listening before it gets the Complete call, so this just fixes the base game function.
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.Generator_OnGenerationStatusChanged)), HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> OnGenerationStatusChanged_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            if (status == GenerationStatus.Complete && !__instance.dungeonCompletedGenerating)
-            {
-                __instance.FinishGeneratingLevel();
-                __instance.dungeonGenerator.Generator.OnGenerationStatusChanged -= __instance.Generator_OnGenerationStatusChanged;
-                Debug.Log("Dungeon has finished generating on this client after multiple frames");
-            }
-            return (false);
+            CodeMatcher matcher = new CodeMatcher(instructions).MatchForward(useEnd: true, new CodeMatch(OpCodes.Bne_Un));
+            if (matcher.IsInvalid) return instructions;
+            object jumpEnd = matcher.Operand; // Copy instruction to jump to.
+
+            matcher.MatchForward(useEnd: false, new CodeMatch(OpCodes.Brtrue));
+            if (matcher.IsInvalid) return instructions;
+            matcher.Operand = jumpEnd; // Set instruction to jump to.
+
+            return matcher.InstructionEnumeration();
         }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> GenerateNewLevelClientRpcTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> GenerateNewLevelClientRpc_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             return new CodeMatcher(instructions).End()
             .MatchBack(useEnd: true,
@@ -695,7 +694,7 @@ if (AssetBundleLoader.noBundlesFound == true)
         }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewFloor)), HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> GenerateNewFloorTranspiler(IEnumerable<CodeInstruction> instructions)
+        public static IEnumerable<CodeInstruction> GenerateNewFloor_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             return new CodeMatcher(instructions).End()
             .MatchBack(useEnd: true,
@@ -724,30 +723,39 @@ if (AssetBundleLoader.noBundlesFound == true)
                 roundManager.GenerateNewFloor();
         }
 
-        [HarmonyPatch(typeof(RoundManager), "SetLockedDoors"), HarmonyPrefix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SetLockedDoors)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static void RoundManagerSetLockedDoors_Prefix()
         {
             RoundManager.keyPrefab = DungeonManager.CurrentExtendedDungeonFlow.OverrideKeyPrefab != null ? DungeonManager.CurrentExtendedDungeonFlow.OverrideKeyPrefab : DungeonLoader.defaultKeyPrefab;
         }
 
-        [HarmonyPatch(typeof(RoundManager), "SpawnOutsideHazards"), HarmonyPrefix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnOutsideHazards)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static void RoundManagerSpawnOutsideHazards_Prefix()
         {
-            RoundManager.quicksandPrefab = LevelManager.CurrentExtendedLevel.OverrideQuicksandPrefab;
+            RoundManager.quicksandPrefab = LevelManager.CurrentExtendedLevel.OverrideQuicksandPrefab != null ? LevelManager.CurrentExtendedLevel.OverrideQuicksandPrefab : LevelLoader.defaultQuicksandPrefab;
+        }
+
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc)), HarmonyPrefix, HarmonyPriority(priority)]
+        internal static void RoundManagerFinishGeneratingNewLevelClientRpc_Prefix(RoundManager __instance, ref bool __state)
+        {
+            __state = __instance.__rpc_exec_stage is NetworkBehaviour.__RpcExecStage.Execute;
         }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc)), HarmonyPostfix, HarmonyPriority(priority)]
-        internal static void RoundManagerFinishGeneratingNewLevelClientRpc_Prefix()
+        internal static void RoundManagerFinishGeneratingNewLevelClientRpc_Postfix(RoundManager __instance, bool __state)
         {
+            // Don't run on the server.
+            if (__state) return;
+
             if (TimeOfDay.sunAnimator == null) return;
             LevelLoader.RefreshFootstepSurfaces();
             LevelLoader.BakeSceneColliderMaterialData(TimeOfDay.sunAnimator.gameObject.scene);
             if (LevelLoader.vanillaWaterShader != null)
                 LevelLoader.TryRestoreWaterShaders(TimeOfDay.sunAnimator.gameObject.scene);
-            ApplyCamerDistanceOverride();
+            ApplyCameraDistanceOverride();
         }
 
-        internal static void ApplyCamerDistanceOverride()
+        internal static void ApplyCameraDistanceOverride()
         {
             float newDistance = 0;
             if (LevelManager.CurrentExtendedLevel.OverrideCameraMaxDistance > 400f || (DungeonManager.CurrentExtendedDungeonFlow != null && DungeonManager.CurrentExtendedDungeonFlow.OverrideCameraMaxDistance > 400f))

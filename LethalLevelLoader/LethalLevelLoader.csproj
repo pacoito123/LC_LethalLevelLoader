@@ -64,67 +64,7 @@
 
   <ItemGroup>
     <PackageReference Include="MaxWasUnavailable.LethalModDataLib" Version="1.2.2" PrivateAssets="all" />
-    <!-- <PackageReference Include="LethalCompany.GameLibs.Steam" Version="73.0.0-ngd.0" PrivateAssets="all" Publicize="true" /> -->
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <PrivateAssets>all</PrivateAssets>
-      <Publicize>true</Publicize>
-      <HintPath>managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <PrivateAssets>all</PrivateAssets>
-      <Publicize>true</Publicize>
-      <HintPath>managed\Assembly-CSharp-firstpass.dll</HintPath>
-    </Reference>
-    <Reference Include="DunGen">
-      <PrivateAssets>all</PrivateAssets>
-      <Publicize>true</Publicize>
-      <HintPath>managed\DunGen.dll</HintPath>
-    </Reference>
-    <Reference Include="DunGen.Integration.UnityNav">
-      <PrivateAssets>all</PrivateAssets>
-      <Publicize>true</Publicize>
-      <HintPath>managed\DunGen.Integration.UnityNav.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.AI.Navigation">
-      <PrivateAssets>all</PrivateAssets>
-      <HintPath>managed\Unity.AI.Navigation.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.InputSystem">
-      <PrivateAssets>all</PrivateAssets>
-      <HintPath>managed\Unity.InputSystem.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Netcode.Runtime">
-      <PrivateAssets>all</PrivateAssets>
-      <Publicize>true</Publicize>
-      <HintPath>managed\Unity.Netcode.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.ProBuilder">
-      <PrivateAssets>all</PrivateAssets>
-      <HintPath>managed\Unity.ProBuilder.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.HighDefinition.Runtime">
-      <PrivateAssets>all</PrivateAssets>
-      <HintPath>managed\Unity.RenderPipelines.HighDefinition.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <PrivateAssets>all</PrivateAssets>
-      <HintPath>managed\Unity.TextMeshPro.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <PrivateAssets>all</PrivateAssets>
-      <HintPath>managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.InputModule">
-      <PrivateAssets>all</PrivateAssets>
-      <HintPath>managed\UnityEngine.InputModule.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <PrivateAssets>all</PrivateAssets>
-      <HintPath>managed\UnityEngine.UI.dll</HintPath>
-    </Reference>
+    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="81.0.0-ngd.0" PrivateAssets="all" Publicize="true" />
   </ItemGroup>
 
   <!-- <ItemGroup>
@@ -137,7 +77,11 @@
   </ItemGroup> -->
 
   <Target Name="NetcodePatch" AfterTargets="PostBuildEvent">
-    <Exec Command="netcode-patch -uv 2022.3.62 -nv 1.12.0 -tv 1.0.0 &quot;$(TargetPath)&quot; @(ReferencePathWithRefAssemblies->'&quot;%(Identity)&quot;', ' ')" />
+    <PropertyGroup>
+      <NetcodePatcherDepsListFile>$(IntermediateOutputPath)ncp-deps.list</NetcodePatcherDepsListFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(NetcodePatcherDepsListFile)" Lines="@(ReferencePathWithRefAssemblies)" Overwrite="true"/>
+    <Exec Command="dotnet netcode-patch -uv 2022.3.62 -nv 1.12.2 -tv 1.0.0 &quot;$(TargetPath)&quot; --dependency-file &quot;$(NetcodePatcherDepsListFile)&quot;" />
   </Target>
 
   <PropertyGroup>
