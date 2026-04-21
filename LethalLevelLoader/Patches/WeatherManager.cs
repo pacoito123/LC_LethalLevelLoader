@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 using Random = System.Random;
@@ -130,10 +131,11 @@ namespace LethalLevelLoader
                             if (LevelLoader.defaultFloodedWaterMaterial != null) break;
                             foreach (Material material in renderer.sharedMaterials)
                             {
-                                if (material.shader.name == "Shader Graphs/WaterShaderHDRP")
+                                if (material != null && material.shader != null && string.Equals(material.shader.name, "Shader Graphs/WaterShaderHDRP", StringComparison.Ordinal))
                                 {
                                     LevelLoader.defaultFloodedWaterMaterial = material;
                                     LevelLoader.vanillaWaterShader = material.shader;
+                                    LevelLoader.vanillaWaterShaderKeywords = material.enabledKeywords;
                                     break;
                                 }
                             }

@@ -6,6 +6,7 @@ using Unity.AI.Navigation;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 namespace LethalLevelLoader
@@ -87,6 +88,21 @@ namespace LethalLevelLoader
                 LevelLoader.defaultMidDayMusic = LevelLoader.timeOfDayCues[1];
                 LevelLoader.defaultLateDayMusic = LevelLoader.timeOfDayCues[2];
                 LevelLoader.defaultNightMusic = LevelLoader.timeOfDayCues[3];
+            }
+        }
+
+        internal static void ObtainGrassShaderReference()
+        {
+            // Appears to grab the first instance of a shader with that name, any additional ones that may be loaded by custom bundles are therefore ignored.
+            Shader wavingGrass = Shader.Find("Shader Graphs/WavingGrass");
+            if (wavingGrass != null)
+            {
+                LevelLoader.vanillaWavingGrassShader = wavingGrass;
+                LevelLoader.vanillaWavingGrassShaderKeywords = [
+                    new LocalKeyword(wavingGrass, "_ALPHATEST_ON"),
+                    new LocalKeyword(wavingGrass, "_DISABLE_SSR"),
+                    new LocalKeyword(wavingGrass, "_DISABLE_SSR_TRANSPARENT")
+                ];
             }
         }
 

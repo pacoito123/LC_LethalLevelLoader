@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Rendering;
@@ -197,21 +196,20 @@ namespace LethalLevelLoader.Tools
             objectsToDestroy.Clear();
         }
 
-        internal static void TryRestoreWaterShader(Material customMaterial)
+        internal static void TryRestoreShader(Material customMaterial, Shader vanillaShader, LocalKeyword[] enabledKeywords = null)
         {
-            if (customMaterial == null || customMaterial.shader == null || string.IsNullOrEmpty(customMaterial.shader.name))
+            if (vanillaShader == null || customMaterial == null || customMaterial.shader == null)
                 return;
 
-            if (customMaterial.shader == LevelLoader.vanillaWaterShader)
+            if (customMaterial.shader == vanillaShader || string.IsNullOrEmpty(customMaterial.shader.name))
                 return;
 
-            if (customMaterial.shader.name == LevelLoader.vanillaWaterShader.name)
+            if (string.Equals(customMaterial.shader.name, vanillaShader.name, StringComparison.Ordinal))
             {
-                customMaterial.shader = LevelLoader.vanillaWaterShader;
-                customMaterial.DisableKeyword("_BLENDMODE_ALPHA");
-                customMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                customMaterial.EnableKeyword("_ENABLE_FOG_ON_TRANSPARENT");
-                customMaterial.EnableKeyword("_DISABLE_SSR_TRANSPARENT");
+                customMaterial.shader = vanillaShader;
+
+                if (enabledKeywords != null)
+                    customMaterial.enabledKeywords = enabledKeywords;
             }
         }
 

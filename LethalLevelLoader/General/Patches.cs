@@ -224,6 +224,7 @@ if (AssetBundleLoader.noBundlesFound == true)
 
                 LevelManager.ObtainShipAnimatorClips(StartOfRound);
                 LevelManager.ObtainTimeOfDayClips(TimeOfDay);
+                LevelManager.ObtainGrassShaderReference();
 
                 DebugStopwatch.StartStopWatch("Create Vanilla ExtendedContent");
                 //Create & Initialize ExtendedContent Objects For Vanilla Content.
@@ -747,11 +748,13 @@ if (AssetBundleLoader.noBundlesFound == true)
             // Don't run on the server.
             if (__state) return;
 
-            if (TimeOfDay.sunAnimator == null) return;
-            LevelLoader.RefreshFootstepSurfaces();
-            LevelLoader.BakeSceneColliderMaterialData(TimeOfDay.sunAnimator.gameObject.scene);
-            if (LevelLoader.vanillaWaterShader != null)
-                LevelLoader.TryRestoreWaterShaders(TimeOfDay.sunAnimator.gameObject.scene);
+            if (__instance.currentLevel == null || string.IsNullOrEmpty(__instance.currentLevel.sceneName)) return;
+            Scene scene = SceneManager.GetSceneByName(__instance.currentLevel.sceneName);
+            if (!scene.isLoaded) return;
+
+            // LevelLoader.RefreshFootstepSurfaces();
+            // LevelLoader.BakeSceneColliderMaterialData(scene);
+            LevelLoader.TryRestoreShaders(scene);
             ApplyCameraDistanceOverride();
         }
 

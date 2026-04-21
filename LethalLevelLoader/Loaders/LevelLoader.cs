@@ -2,8 +2,9 @@
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LethalLevelLoader.Tools;
 using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.Rendering;
+using LethalLevelLoader.Tools;
 
 namespace LethalLevelLoader
 {
@@ -76,6 +77,9 @@ namespace LethalLevelLoader
         internal static LayerMask triggerMask;
 
         internal static Shader vanillaWaterShader;
+        internal static Shader vanillaWavingGrassShader;
+        internal static LocalKeyword[] vanillaWaterShaderKeywords;
+        internal static LocalKeyword[] vanillaWavingGrassShaderKeywords;
 
         internal static async void EnableMeshColliders()
         {
@@ -290,20 +294,37 @@ namespace LethalLevelLoader
             Patches.StartOfRound.footstepSurfaces = activeFootstepSurfaces.ToArray();
         }
 
-        internal static void TryRestoreWaterShaders(Scene scene)
-        {
-            List<Material> uniqueMaterials = new List<Material>();
-            foreach (MeshRenderer meshRenderer in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
-                if (meshRenderer.gameObject.scene == scene)
-                    foreach (Material sharedMaterial in meshRenderer.sharedMaterials)
-                    {
-                        if (sharedMaterial != null && !string.IsNullOrEmpty(sharedMaterial.name))
-                            if (!uniqueMaterials.Contains(sharedMaterial))
-                                uniqueMaterials.Add(sharedMaterial);
-                    }
+        private static readonly HashSet<Material> uniqueMaterials = [];
+        private static readonly List<GameObject> tempRootObjects = [];
+        private static readonly List<Renderer> tempRenderers = [];
 
-            foreach (Material sharedMaterial in uniqueMaterials)
-                ContentRestorer.TryRestoreWaterShader(sharedMaterial);
+        internal static void TryRestoreShaders(Scene scene)
+        {
+            foreach (Terrain terrain in Terrain.activeTerrains)
+                foreach (DetailPrototype detailPrototype in terrain.terrainData.detailPrototypes)
+                    TryRestoreShaders(detailPrototype.prototype);
+
+            scene.GetRootGameObjects(tempRootObjects);
+            tempRootObjects.ForEach(TryRestoreShaders);
+
+            uniqueMaterials.Clear();
+            tempRootObjects.Clear();
+            tempRenderers.Clear();
+        }
+
+        private static void TryRestoreShaders(GameObject gameObject)
+        {
+            if (gameObject == null) return;
+            gameObject.GetComponentsInChildren(includeInactive: true, tempRenderers);
+            foreach (Renderer renderer in tempRenderers)
+                foreach (Material sharedMaterial in renderer.sharedMaterials)
+                    if (sharedMaterial != null && sharedMaterial.shader != null && uniqueMaterials.Add(sharedMaterial))
+                    {
+                        if (vanillaWaterShader != null && vanillaWaterShaderKeywords?.Length > 0)
+                            ContentRestorer.TryRestoreShader(sharedMaterial, vanillaWaterShader, vanillaWaterShaderKeywords);
+                        if (vanillaWavingGrassShader != null && vanillaWavingGrassShaderKeywords?.Length > 0)
+                            ContentRestorer.TryRestoreShader(sharedMaterial, vanillaWavingGrassShader, vanillaWavingGrassShaderKeywords);
+                    }
         }
 
         internal static void BakeSceneColliderMaterialData(Scene scene)
