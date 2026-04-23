@@ -40,12 +40,6 @@ namespace LethalLevelLoader
 
             dungeonGenerator.retryCount = 50; //I shouldn't really do this but I'm curious if it silently helps some custom interiors
 
-            if (currentExtendedDungeonFlow.OverrideTilePlacementBounds)
-            {
-                dungeonGenerator.RestrictDungeonToBounds = true;
-                dungeonGenerator.TilePlacementBounds = new Bounds(Vector3.zero, currentExtendedDungeonFlow.OverrideRestrictedTilePlacementBounds);
-            }
-
             if (currentExtendedDungeonFlow.IsDynamicOutOfBoundsTriggerEnabled)
                 dungeonGenerator.OnGenerationStatusChanged += PatchOutOfBoundsTriggers;
 

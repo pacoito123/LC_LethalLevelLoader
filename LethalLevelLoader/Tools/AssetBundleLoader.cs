@@ -566,7 +566,7 @@ namespace LethalLevelLoader
 
             if (Patches.RoundManager.dungeonFlowTypes != null)
                 foreach (IndoorMapType indoorMapType in Patches.RoundManager.dungeonFlowTypes)
-                    CreateVanillaExtendedDungeonFlow(indoorMapType.dungeonFlow);
+                    CreateVanillaExtendedDungeonFlow(indoorMapType);
             else
                 DebugHelper.Log("Error! RoundManager dungeonFlowTypes Array Was Null!", DebugType.User);
         }
@@ -636,28 +636,21 @@ namespace LethalLevelLoader
             }
         }
 
-        internal static void CreateVanillaExtendedDungeonFlow(DungeonFlow dungeonFlow)
+        internal static void CreateVanillaExtendedDungeonFlow(IndoorMapType indoorMapType)
         {
-            AudioClip firstTimeDungeonAudio = null;
-            string dungeonDisplayName = string.Empty;
-
-            if (dungeonFlow.name.Contains("Level1"))
+            if (indoorMapType.dungeonFlow == null)
             {
-                dungeonDisplayName = "Facility";
-                firstTimeDungeonAudio = Patches.RoundManager.firstTimeDungeonAudios[0];
-            }
-            else if (dungeonFlow.name.Contains("Level2"))
-            {
-                dungeonDisplayName = "Haunted Mansion";
-                firstTimeDungeonAudio = Patches.RoundManager.firstTimeDungeonAudios[1];
-            }
-            else if (dungeonFlow.name.Contains("Level3"))
-            {
-                dungeonDisplayName = "Mineshaft";
+                DebugHelper.LogError("Vanilla DungeonFlow In RoundManager dungeonFlowTypes Array Was Null!", DebugType.User);
+                return;
             }
 
-            ExtendedDungeonFlow extendedDungeonFlow = ExtendedDungeonFlow.Create(dungeonFlow, firstTimeDungeonAudio);
-            extendedDungeonFlow.DungeonName = dungeonDisplayName;
+            string dungeonName = indoorMapType.dungeonFlow.name;
+            ExtendedDungeonFlow extendedDungeonFlow = ExtendedDungeonFlow.Create(indoorMapType.dungeonFlow, indoorMapType.firstTimeAudio, indoorMapType.restrictBounds, indoorMapType.cullingTileDepth);
+            extendedDungeonFlow.DungeonName = dungeonName.StartsWith("Level1", StringComparison.Ordinal) ? "Facility"
+                : dungeonName.StartsWith("Level2", StringComparison.Ordinal) ? "Haunted Mansion"
+                : dungeonName.StartsWith("Level3", StringComparison.Ordinal) ? "Mineshaft"
+                : dungeonName.StartsWith("Level4", StringComparison.Ordinal) ? "Aquarium" // What if I call it though...
+                : "Unknown";
 
             extendedDungeonFlow.Initialize();
             PatchedContent.VanillaMod.RegisterExtendedContent(extendedDungeonFlow);

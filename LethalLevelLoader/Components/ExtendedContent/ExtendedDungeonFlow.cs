@@ -16,6 +16,8 @@ namespace LethalLevelLoader
         [field: SerializeField] public string DungeonName { get; set; } = string.Empty;
         [field: SerializeField] public float MapTileSize { get; set; } = 1f;
         [field: SerializeField] public AudioClip FirstTimeDungeonAudio { get; set; }
+        [field: SerializeField] public Vector3 RestrictBounds { get; set; } = Vector3.zero;
+        [field: SerializeField] public int CullingTileDepth { get; set; } = 6;
 
         [field: Space(5)]
         [field: Header("Dynamic Injection Matching Settings")]
@@ -23,10 +25,6 @@ namespace LethalLevelLoader
 
         [field: Space(5)]
         [field: Header("Extended Feature Settings")]
-
-        [field: Tooltip("When above Vector3.zero this value will restrict the max bounds of the interior.")]
-        [field: SerializeField] public Vector3 OverrideRestrictedTilePlacementBounds { get; set; } = Vector3.zero;
-        public bool OverrideTilePlacementBounds => (OverrideRestrictedTilePlacementBounds.sqrMagnitude > 1f);
 
         [field: SerializeField] public GameObject OverrideKeyPrefab { get; set; }
         [field: SerializeField] public List<IndoorMapHazard> IndoorMapHazards { get; set; } = new List<IndoorMapHazard>();
@@ -70,8 +68,8 @@ namespace LethalLevelLoader
         [Obsolete] public List<StringWithRarity> dynamicCurrentWeatherList = new List<StringWithRarity>();
         [Obsolete] public List<StringWithRarity> manualPlanetNameReferenceList = new List<StringWithRarity>();
         [Obsolete] public List<StringWithRarity> manualContentSourceNameReferenceList = new List<StringWithRarity>();
-        [Obsolete][HideInInspector] public int dungeonDefaultRarity;
-        [Obsolete][HideInInspector][field: SerializeField] public List<SpawnableMapObject> SpawnableMapObjects { get; set; } = new List<SpawnableMapObject>();
+        [Obsolete][field: SerializeField] public List<SpawnableMapObject> SpawnableMapObjects { get; set; } = new List<SpawnableMapObject>();
+        [Obsolete][field: SerializeField] public Vector3 OverrideRestrictedTilePlacementBounds { get; set; } = Vector3.zero;
 
         // HideInInspector
         public int DungeonID { get; internal set; }
@@ -88,11 +86,13 @@ namespace LethalLevelLoader
             }
         }
 
-        internal static ExtendedDungeonFlow Create(DungeonFlow newDungeonFlow, AudioClip newFirstTimeDungeonAudio)
+        internal static ExtendedDungeonFlow Create(DungeonFlow newDungeonFlow, AudioClip newFirstTimeDungeonAudio, Vector3 newRestrictBounds, int newCullingTileDepth)
         {
             ExtendedDungeonFlow newExtendedDungeonFlow = ScriptableObject.CreateInstance<ExtendedDungeonFlow>();
             newExtendedDungeonFlow.DungeonFlow = newDungeonFlow;
             newExtendedDungeonFlow.FirstTimeDungeonAudio = newFirstTimeDungeonAudio;
+            newExtendedDungeonFlow.RestrictBounds = newRestrictBounds;
+            newExtendedDungeonFlow.CullingTileDepth = newCullingTileDepth;
 
             if (newExtendedDungeonFlow.LevelMatchingProperties == null)
                 newExtendedDungeonFlow.LevelMatchingProperties = LevelMatchingProperties.Create(newExtendedDungeonFlow);
@@ -111,7 +111,7 @@ namespace LethalLevelLoader
 
             GetDungeonFlowID();
 
-            if (DungeonName == null || DungeonName == string.Empty)
+            if (string.IsNullOrEmpty(DungeonName))
                 DungeonName = DungeonFlow.name;
 
             name = DungeonFlow.name.Replace("Flow", "") + "ExtendedDungeonFlow";
@@ -125,12 +125,12 @@ namespace LethalLevelLoader
 
         private void GetDungeonFlowID()
         {
-            if (ContentType == ContentType.Custom)
+            if (ContentType is ContentType.Custom)
                 DungeonID = PatchedContent.ExtendedDungeonFlows.Count;
-            if (ContentType == ContentType.Vanilla)
-                foreach (IndoorMapType indoorMapType in Patches.RoundManager.dungeonFlowTypes)
-                    if (indoorMapType.dungeonFlow == DungeonFlow)
-                        DungeonID = Patches.RoundManager.dungeonFlowTypes.ToList().IndexOf(indoorMapType);
+            if (ContentType is ContentType.Vanilla or ContentType.External)
+                for (int i = 0; i < Patches.RoundManager.dungeonFlowTypes.Length; i++)
+                    if (Patches.RoundManager.dungeonFlowTypes[i] != null && Patches.RoundManager.dungeonFlowTypes[i].dungeonFlow == DungeonFlow)
+                        DungeonID = i;
         }
 
         internal override void TryCreateMatchingProperties()
@@ -184,23 +184,32 @@ namespace LethalLevelLoader
                 DebugHelper.LogWarning("ExtendedDungeonFlow.generateAutomaticConfigurationOptions Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.GenerateAutomaticConfigurationOptions instead.", DebugType.Developer);
                 GenerateAutomaticConfigurationOptions = generateAutomaticConfigurationOptions;
             }
-            foreach (SpawnableMapObject spawnableMapObject in SpawnableMapObjects)
+            if (SpawnableMapObjects.Count > 0)
             {
-                IndoorMapHazardType mapHazardType = CreateInstance<IndoorMapHazardType>();
-                mapHazardType.prefabToSpawn = spawnableMapObject.prefabToSpawn;
-                mapHazardType.spawnFacingAwayFromWall = spawnableMapObject.spawnFacingAwayFromWall;
-                mapHazardType.spawnFacingWall = spawnableMapObject.spawnFacingWall;
-                mapHazardType.spawnWithBackToWall = spawnableMapObject.spawnWithBackToWall;
-                mapHazardType.spawnWithBackFlushAgainstWall = spawnableMapObject.spawnWithBackFlushAgainstWall;
-                mapHazardType.requireDistanceBetweenSpawns = spawnableMapObject.requireDistanceBetweenSpawns;
-                mapHazardType.disallowSpawningNearEntrances = spawnableMapObject.disallowSpawningNearEntrances;
-
-                IndoorMapHazard mapHazard = new()
+                DebugHelper.LogWarning("ExtendedDungeonFlow.SpawnableMapObjects Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.IndoorMapHazards instead.", DebugType.Developer);
+                foreach (SpawnableMapObject spawnableMapObject in SpawnableMapObjects)
                 {
-                    hazardType = mapHazardType,
-                    numberToSpawn = spawnableMapObject.numberToSpawn
-                };
-                IndoorMapHazards.Add(mapHazard);
+                    IndoorMapHazardType mapHazardType = CreateInstance<IndoorMapHazardType>();
+                    mapHazardType.prefabToSpawn = spawnableMapObject.prefabToSpawn;
+                    mapHazardType.spawnFacingAwayFromWall = spawnableMapObject.spawnFacingAwayFromWall;
+                    mapHazardType.spawnFacingWall = spawnableMapObject.spawnFacingWall;
+                    mapHazardType.spawnWithBackToWall = spawnableMapObject.spawnWithBackToWall;
+                    mapHazardType.spawnWithBackFlushAgainstWall = spawnableMapObject.spawnWithBackFlushAgainstWall;
+                    mapHazardType.requireDistanceBetweenSpawns = spawnableMapObject.requireDistanceBetweenSpawns;
+                    mapHazardType.disallowSpawningNearEntrances = spawnableMapObject.disallowSpawningNearEntrances;
+
+                    IndoorMapHazard mapHazard = new()
+                    {
+                        hazardType = mapHazardType,
+                        numberToSpawn = spawnableMapObject.numberToSpawn
+                    };
+                    IndoorMapHazards.Add(mapHazard);
+                }
+            }
+            if (OverrideRestrictedTilePlacementBounds.sqrMagnitude > 1f)
+            {
+                DebugHelper.LogWarning("ExtendedDungeonFlow.OverrideRestrictedTilePlacementBounds Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.RestrictBounds instead.", DebugType.Developer);
+                RestrictBounds = OverrideRestrictedTilePlacementBounds;
             }
             if (Application.isEditor)
                 SpawnableMapObjects.Clear();
@@ -214,7 +223,7 @@ namespace LethalLevelLoader
         [Range(0, 1)] public float globalPropCountScaleRate = 0;
     }
 
-    [System.Serializable]
+    [Serializable]
     public class DungeonEvents
     {
         public ExtendedEvent<RoundManager> onBeforeDungeonGenerate = new ExtendedEvent<RoundManager>();

@@ -26,14 +26,24 @@ namespace LethalLevelLoader
 
         internal static void PatchVanillaDungeonLists()
         {
+            if (PatchedContent.CustomExtendedDungeonFlows.Count == 0) return;
+
+            List<IndoorMapType> indoorMapTypes = [.. Patches.RoundManager.dungeonFlowTypes];
+            List<AudioClip> firstTimeDungeonAudios = [.. Patches.RoundManager.firstTimeDungeonAudios];
             foreach (ExtendedDungeonFlow extendedDungeonFlow in PatchedContent.CustomExtendedDungeonFlows)
             {
-                extendedDungeonFlow.DungeonID = Patches.RoundManager.dungeonFlowTypes.Length;
-                IndoorMapType newIndoorMapType = new IndoorMapType(extendedDungeonFlow.DungeonFlow, extendedDungeonFlow.MapTileSize, extendedDungeonFlow.FirstTimeDungeonAudio);
-                Patches.RoundManager.dungeonFlowTypes = Patches.RoundManager.dungeonFlowTypes.AddItem(newIndoorMapType).ToArray();
-                if (extendedDungeonFlow.FirstTimeDungeonAudio != null)
-                    Patches.RoundManager.firstTimeDungeonAudios = Patches.RoundManager.firstTimeDungeonAudios.AddItem(extendedDungeonFlow.FirstTimeDungeonAudio).ToArray();
+                extendedDungeonFlow.DungeonID = indoorMapTypes.Count;
+                IndoorMapType newIndoorMapType = new(extendedDungeonFlow.DungeonFlow, extendedDungeonFlow.MapTileSize, extendedDungeonFlow.FirstTimeDungeonAudio)
+                {
+                    restrictBounds = extendedDungeonFlow.RestrictBounds,
+                    cullingTileDepth = extendedDungeonFlow.CullingTileDepth
+                };
+                indoorMapTypes.Add(newIndoorMapType);
+                if (extendedDungeonFlow.FirstTimeDungeonAudio != null && !firstTimeDungeonAudios.Contains(extendedDungeonFlow.FirstTimeDungeonAudio))
+                    firstTimeDungeonAudios.Add(extendedDungeonFlow.FirstTimeDungeonAudio);
             }
+            Patches.RoundManager.dungeonFlowTypes = [.. indoorMapTypes];
+            Patches.RoundManager.firstTimeDungeonAudios = [.. firstTimeDungeonAudios];
         }
 
         public static List<ExtendedDungeonFlowWithRarity> GetValidExtendedDungeonFlows(ExtendedLevel extendedLevel, bool debugResults)
