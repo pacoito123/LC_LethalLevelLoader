@@ -190,7 +190,7 @@ namespace LethalLevelLoader.Tools
                     if (lungProp.radMechEnemyType == vanillaRadMechEnemyType) continue;
                     if (lungProp.radMechEnemyType == null)
                     {
-                        lungProp.radMechEnemyType = RestoreAsset(lungProp.radMechEnemyType, vanillaRadMechEnemyType);
+                        lungProp.radMechEnemyType = vanillaRadMechEnemyType;
                         continue;
                     }
                     if (string.Equals(lungProp.radMechEnemyType.name, "RadMech", StringComparison.Ordinal))
@@ -212,7 +212,7 @@ namespace LethalLevelLoader.Tools
                     if (hauntedMask.mimicEnemy == vanillaMaskedEnemyType) continue;
                     if (hauntedMask.mimicEnemy == null)
                     {
-                        hauntedMask.mimicEnemy = RestoreAsset(hauntedMask.mimicEnemy, vanillaMaskedEnemyType);
+                        hauntedMask.mimicEnemy = vanillaMaskedEnemyType;
                         continue;
                     }
                     if (string.Equals(hauntedMask.mimicEnemy.name, "MaskedPlayerEnemy", StringComparison.Ordinal))
