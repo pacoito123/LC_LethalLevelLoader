@@ -17,12 +17,12 @@ namespace LethalLevelLoader.Tools
         {
             if (extendedDungeonFlow == null)
             {
-                DebugHelper.LogError("Tried To Restore Null Vanilla ExtendedDungeonFlow! Returning!", DebugType.User);
+                DebugHelper.LogError("Tried To Restore Vanilla Assets For Null ExtendedDungeonFlow! Returning!", DebugType.User);
                 return;
             }
             if (extendedDungeonFlow.DungeonFlow == null)
             {
-                DebugHelper.LogError("Tried To Restore Null Vanilla ExtendedDungeonFlow " + extendedDungeonFlow.DungeonName + " But DungeonFlow Was Null! Returning!", DebugType.User);
+                DebugHelper.LogError("Tried To Restore Vanilla Assets For ExtendedDungeonFlow " + extendedDungeonFlow.DungeonName + " But DungeonFlow Was Null! Returning!", DebugType.User);
                 return;
             }
 
@@ -63,6 +63,17 @@ namespace LethalLevelLoader.Tools
 
         internal static void RestoreVanillaLevelAssetReferences(ExtendedLevel extendedLevel)
         {
+            if (extendedLevel == null)
+            {
+                DebugHelper.LogError("Tried To Restore Vanilla Assets For Null ExtendedLevel! Returning!", DebugType.User);
+                return;
+            }
+            if (extendedLevel.SelectableLevel == null)
+            {
+                DebugHelper.LogError("Tried To Restore Vanilla Assets For ExtendedLevel " + extendedLevel.NumberlessPlanetName + " But SelectableLevel Was Null! Returning!", DebugType.User);
+                return;
+            }
+
             DebugHelper.Log($"Restoring Vanilla References for SelectableLevel: {extendedLevel.SelectableLevel.name}", DebugType.IAmBatby);
 
             foreach (SpawnableItemWithRarity spawnableItem in extendedLevel.SelectableLevel.spawnableScrap)
@@ -167,6 +178,53 @@ namespace LethalLevelLoader.Tools
                 if (vanillaAmbienceLibrary != null)
                     extendedLevel.SelectableLevel.levelAmbienceClips = RestoreAsset(extendedLevel.SelectableLevel.levelAmbienceClips, vanillaAmbienceLibrary);
             }
+        }
+
+        internal static void RestoreVanillaItemAssetReferences()
+        {
+            EnemyType vanillaRadMechEnemyType = OriginalContent.Enemies.Find(enemy => string.Equals(enemy.enemyName, "RadMech", StringComparison.Ordinal));
+            if (vanillaRadMechEnemyType != null)
+            {
+                foreach (LungProp lungProp in Resources.FindObjectsOfTypeAll<LungProp>())
+                {
+                    if (lungProp.radMechEnemyType == vanillaRadMechEnemyType) continue;
+                    if (lungProp.radMechEnemyType == null)
+                    {
+                        lungProp.radMechEnemyType = RestoreAsset(lungProp.radMechEnemyType, vanillaRadMechEnemyType);
+                        continue;
+                    }
+                    if (string.Equals(lungProp.radMechEnemyType.name, "RadMech", StringComparison.Ordinal))
+                    {
+                        if (lungProp.radMechEnemyType.enemyPrefab != null || lungProp.radMechEnemyType.nestSpawnPrefab != null)
+                            DebugHelper.LogWarning("LungProp " + lungProp.name + " Bundles An Additional RadMech Enemy! Fields radMechEnemyType And nestSpawnPrefab Should Be Empty!", DebugType.User);
+                        lungProp.radMechEnemyType = RestoreAsset(lungProp.radMechEnemyType, vanillaRadMechEnemyType);
+                    }
+                }
+            }
+            else
+                DebugHelper.LogError("Could Not Find Vanilla RadMech Enemy Reference To Assign To LungProp Items!", DebugType.User);
+
+            EnemyType vanillaMaskedEnemyType = OriginalContent.Enemies.Find(enemy => string.Equals(enemy.enemyName, "Masked", StringComparison.Ordinal));
+            if (vanillaMaskedEnemyType != null)
+            {
+                foreach (HauntedMaskItem hauntedMask in Resources.FindObjectsOfTypeAll<HauntedMaskItem>())
+                {
+                    if (hauntedMask.mimicEnemy == vanillaMaskedEnemyType) continue;
+                    if (hauntedMask.mimicEnemy == null)
+                    {
+                        hauntedMask.mimicEnemy = RestoreAsset(hauntedMask.mimicEnemy, vanillaMaskedEnemyType);
+                        continue;
+                    }
+                    if (string.Equals(hauntedMask.mimicEnemy.name, "MaskedPlayerEnemy", StringComparison.Ordinal))
+                    {
+                        if (hauntedMask.mimicEnemy.enemyPrefab != null)
+                            DebugHelper.LogWarning("HauntedMaskItem " + hauntedMask.name + " Bundles An Additional Masked Enemy! Field mimicEnemy Should Be Empty!", DebugType.User);
+                        hauntedMask.mimicEnemy = RestoreAsset(hauntedMask.mimicEnemy, vanillaMaskedEnemyType);
+                    }
+                }
+            }
+            else
+                DebugHelper.LogError("Could Not Find Vanilla Masked Enemy Reference To Assign To HauntedMaskItem Items!", DebugType.User);
         }
 
         internal static void RestoreAudioAssetReferencesInParent(GameObject parent)

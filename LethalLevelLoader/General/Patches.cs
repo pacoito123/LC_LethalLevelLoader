@@ -268,6 +268,9 @@ if (AssetBundleLoader.noBundlesFound == true)
                 foreach (ExtendedDungeonFlow customDungeonFlow in PatchedContent.CustomExtendedDungeonFlows)
                     ContentRestorer.RestoreVanillaDungeonAssetReferences(customDungeonFlow);
 
+                ContentRestorer.RestoreVanillaItemAssetReferences(); // LungProp, HauntedMaskItem
+                // ContentRestorer.RestoreVanillaEnemyAssetReferences(); // ButlerEnemyAI, CadaverGrowthAI, GiantKiwiAI
+
                 //Destroy Placeholder Custom Content References That Have Now Been Restored
                 ContentRestorer.DestroyRestoredAssets();
 
