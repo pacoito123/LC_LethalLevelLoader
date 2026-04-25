@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using ScriptableObject = UnityEngine.ScriptableObject;
 
 public enum ContentType { Vanilla, Custom, Any, External } //Any & All included for built in checks, External for content registered by others.
 
@@ -15,10 +14,13 @@ namespace LethalLevelLoader
     {
         [field: Header("General Settings")]
         [field: SerializeField] public SelectableLevel SelectableLevel { get; set; }
-        [Space(5)] [SerializeField] private int routePrice = 0;
+        [Space(5)][SerializeField] private int routePrice = 0;
 
         [field: Header("Extended Feature Settings")]
         [field: SerializeField] public bool OverrideDynamicRiskLevelAssignment { get; set; } = false;
+        [field: Tooltip("Disable to use Terrain layers for Player footstep sound effects instead of GameObject tags. "
+            + "Enabled by default for older moons to keep their intended footstep sounds.")]
+        [field: SerializeField] public bool OverrideTerrainFootsteps { get; set; } = true;
 
         [field: Space(5)]
 
@@ -83,10 +85,10 @@ namespace LethalLevelLoader
         [field: Space(5)]
         [field: Header("Terminal Route Override Settings")]
 
-        [field: SerializeField] public string OverrideRouteNoun { get; set; } = string.Empty;   
-        [field: SerializeField] [field: TextArea(2, 20)] public string OverrideInfoNodeDescription { get; set; } = string.Empty;
-        [field: SerializeField] [field: TextArea(2, 20)] public string OverrideRouteNodeDescription { get; set; } = string.Empty;
-        [field: SerializeField] [field: TextArea(2, 20)] public string OverrideRouteConfirmNodeDescription { get; set; } = string.Empty;
+        [field: SerializeField] public string OverrideRouteNoun { get; set; } = string.Empty;
+        [field: SerializeField][field: TextArea(2, 20)] public string OverrideInfoNodeDescription { get; set; } = string.Empty;
+        [field: SerializeField][field: TextArea(2, 20)] public string OverrideRouteNodeDescription { get; set; } = string.Empty;
+        [field: SerializeField][field: TextArea(2, 20)] public string OverrideRouteConfirmNodeDescription { get; set; } = string.Empty;
 
         [field: Space(10)]
         [field: Header("Misc. Settings")]
@@ -279,9 +281,8 @@ namespace LethalLevelLoader
             routePrice = newValue;
         }
     }
-        
 
-    [System.Serializable]
+    [Serializable]
     public class LevelEvents
     {
         public ExtendedEvent onLevelLoaded = new ExtendedEvent();

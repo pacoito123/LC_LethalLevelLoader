@@ -541,6 +541,9 @@ namespace LethalLevelLoader
             foreach (SelectableLevel selectableLevel in startOfRound.levels)
             {
                 ExtendedLevel extendedLevel = ExtendedLevel.Create(selectableLevel);
+                extendedLevel.OverrideTerrainFootsteps = !selectableLevel.name.StartsWith("Vow", StringComparison.Ordinal)
+                    && !selectableLevel.name.StartsWith("March", StringComparison.Ordinal)
+                    && !selectableLevel.name.StartsWith("Adamance", StringComparison.Ordinal);
 
                 foreach (CompatibleNoun compatibleRouteNoun in TerminalManager.routeKeyword.compatibleNouns)
                     if (compatibleRouteNoun.noun.name.Contains(ExtendedLevel.GetNumberlessPlanetName(selectableLevel)))

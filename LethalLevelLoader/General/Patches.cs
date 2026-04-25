@@ -810,9 +810,47 @@ if (AssetBundleLoader.noBundlesFound == true)
             }
         }
 
-        static FootstepSurface previousFootstepSurface;
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.GetCurrentMaterialStandingOn)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> PlayerControllerBGetCurrentMaterialStandingOn_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            CodeMatcher codeMatcher = new CodeMatcher(instructions, generator).MatchForward(useEnd: false,
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.Public)),
+                new(OpCodes.Ldc_I4_S, (sbyte)12), // Match immediately before Gunkfish slime footstep check.
+                new(OpCodes.Beq));
 
-        [HarmonyPatch(typeof(PlayerControllerB), "GetCurrentMaterialStandingOn"), HarmonyPostfix, HarmonyPriority(priority)]
+            if (codeMatcher.IsInvalid)
+            {
+                DebugHelper.LogError("Could not match Gunkfish slime footstep check.", DebugType.User);
+                return instructions;
+            }
+
+            _ = codeMatcher.CreateLabel(out Label terrainFootstepOverrideTarget)
+            .MatchBack(useEnd: true,
+                new(OpCodes.Ldarg_1), // Match immediately after 'checkStandingOnTerrain' check.
+                new(OpCodes.Brfalse),
+                new(OpCodes.Ret));
+
+            if (codeMatcher.Advance(1).IsInvalid)
+            {
+                DebugHelper.LogError("Could not match 'checkStandingOnTerrain' check.", DebugType.User);
+                return instructions;
+            }
+
+            MethodInfo currentExtendedLevelGetter = typeof(LevelManager).GetProperty(nameof(LevelManager.CurrentExtendedLevel), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
+            MethodInfo overrideTerrainFootstepsGetter = typeof(ExtendedLevel).GetProperty(nameof(ExtendedLevel.OverrideTerrainFootsteps), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+
+            return codeMatcher.Insert( // Insert call to 'LevelManager.CurrentExtendedLevel.OverrideTerrainFootsteps' and jump to Gunkfish slime footstep check if true.
+                new(OpCodes.Call, currentExtendedLevelGetter),
+                new(OpCodes.Callvirt, overrideTerrainFootstepsGetter),
+                new(OpCodes.Brtrue, terrainFootstepOverrideTarget))
+            .CreateLabel(out Label checkStandingOnTerrainTarget)
+            .Advance(-2)
+            .SetOperandAndAdvance(checkStandingOnTerrainTarget) // Update target position of the matched 'brfalse' instruction.
+            .InstructionEnumeration();
+        }
+
+        /* [HarmonyPatch(typeof(PlayerControllerB), "GetCurrentMaterialStandingOn"), HarmonyPostfix, HarmonyPriority(priority)]
         internal static void PlayerControllerBGetCurrentMaterialStandingOn_Postfix(PlayerControllerB __instance)
         {
             if (LevelLoader.TryGetFootstepSurface(__instance.hit.collider, out FootstepSurface footstepSurface))
@@ -827,7 +865,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                     }
                 }
             }
-        }
+        } */
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnClientConnect)), HarmonyPostfix, HarmonyPriority(priority)]
         internal static void StartOfRoundOnClientConnect_Postfix()

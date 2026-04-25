@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using Unity.AI.Navigation;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.Rendering;
-using UnityEngine.SceneManagement;
 
 namespace LethalLevelLoader
 {
@@ -17,11 +12,11 @@ namespace LethalLevelLoader
         {
             get
             {
-                ExtendedLevel returnLevel = null;
-                if (Patches.StartOfRound != null)
-                    if (TryGetExtendedLevel(Patches.StartOfRound.currentLevel, out ExtendedLevel level))
-                        returnLevel = level;
-                return returnLevel;
+                if (Patches.StartOfRound == null || Patches.StartOfRound.currentLevel == null) return null;
+                if (field == null || Patches.StartOfRound.currentLevel != field.SelectableLevel)
+                    if (PatchedContent.TryGetExtendedContent(Patches.StartOfRound.currentLevel, out field))
+                        DebugHelper.Log($"Level switched to: {field.SelectableLevel.PlanetName}", DebugType.IAmBatby);
+                return field;
             }
         }
         public static LevelEvents GlobalLevelEvents = new LevelEvents();
@@ -108,21 +103,7 @@ namespace LethalLevelLoader
 
         public static bool TryGetExtendedLevel(SelectableLevel selectableLevel, out ExtendedLevel returnExtendedLevel, ContentType levelType = ContentType.Any)
         {
-            returnExtendedLevel = null;
-            List<ExtendedLevel> extendedLevelsList = null;
-
-            if (selectableLevel == null) return false;
-
-            if (levelType == ContentType.Any)
-                extendedLevelsList = PatchedContent.ExtendedLevels;
-            else if (levelType is ContentType.Custom or ContentType.External)
-                extendedLevelsList = PatchedContent.CustomExtendedLevels;
-            else if (levelType == ContentType.Vanilla)
-                extendedLevelsList = PatchedContent.VanillaExtendedLevels;
-
-            returnExtendedLevel = extendedLevelsList.Find(extendedLevel => extendedLevel.SelectableLevel == selectableLevel);
-
-            return (returnExtendedLevel != null);
+            return PatchedContent.TryGetExtendedContent(selectableLevel, out returnExtendedLevel);
         }
 
         public static ExtendedLevel GetExtendedLevel(SelectableLevel selectableLevel)
