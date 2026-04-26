@@ -14,7 +14,7 @@ namespace LethalLevelLoader
     {
         [field: Header("General Settings")]
         [field: SerializeField] public SelectableLevel SelectableLevel { get; set; }
-        [Space(5)][SerializeField] private int routePrice = 0;
+        [Space(5)][SerializeField][Min(0)] private int routePrice = 0;
 
         [field: Header("Extended Feature Settings")]
         [field: SerializeField] public bool OverrideDynamicRiskLevelAssignment { get; set; } = false;

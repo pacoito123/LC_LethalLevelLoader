@@ -24,8 +24,10 @@ namespace LethalLevelLoader
 
         internal virtual (bool result, string log) TryValidateContent()
         {
-            // TODO: General content validation.
-            return (true, string.Empty);
+            int removedTags = ContentTags.RemoveAll(tag => tag == null || string.IsNullOrEmpty(tag.contentTagName));
+            if (removedTags > 0)
+                DebugHelper.LogWarning($"Removed '{removedTags}' missing or empty tags in ExtendedContent: {name}", DebugType.User);
+            return ((true, string.Empty));
         }
 
         internal virtual void ConvertObsoleteValues()

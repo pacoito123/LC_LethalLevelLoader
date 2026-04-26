@@ -43,7 +43,15 @@ namespace LethalLevelLoader
         [field: SerializeField]
         public List<string> StreamingLethalBundleNames { get; private set; } = new List<string>();
 
-        public static ContentTag CustomContentTag { get; } = ContentTag.Create("Custom");
+        public static ContentTag CustomContentTag
+        {
+            get
+            {
+                if (field == null)
+                    field = ContentTag.Create("Custom");
+                return field;
+            }
+        }
 
         public List<ExtendedContent> ExtendedContents
         {

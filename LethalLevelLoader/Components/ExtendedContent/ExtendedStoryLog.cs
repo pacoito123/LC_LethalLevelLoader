@@ -12,7 +12,7 @@ namespace LethalLevelLoader
         public string terminalKeywordNoun = string.Empty;
         [Space(5)]
         public string storyLogTitle = string.Empty;
-        [TextArea] public string storyLogDescription = string.Empty;
+        [TextArea(2, 20)] public string storyLogDescription = string.Empty;
 
         [HideInInspector] internal int newStoryLogID;
 

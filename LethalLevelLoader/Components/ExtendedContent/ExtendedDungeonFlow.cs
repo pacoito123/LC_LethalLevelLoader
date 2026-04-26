@@ -13,10 +13,10 @@ namespace LethalLevelLoader
         [field: Header("General Settings")]
         [field: SerializeField] public DungeonFlow DungeonFlow { get; set; }
         [field: SerializeField] public string DungeonName { get; set; } = string.Empty;
-        [field: SerializeField] public float MapTileSize { get; set; } = 1f;
+        [field: SerializeField][field: Min(0)] public float MapTileSize { get; set; } = 1f;
         [field: SerializeField] public AudioClip FirstTimeDungeonAudio { get; set; }
         [field: SerializeField] public Vector3 RestrictBounds { get; set; } = Vector3.zero;
-        [field: SerializeField] public int CullingTileDepth { get; set; } = 6;
+        [field: SerializeField][field: Min(0)] public int CullingTileDepth { get; set; } = 6;
 
         [field: Space(5)]
         [field: Header("Dynamic Injection Matching Settings")]
@@ -45,14 +45,12 @@ namespace LethalLevelLoader
         [field: Range(0f, 10000f)]
         [field: SerializeField] public float OverrideCameraMaxDistance = 400;
 
-
         [field: Space(10)]
         [field: Header("Misc. Settings")]
         [field: SerializeField] public bool GenerateAutomaticConfigurationOptions { get; set; } = true;
 
         [Space(25)]
         [Header("Obsolete (Legacy Fields, Will Be Removed In The Future)")]
-        //public bool IsDynamicDungeonSizeRestrictionEnabled = false;
         [Obsolete] public bool generateAutomaticConfigurationOptions = true;
         [Obsolete] public bool enableDynamicDungeonSizeRestriction = false;
         [Obsolete] public float dungeonSizeMin = 1;
@@ -141,7 +139,12 @@ namespace LethalLevelLoader
 
         internal override (bool result, string log) TryValidateContent()
         {
-            // TODO: Interior validation.
+            if (DungeonFlow == null)
+                return ((false, "DungeonFlow Was Null"));
+            if (DungeonFlow.Nodes == null || DungeonFlow.Nodes.Count == 0)
+                return ((false, "DungeonFlow Nodes List Was Null Or Empty"));
+            if (DungeonFlow.Lines == null || DungeonFlow.Lines.Count == 0)
+                return ((false, "DungeonFlow Lines List Was Null Or Empty"));
             return (base.TryValidateContent());
         }
 
