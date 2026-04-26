@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.Netcode;
+using UnityEngine;
 using UnityEngine.Video;
 
 namespace LethalLevelLoader
@@ -26,7 +27,7 @@ namespace LethalLevelLoader
         [field: Space(5)]
         [field: Header("Terminal Bestiary Override Settings")]
 
-        [field: SerializeField] [field: TextArea(2,20)] public string InfoNodeDescription { get; set; } = string.Empty;
+        [field: SerializeField][field: TextArea(2, 20)] public string InfoNodeDescription { get; set; } = string.Empty;
         [field: SerializeField] public VideoClip InfoNodeVideoClip { get; set; }
 
         public ScanNodeProperties ScanNodeProperties { get; internal set; }
@@ -67,6 +68,25 @@ namespace LethalLevelLoader
                 DaytimeLevelMatchingProperties = LevelMatchingProperties.Create(this);
             if (DaytimeDungeonMatchingProperties == null)
                 DaytimeDungeonMatchingProperties = DungeonMatchingProperties.Create(this);
+        }
+
+        internal override (bool result, string log) TryValidateContent()
+        {
+            if (EnemyType == null)
+                return ((false, "EnemyType Was Null"));
+            if (EnemyType.enemyPrefab == null)
+                return ((false, "EnemyPrefab Was Null"));
+            if (EnemyType.enemyPrefab.GetComponent<NetworkObject>() == false)
+                return ((false, "EnemyPrefab Did Not Contain A NetworkObject"));
+            EnemyAI enemyAI = EnemyType.enemyPrefab.GetComponentInChildren<EnemyAI>(includeInactive: false);
+            if (enemyAI == null)
+                return ((false, "EnemyPrefab Did Not Contain A Component Deriving From EnemyAI"));
+            if (enemyAI.enemyType == null)
+                return ((false, "EnemyAI.enemyType Was Null"));
+            if (enemyAI.enemyType != EnemyType)
+                return ((false, "EnemyAI.enemyType Did Not Match ExtendedEnemyType.EnemyType"));
+            else
+                return (base.TryValidateContent());
         }
     }
 }

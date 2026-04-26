@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace LethalLevelLoader
 {
@@ -90,6 +87,16 @@ namespace LethalLevelLoader
                 LevelMatchingProperties = LevelMatchingProperties.Create(this);
             if (DungeonMatchingProperties == null)
                 DungeonMatchingProperties = DungeonMatchingProperties.Create(this);
+        }
+
+        internal override (bool result, string log) TryValidateContent()
+        {
+            if (Item == null)
+                return ((false, "Item Was Null"));
+            else if (Item.spawnPrefab == null)
+                return ((false, "SpawnPrefab Was Null"));
+            else
+                return (base.TryValidateContent());
         }
 
         public void SetLevelMatchingProperties(LevelMatchingProperties newLevelMatchingProperties)

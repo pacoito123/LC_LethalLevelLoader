@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -10,16 +8,27 @@ namespace LethalLevelLoader
     {
         public ExtendedMod ExtendedMod { get; internal set; }
         public ContentType ContentType { get; internal set; } = ContentType.Vanilla;
-        /*Obsolete*/ public List<string> ContentTagStrings { get; internal set; } = new List<string>();
         [field: SerializeField] public List<ContentTag> ContentTags { get; internal set; } = new List<ContentTag>();
-        //public List<string> ContentTagsAsStrings => ContentTags.Select(t => t.contentTagName).ToList();
 
         public string ModName => ExtendedMod.ModName;
         public string AuthorName => ExtendedMod.AuthorName;
 
         public string UniqueIdentificationName => AuthorName.ToLowerInvariant() + "." + ModName.ToLowerInvariant() + "." + name.ToLowerInvariant();
 
+        [Obsolete] public List<string> ContentTagStrings { get; internal set; } = [];
+
         internal virtual void TryCreateMatchingProperties()
+        {
+
+        }
+
+        internal virtual (bool result, string log) TryValidateContent()
+        {
+            // TODO: General content validation.
+            return (true, string.Empty);
+        }
+
+        internal virtual void ConvertObsoleteValues()
         {
 
         }

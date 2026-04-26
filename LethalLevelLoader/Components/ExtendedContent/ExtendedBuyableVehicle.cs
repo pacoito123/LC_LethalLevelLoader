@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Unity.Netcode;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -24,6 +22,22 @@ namespace LethalLevelLoader
             newExtendedBuyableVehicle.BuyableVehicle = newBuyableVehicle;
 
             return (newExtendedBuyableVehicle);
+        }
+
+        internal override (bool result, string log) TryValidateContent()
+        {
+            if (BuyableVehicle == null)
+                return ((false, "BuyableVehicle Was Null Or Empty"));
+            if (BuyableVehicle.vehiclePrefab == null)
+                return ((false, "Vehicle Prefab Was Null Or Empty"));
+            else if (BuyableVehicle.secondaryPrefab == null)
+                return ((false, "Vehicle Secondary Prefab Was Null Or Empty"));
+            else if (!BuyableVehicle.vehiclePrefab.TryGetComponent<NetworkObject>(out _))
+                return ((false, "Vehicle Prefab Is Missing NetworkObject Component"));
+            else if (!BuyableVehicle.secondaryPrefab.TryGetComponent<NetworkObject>(out _))
+                return ((false, "Vehicle Secondary Prefab Is Missing NetworkObject Component"));
+            else
+                return (base.TryValidateContent());
         }
     }
 }

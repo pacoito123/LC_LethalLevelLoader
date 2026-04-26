@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace LethalLevelLoader
 {
@@ -20,5 +17,19 @@ namespace LethalLevelLoader
         [HideInInspector] internal int newStoryLogID;
 
         [HideInInspector] internal TerminalNode assignedNode;
+
+        internal override (bool result, string log) TryValidateContent()
+        {
+            if (string.IsNullOrEmpty(sceneName))
+                return ((false, "StoryLog SceneName Was Null Or Empty"));
+            if (string.IsNullOrEmpty(terminalKeywordNoun))
+                return ((false, "StoryLog TerminalKeywordNoun Was Null Or Empty"));
+            if (string.IsNullOrEmpty(storyLogTitle))
+                return ((false, "StoryLog Title Was Null Or Empty"));
+            if (string.IsNullOrEmpty(storyLogDescription))
+                return ((false, "StoryLog Description Was Null Or Empty"));
+            else
+                return (base.TryValidateContent());
+        }
     }
 }

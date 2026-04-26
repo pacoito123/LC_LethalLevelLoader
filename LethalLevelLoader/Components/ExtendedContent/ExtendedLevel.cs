@@ -156,6 +156,7 @@ namespace LethalLevelLoader
 
             return (newExtendedLevel);
         }
+
         internal void Initialize(string newContentSourceName, bool generateTerminalAssets)
         {
             bool mainSceneRegistered = false;
@@ -191,7 +192,6 @@ namespace LethalLevelLoader
             if (OverrideNightMusic == null)
                 OverrideNightMusic = LevelLoader.defaultNightMusic;
 
-
             if (ContentType is ContentType.Custom or ContentType.External)
             {
                 name = NumberlessPlanetName.StripSpecialCharacters() + "ExtendedLevel";
@@ -206,11 +206,25 @@ namespace LethalLevelLoader
             if (ContentType == ContentType.Vanilla)
                 GetVanillaInfoNode();
             SetExtendedDungeonFlowMatches();
-
-            //Obsolete
         }
 
-        internal void ConvertObsoleteValues()
+        internal override (bool result, string log) TryValidateContent()
+        {
+            if (SelectableLevel == null)
+                return ((false, "SelectableLevel Was Null"));
+            else if (string.IsNullOrEmpty(SelectableLevel.sceneName))
+                return ((false, "SelectableLevel SceneName Was Null Or Empty"));
+            else if (SelectableLevel.planetPrefab == null)
+                return ((false, "SelectableLevel PlanetPrefab Was Null"));
+            else if (!SelectableLevel.planetPrefab.TryGetComponent(out Animator planetPrefabAnimator))
+                return ((false, "SelectableLevel PlanetPrefab Animator Was Null"));
+            else if (planetPrefabAnimator.runtimeAnimatorController == null)
+                return ((false, "SelectableLevel PlanetPrefab Animator AnimatorController Was Null"));
+            else
+                return (base.TryValidateContent());
+        }
+
+        internal override void ConvertObsoleteValues()
         {
             if (levelTags.Count > 0 && ContentTags.Count == 0)
             {
@@ -255,7 +269,6 @@ namespace LethalLevelLoader
             foreach (IntWithRarity intWithRarity in SelectableLevel.dungeonFlowTypes)
                 if (DungeonManager.TryGetExtendedDungeonFlow(Patches.RoundManager.dungeonFlowTypes[intWithRarity.id].dungeonFlow, out ExtendedDungeonFlow extendedDungeonFlow))
                     extendedDungeonFlow.LevelMatchingProperties.planetNames.Add(new StringWithRarity(NumberlessPlanetName, intWithRarity.rarity));
-
 
             if (SelectableLevel.sceneName == "Level4March")
                 foreach (IndoorMapType indoorMapType in Patches.RoundManager.dungeonFlowTypes)

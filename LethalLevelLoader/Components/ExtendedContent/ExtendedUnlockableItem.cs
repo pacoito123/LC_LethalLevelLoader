@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -44,6 +45,22 @@ namespace LethalLevelLoader
             extendedMod.RegisterExtendedContent(extendedUnlockableItem);
 
             return (extendedUnlockableItem);
+        }
+
+        internal override (bool result, string log) TryValidateContent()
+        {
+            if (UnlockableItem.unlockableType == 1 && !UnlockableItem.alreadyUnlocked)
+            {
+                if (UnlockableItem.prefabObject == null)
+                    return ((false, "Unlockable Item Prefab Was Null Or Empty"));
+                else if (!UnlockableItem.prefabObject.TryGetComponent(out NetworkObject _))
+                    return ((false, "Unlockable Item Prefab Is Missing NetworkObject Component"));
+                else if (!UnlockableItem.prefabObject.TryGetComponent(out AutoParentToShip _))
+                    return ((false, "Unlockable Item Prefab Is Missing AutoParentToShip Component"));
+            }
+            else if (UnlockableItem.unlockableType == 0 && UnlockableItem.suitMaterial == null)
+                return ((false, "Unlockable Suit Is Missing Suit Material"));
+            return (base.TryValidateContent());
         }
     }
 }

@@ -3,7 +3,6 @@ using DunGen.Graph;
 using GameNetcodeStuff;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -140,7 +139,13 @@ namespace LethalLevelLoader
             LevelMatchingProperties.ApplyValues(newAuthorNames: manualContentSourceNameReferenceList, newPlanetNames: manualPlanetNameReferenceList, newLevelTags: dynamicLevelTagsList, newRoutePrices: dynamicRoutePricesList, newCurrentWeathers: dynamicCurrentWeatherList);
         }
 
-        internal void ConvertObsoleteValues()
+        internal override (bool result, string log) TryValidateContent()
+        {
+            // TODO: Interior validation.
+            return (base.TryValidateContent());
+        }
+
+        internal override void ConvertObsoleteValues()
         {
             if (DungeonFlow == null && dungeonFlow != null)
             {
