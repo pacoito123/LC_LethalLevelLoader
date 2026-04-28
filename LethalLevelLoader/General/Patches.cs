@@ -549,6 +549,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             LevelLoader.RefreshShipAnimatorClips(currentLevel);
             LevelLoader.RefreshWeatherEffects(currentLevel);
             LevelLoader.RefreshTimeOfDayMusic(currentLevel);
+            SceneManager.sceneUnloaded += TerrainManager.CleanupTerrainFootsteps;
         }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), HarmonyPrefix, HarmonyPriority(priority)]
@@ -811,11 +812,74 @@ if (AssetBundleLoader.noBundlesFound == true)
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.GetCurrentMaterialStandingOn)), HarmonyTranspiler, HarmonyPriority(priority)]
-        internal static IEnumerable<CodeInstruction> PlayerControllerBGetCurrentMaterialStandingOn_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        internal static IEnumerable<CodeInstruction> SwapActiveTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
+            MethodInfo terrainGetComponentInfo = typeof(Component).GetMethod(nameof(Component.GetComponent), 1, []).MakeGenericMethod(typeof(Terrain));
+            CodeMatcher codeMatcher = new CodeMatcher(instructions).MatchForward(useEnd: false,
+                new(OpCodes.Callvirt, terrainGetComponentInfo),
+                new(OpCodes.Ldnull),
+                new(OpCodes.Call));
+
+            if (codeMatcher.IsInvalid)
+            {
+                DebugHelper.LogError("Could not match GetComponent<Terrain>() call.", DebugType.User);
+                return instructions;
+            }
+
+            Type genericType = Type.MakeGenericMethodParameter(0).MakeByRefType();
+            MethodInfo terrainTryGetComponentInfo = typeof(Component).GetMethod(nameof(Component.TryGetComponent), 1, [genericType]).MakeGenericMethod(typeof(Terrain));
+            _ = codeMatcher.RemoveInstructions(3)
+            .InsertAndAdvance(
+                new(OpCodes.Ldloca_S, (sbyte)0),
+                new(OpCodes.Callvirt, terrainTryGetComponentInfo))
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Stloc_0));
+
+            if (codeMatcher.IsInvalid)
+            {
+                DebugHelper.LogError("Could not match Terrain local variable assignment.", DebugType.User);
+                return instructions;
+            }
+
+            _ = codeMatcher.SetOpcodeAndAdvance(OpCodes.Pop) // Not removing Terrain.activeTerrain call before this in case any other Transpiler expects it to still be there.
+            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Stloc_1));
+
+            if (codeMatcher.Advance(1).IsInvalid)
+            {
+                DebugHelper.LogError("Could not match TerrainData local variable assignment.", DebugType.User);
+                return instructions;
+            }
+
+            MethodInfo swapTerrainAlphaMapInfo = typeof(Patches).GetMethod(nameof(SwapTerrainAlphaMap), BindingFlags.Static | BindingFlags.NonPublic);
+            _ = codeMatcher.Insert(
+                new(OpCodes.Ldloc_0),
+                new(OpCodes.Ldloc_1),
+                new(OpCodes.Call, swapTerrainAlphaMapInfo));
+
+            return codeMatcher.InstructionEnumeration();
+        }
+
+        private static void SwapTerrainAlphaMap(Terrain terrain, TerrainData terrainData)
+        {
+            if (TerrainManager.CurrentTerrain == terrain) return;
+            TerrainManager.CurrentTerrain = terrain;
+
+            if (!TerrainManager.TerrainAlphaMaps.TryGetValue(terrain, out float[,,] alphaMaps))
+            {
+                alphaMaps = terrainData.GetAlphamaps(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
+                TerrainManager.TerrainAlphaMaps[terrain] = alphaMaps;
+            }
+
+            StartOfRound.Instance.currentTerrainAlphaMaps = alphaMaps;
+            StartOfRound.Instance.gotCurrentTerrainAlphamaps = true;
+        }
+
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.GetCurrentMaterialStandingOn)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> RestoreOldFootsteps_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            FieldInfo currentFootstepSurfaceIndexInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.Public);
             CodeMatcher codeMatcher = new CodeMatcher(instructions, generator).MatchForward(useEnd: false,
                 new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldfld, typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.Public)),
+                new(OpCodes.Ldfld, currentFootstepSurfaceIndexInfo),
                 new(OpCodes.Ldc_I4_S, (sbyte)12), // Match immediately before Gunkfish slime footstep check.
                 new(OpCodes.Beq));
 
@@ -839,7 +903,6 @@ if (AssetBundleLoader.noBundlesFound == true)
 
             MethodInfo currentExtendedLevelGetter = typeof(LevelManager).GetProperty(nameof(LevelManager.CurrentExtendedLevel), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
             MethodInfo useTerrainFootstepsGetter = typeof(ExtendedLevel).GetProperty(nameof(ExtendedLevel.UseTerrainFootsteps), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
-
             return codeMatcher.Insert( // Insert call to 'LevelManager.CurrentExtendedLevel.UseTerrainFootsteps' and jump to Gunkfish slime footstep check if false.
                 new(OpCodes.Call, currentExtendedLevelGetter),
                 new(OpCodes.Callvirt, useTerrainFootstepsGetter),
@@ -849,23 +912,6 @@ if (AssetBundleLoader.noBundlesFound == true)
             .SetOperandAndAdvance(checkStandingOnTerrainTarget) // Update target position of the matched 'brfalse' instruction.
             .InstructionEnumeration();
         }
-
-        /* [HarmonyPatch(typeof(PlayerControllerB), "GetCurrentMaterialStandingOn"), HarmonyPostfix, HarmonyPriority(priority)]
-        internal static void PlayerControllerBGetCurrentMaterialStandingOn_Postfix(PlayerControllerB __instance)
-        {
-            if (LevelLoader.TryGetFootstepSurface(__instance.hit.collider, out FootstepSurface footstepSurface))
-            {
-                for (int i = 0; i < StartOfRound.footstepSurfaces.Length; i++)
-                {
-                    FootstepSurface surface = StartOfRound.footstepSurfaces[i];
-                    if (surface != null && surface == footstepSurface)
-                    {
-                        __instance.currentFootstepSurfaceIndex = i;
-                        break;
-                    }
-                }
-            }
-        } */
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnClientConnect)), HarmonyPostfix, HarmonyPriority(priority)]
         internal static void StartOfRoundOnClientConnect_Postfix()
