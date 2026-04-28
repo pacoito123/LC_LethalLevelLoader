@@ -18,9 +18,9 @@ namespace LethalLevelLoader
 
         [field: Header("Extended Feature Settings")]
         [field: SerializeField] public bool OverrideDynamicRiskLevelAssignment { get; set; } = false;
-        [field: Tooltip("Disable to use Terrain layers for Player footstep sound effects instead of GameObject tags. "
-            + "Enabled by default for older moons to keep their intended footstep sounds.")]
-        [field: SerializeField] public bool OverrideTerrainFootsteps { get; set; } = true;
+        [field: Tooltip("Enable to use Terrain layers for Player footstep sound effects instead of GameObject tags, when applicable. "
+            + "Disabled by default for older moons to keep their intended (original) footstep sounds.")]
+        [field: SerializeField] public bool UseTerrainFootsteps { get; set; }
 
         [field: Space(5)]
 

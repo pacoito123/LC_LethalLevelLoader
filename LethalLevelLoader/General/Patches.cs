@@ -838,12 +838,12 @@ if (AssetBundleLoader.noBundlesFound == true)
             }
 
             MethodInfo currentExtendedLevelGetter = typeof(LevelManager).GetProperty(nameof(LevelManager.CurrentExtendedLevel), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
-            MethodInfo overrideTerrainFootstepsGetter = typeof(ExtendedLevel).GetProperty(nameof(ExtendedLevel.OverrideTerrainFootsteps), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            MethodInfo useTerrainFootstepsGetter = typeof(ExtendedLevel).GetProperty(nameof(ExtendedLevel.UseTerrainFootsteps), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
 
-            return codeMatcher.Insert( // Insert call to 'LevelManager.CurrentExtendedLevel.OverrideTerrainFootsteps' and jump to Gunkfish slime footstep check if true.
+            return codeMatcher.Insert( // Insert call to 'LevelManager.CurrentExtendedLevel.UseTerrainFootsteps' and jump to Gunkfish slime footstep check if false.
                 new(OpCodes.Call, currentExtendedLevelGetter),
-                new(OpCodes.Callvirt, overrideTerrainFootstepsGetter),
-                new(OpCodes.Brtrue, terrainFootstepOverrideTarget))
+                new(OpCodes.Callvirt, useTerrainFootstepsGetter),
+                new(OpCodes.Brfalse, terrainFootstepOverrideTarget))
             .CreateLabel(out Label checkStandingOnTerrainTarget)
             .Advance(-2)
             .SetOperandAndAdvance(checkStandingOnTerrainTarget) // Update target position of the matched 'brfalse' instruction.

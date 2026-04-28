@@ -139,12 +139,31 @@ namespace LethalLevelLoader
 
         internal override (bool result, string log) TryValidateContent()
         {
+            int removedMapHazards = IndoorMapHazards.RemoveAll(mapHazard => mapHazard == null || mapHazard.hazardType == null || mapHazard.hazardType.prefabToSpawn == null);
+            if (removedMapHazards > 0)
+                DebugHelper.LogWarning($"Removed '{removedMapHazards}' missing or empty IndoorMapHazard spawns in ExtendedDungeonFlow: {name}", DebugType.User);
+
             if (DungeonFlow == null)
                 return ((false, "DungeonFlow Was Null"));
             if (DungeonFlow.Nodes == null || DungeonFlow.Nodes.Count == 0)
                 return ((false, "DungeonFlow Nodes List Was Null Or Empty"));
             if (DungeonFlow.Lines == null || DungeonFlow.Lines.Count == 0)
                 return ((false, "DungeonFlow Lines List Was Null Or Empty"));
+
+            for (int i = 0; i < AllTiles.Length; i++) // TODO: More thorough/comprehensive Tile and DungeonFlow validation.
+            {
+                Tile tile = AllTiles[i];
+                if (tile.AllDoorways.Count > 0 || tile.UsedDoorways.Count > 0 || tile.UnusedDoorways.Count > 0)
+                {
+                    DebugHelper.LogWarning($"Tile '{tile.name}' does not have its 'AllDoorways', 'UsedDoorways', or 'UnusedDoorways' lists empty! Clearing them all to avoid generation issues...", DebugType.Developer);
+                    tile.AllDoorways.Clear();
+                    tile.UsedDoorways.Clear();
+                    tile.UnusedDoorways.Clear();
+                }
+                // int removedEntrances = tile.Entrances.RemoveAll(doorway => doorway == null || doorway.socket == null);
+                // int removedExits = tile.Exits.RemoveAll(doorway => doorway == null || doorway.socket == null);
+            }
+
             return (base.TryValidateContent());
         }
 
