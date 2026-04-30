@@ -189,6 +189,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                 DebugStopwatch.StartStopWatch("Scrape Vanilla Content");
                 ContentExtractor.TryScrapeVanillaItems(StartOfRound);
                 ContentExtractor.TryScrapeVanillaUnlockableItems(StartOfRound);
+                ContentExtractor.TryScrapeVanillaFootstepSurfaces(StartOfRound);
                 ContentExtractor.TryScrapeVanillaContent(StartOfRound, RoundManager);
                 ContentExtractor.ObtainSpecialItemReferences();
 
@@ -233,7 +234,8 @@ if (AssetBundleLoader.noBundlesFound == true)
                 AssetBundleLoader.CreateVanillaExtendedItems();
                 AssetBundleLoader.CreateVanillaExtendedEnemyTypes();
                 AssetBundleLoader.CreateVanillaExtendedBuyableVehicles();
-                AssetBundleLoader.CreateVanillaExtendedUnlockableItems(StartOfRound);
+                AssetBundleLoader.CreateVanillaExtendedUnlockableItems();
+                AssetBundleLoader.CreateVanillaExtendedFootstepSurfaces();
 
                 DebugStopwatch.StartStopWatch("Initialize Custom ExtendedContent"); // this is not used
                 //Initialize ExtendedContent Objects For Custom Content.
@@ -350,6 +352,11 @@ if (AssetBundleLoader.noBundlesFound == true)
                     TerminalManager.CreateUnlockableItemTerminalData(customExtendedUnlockableItem);
             }
 
+            DebugStopwatch.StartStopWatch("ExtendedFootstepSurface Injection");
+            if (Plugin.IsSetupComplete == false)
+                FootstepSurfaceManager.MergeExtendedFootstepSurfaces();
+            FootstepSurfaceManager.PatchVanillaFootstepSurfaceLists();
+
             DebugStopwatch.StartStopWatch("Create ExtendedLevelGroups & Filter Assets");
 
             //Populate SelectableLevel Data To Be Used In Overhaul Of The Terminal Moons Catalogue.
@@ -410,8 +417,6 @@ if (AssetBundleLoader.noBundlesFound == true)
                 }
                 // ...
             }
-
-            LevelLoader.defaultFootstepSurfaces = new List<FootstepSurface>(StartOfRound.footstepSurfaces).ToArray();
 
             DebugStopwatch.StartStopWatch("Initialize Save");
 

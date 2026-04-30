@@ -33,12 +33,18 @@ namespace LethalLevelLoader
             OriginalContent.ItemGroups = OriginalContent.ItemGroups.Distinct().ToList();
 
         }
+
         internal static void TryScrapeVanillaUnlockableItems(StartOfRound startOfRound)
         {
             foreach (UnlockableItem item in startOfRound.unlockablesList.unlockables)
                 if (!OriginalContent.UnlockableItems.Contains(item))
                     OriginalContent.UnlockableItems.Add(item);
+        }
 
+        internal static void TryScrapeVanillaFootstepSurfaces(StartOfRound startOfRound)
+        {
+            if (OriginalContent.FootstepSurfaces.Count == 0)
+                OriginalContent.FootstepSurfaces = [.. startOfRound.footstepSurfaces];
         }
 
         internal static void TryScrapeVanillaContent(StartOfRound startOfRound, RoundManager roundManager)

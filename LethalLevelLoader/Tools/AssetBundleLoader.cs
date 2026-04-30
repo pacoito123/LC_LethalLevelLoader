@@ -518,6 +518,12 @@ namespace LethalLevelLoader
                     extendedUnlockableItem.Initialize();
                     PatchedContent.ExtendedUnlockableItems.Add(extendedUnlockableItem);
                 }
+                foreach (ExtendedFootstepSurface extendedFootstepSurface in extendedMod.ExtendedFootstepSurfaces)
+                {
+                    extendedFootstepSurface.ContentType = ContentType.Custom;
+                    extendedFootstepSurface.Initialize();
+                    PatchedContent.ExtendedFootstepSurfaces.Add(extendedFootstepSurface);
+                }
             }
             //DebugHelper.DebugAllLevels();
         }
@@ -688,6 +694,30 @@ namespace LethalLevelLoader
             ExtendedUnlockableItem newExtendedVanillaUnlockableItem = ExtendedUnlockableItem.Create(unlockableItem, PatchedContent.VanillaMod, ContentType.Vanilla);
             PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedVanillaUnlockableItem);
             PatchedContent.ExtendedUnlockableItems.Add(newExtendedVanillaUnlockableItem);
+        }
+
+        internal static void CreateVanillaExtendedFootstepSurfaces()
+        {
+            for (int footstepIndex = 0; footstepIndex < OriginalContent.FootstepSurfaces.Count; footstepIndex++)
+            {
+                TerrainWithIndices[] terrainWithIndices = footstepIndex switch
+                {
+                    // Grass:
+                    4 => [new("VowTerrain", 0, 1), new("MarchTerrainNew", 0, 2), new("ConstancyTerrain", 0, 2)],
+                    // Rock:
+                    5 => [new("VowTerrain", 2), new("MarchTerrainNew", 1), new("ConstancyTerrain", 1)],
+                    _ => null,
+                };
+                CreateVanillaExtendedFootstepSurface(OriginalContent.FootstepSurfaces[footstepIndex], terrainWithIndices);
+            }
+        }
+
+        internal static void CreateVanillaExtendedFootstepSurface(FootstepSurface footstepSurface, TerrainWithIndices[] associatedTerrains)
+        {
+            ExtendedFootstepSurface newExtendedFootstepSurface = ExtendedFootstepSurface.Create(footstepSurface, associatedTerrains);
+            newExtendedFootstepSurface.Initialize();
+            PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedFootstepSurface);
+            PatchedContent.ExtendedFootstepSurfaces.Add(newExtendedFootstepSurface);
         }
 
         internal static bool NetworkRegisterDungeonContent(ExtendedDungeonFlow extendedDungeonFlow, NetworkManager networkManager)

@@ -237,6 +237,34 @@ namespace LethalLevelLoader
         }
 
 
+
+        public static List<ExtendedFootstepSurface> ExtendedFootstepSurfaces { get; internal set; } = new List<ExtendedFootstepSurface>();
+
+        public static List<ExtendedFootstepSurface> CustomExtendedFootstepSurfaces
+        {
+            get
+            {
+                List<ExtendedFootstepSurface> returnList = new List<ExtendedFootstepSurface>();
+                foreach (ExtendedFootstepSurface extendedFootstepSurface in ExtendedFootstepSurfaces)
+                    if (extendedFootstepSurface.ContentType == ContentType.Custom)
+                        returnList.Add(extendedFootstepSurface);
+                return (returnList);
+            }
+        }
+
+        public static List<ExtendedFootstepSurface> VanillaExtendedFootstepSurfaces
+        {
+            get
+            {
+                List<ExtendedFootstepSurface> returnList = new List<ExtendedFootstepSurface>();
+                foreach (ExtendedFootstepSurface extendedFootstepSurface in ExtendedFootstepSurfaces)
+                    if (extendedFootstepSurface.ContentType == ContentType.Vanilla)
+                        returnList.Add(extendedFootstepSurface);
+                return (returnList);
+            }
+        }
+
+
         public static List<AudioMixer> AudioMixers { get; internal set; } = new List<AudioMixer>();
 
         public static List<AudioMixerGroup> AudioMixerGroups { get; internal set; } = new List<AudioMixerGroup>();
@@ -406,6 +434,10 @@ namespace LethalLevelLoader
         //Unlockable Items
 
         public static List<UnlockableItem> UnlockableItems { get; internal set; } = new List<UnlockableItem>();
+
+        //Footstep Surfaces
+
+        public static List<FootstepSurface> FootstepSurfaces { get; internal set; } = new List<FootstepSurface>();
 
         //Enemies
 
