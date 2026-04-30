@@ -554,7 +554,11 @@ if (AssetBundleLoader.noBundlesFound == true)
             LevelLoader.RefreshShipAnimatorClips(currentLevel);
             LevelLoader.RefreshWeatherEffects(currentLevel);
             LevelLoader.RefreshTimeOfDayMusic(currentLevel);
-            SceneManager.sceneUnloaded += TerrainManager.CleanupTerrainFootsteps;
+            if (currentLevel.UseTerrainFootsteps)
+            {
+                TerrainManager.BakeTerrainFootsteps();
+                SceneManager.sceneUnloaded += TerrainManager.CleanupTerrainFootsteps;
+            }
         }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), HarmonyPrefix, HarmonyPriority(priority)]
@@ -855,27 +859,58 @@ if (AssetBundleLoader.noBundlesFound == true)
             }
 
             MethodInfo swapTerrainAlphaMapInfo = typeof(Patches).GetMethod(nameof(SwapTerrainAlphaMap), BindingFlags.Static | BindingFlags.NonPublic);
-            _ = codeMatcher.Insert(
+            return codeMatcher.Insert(
                 new(OpCodes.Ldloc_0),
-                new(OpCodes.Ldloc_1),
-                new(OpCodes.Call, swapTerrainAlphaMapInfo));
-
-            return codeMatcher.InstructionEnumeration();
+                new(OpCodes.Call, swapTerrainAlphaMapInfo))
+            .InstructionEnumeration();
         }
 
-        private static void SwapTerrainAlphaMap(Terrain terrain, TerrainData terrainData)
+        private static void SwapTerrainAlphaMap(Terrain terrain)
         {
             if (TerrainManager.CurrentTerrain == terrain) return;
             TerrainManager.CurrentTerrain = terrain;
 
             if (!TerrainManager.TerrainAlphaMaps.TryGetValue(terrain, out float[,,] alphaMaps))
             {
+                TerrainData terrainData = terrain.terrainData;
                 alphaMaps = terrainData.GetAlphamaps(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
                 TerrainManager.TerrainAlphaMaps[terrain] = alphaMaps;
             }
 
             StartOfRound.Instance.currentTerrainAlphaMaps = alphaMaps;
-            StartOfRound.Instance.gotCurrentTerrainAlphamaps = true;
+            StartOfRound.Instance.gotCurrentTerrainAlphamaps = alphaMaps != null;
+        }
+
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.GetCurrentMaterialStandingOn)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> SwapFootstepSurface_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            MethodInfo startOfRoundGetter = typeof(StartOfRound).GetProperty(nameof(StartOfRound.Instance), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
+            FieldInfo currentLevelInfo = typeof(StartOfRound).GetField(nameof(StartOfRound.currentLevel), BindingFlags.Instance | BindingFlags.Public);
+            FieldInfo levelIDInfo = typeof(SelectableLevel).GetField(nameof(SelectableLevel.levelID), BindingFlags.Instance | BindingFlags.Public);
+            CodeMatcher codeMatcher = new CodeMatcher(instructions, generator).MatchForward(useEnd: false,
+                new(OpCodes.Call, startOfRoundGetter),
+                new(OpCodes.Ldfld, currentLevelInfo),
+                new(OpCodes.Ldfld, levelIDInfo),
+                new(OpCodes.Ldc_I4_2)); // Match immediately before Vow level check.
+
+            if (codeMatcher.IsInvalid)
+            {
+                DebugHelper.LogError("Could not match Vow level check.", DebugType.User);
+                return instructions;
+            }
+
+            MethodInfo tryGetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetFootstepSurfaceIndex), BindingFlags.Static | BindingFlags.Public);
+            FieldInfo currentFootstepSurfaceIndexInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.Public);
+            return codeMatcher.CreateLabel(out Label vanillaFootstepsTarget)
+            .Insert( // Insert call to 'FootstepSurfaceManager.TryGetFootstepSurfaceIndex()' and jump to vanilla footstep target if false.
+                new(OpCodes.Ldloc_1),
+                new(OpCodes.Ldloc_3),
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldflda, currentFootstepSurfaceIndexInfo),
+                new(OpCodes.Call, tryGetFootstepSurfaceIndexInfo),
+                new(OpCodes.Brfalse, vanillaFootstepsTarget),
+                new(OpCodes.Ret))
+            .InstructionEnumeration();
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.GetCurrentMaterialStandingOn)), HarmonyTranspiler, HarmonyPriority(priority)]

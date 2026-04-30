@@ -66,13 +66,7 @@ namespace LethalLevelLoader
         internal static AudioClip defaultLateDayMusic;
         internal static AudioClip defaultNightMusic;
 
-        internal static FootstepSurface[] defaultFootstepSurfaces;
-
-        internal static Dictionary<Collider, List<Material>> cachedLevelColliderMaterialDictionary = new Dictionary<Collider, List<Material>>();
-        internal static Dictionary<string, List<Collider>> cachedLevelMaterialColliderDictionary = new Dictionary<string, List<Collider>>();
-        internal static Dictionary<string, FootstepSurface> activeExtendedFootstepSurfaceDictionary = new Dictionary<string, FootstepSurface>();
-        internal static LayerMask triggerMask;
-
+        // Vanilla shaders
         internal static Shader vanillaWaterShader;
         internal static Shader vanillaWavingGrassShader;
         internal static LocalKeyword[] vanillaWaterShaderKeywords;

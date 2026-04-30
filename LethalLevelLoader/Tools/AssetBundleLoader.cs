@@ -683,7 +683,7 @@ namespace LethalLevelLoader
             PatchedContent.ExtendedBuyableVehicles.Add(newExtendedVanillaBuyableVehicle);
         }
 
-        internal static void CreateVanillaExtendedUnlockableItems(StartOfRound startOfRound)
+        internal static void CreateVanillaExtendedUnlockableItems()
         {
             foreach (UnlockableItem vanillaUnlockableItem in OriginalContent.UnlockableItems)
                 CreateVanillaExtendedUnlockableItem(vanillaUnlockableItem);

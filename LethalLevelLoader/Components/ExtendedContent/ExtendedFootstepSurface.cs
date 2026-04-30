@@ -57,6 +57,9 @@ public class ExtendedFootstepSurface : ExtendedContent
                 DebugHelper.LogWarning($"Terrain name {associatedTerrain.terrainName} registered more than once in FootstepSurface: {name}", DebugType.Developer);
     }
 
+    internal bool IsTerrainMatch(TerrainData terrainData) => AssociatedTerrainNames.ContainsKey(terrainData.name);
+    internal bool IsTerrainMatch(TerrainData terrainData, int terrainLayer) => AssociatedTerrainNames.TryGetValue(terrainData.name, out byte terrainMask) && ((byte)(1 << terrainLayer) & terrainMask) != 0;
+
     internal override (bool result, string log) TryValidateContent()
     {
         if (FootstepSurface == null)

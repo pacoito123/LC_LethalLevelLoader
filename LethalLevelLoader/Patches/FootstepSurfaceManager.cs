@@ -44,5 +44,14 @@ namespace LethalLevelLoader
             PatchedContent.ExtendedFootstepSurfaces = [.. surfaceTagExtendedFootstepDict.Values];
             PatchedContent.ExtendedFootstepSurfaces.ForEach(static surface => surface.RefreshAssociatedTerrainNames());
         }
+
+        public static bool TryGetFootstepSurfaceIndex(TerrainData terrainData, int terrainLayer, out int footstepSurfaceIndex)
+        {
+            footstepSurfaceIndex = -1;
+            if (TerrainManager.TerrainFootstepsDict.TryGetValue(terrainData, out ExtendedFootstepSurface[] extendedFootsteps))
+                if (terrainLayer < extendedFootsteps.Length)
+                    footstepSurfaceIndex = extendedFootsteps[terrainLayer].SurfaceIndex;
+            return (footstepSurfaceIndex > 0);
+        }
     }
 }
