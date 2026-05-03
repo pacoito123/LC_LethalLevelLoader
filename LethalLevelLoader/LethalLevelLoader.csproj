@@ -37,8 +37,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Evaisa.LethalLib" Version="1.1.1" PrivateAssets="all" />
-    <PackageReference Include="TeamXiaolan.DawnLib" Version="0.8.*" PrivateAssets="all" />
+    <PackageReference Include="Evaisa.LethalLib" Version="1.2.*" PrivateAssets="all" />
+    <PackageReference Include="TeamXiaolan.DawnLib" Version="0.9.*" PrivateAssets="all" />
     <PackageReference Include="MinVer" Version="4.*" PrivateAssets="all" Private="false" />
   </ItemGroup>
 
@@ -64,7 +64,7 @@
 
   <ItemGroup>
     <PackageReference Include="MaxWasUnavailable.LethalModDataLib" Version="1.2.2" PrivateAssets="all" />
-    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="81.0.0-ngd.0" PrivateAssets="all" Publicize="true" />
+    <PackageReference Include="LethalCompany.GameLibs.Steam" Version="81.0.5-ngd.0" PrivateAssets="all" Publicize="true" />
   </ItemGroup>
 
   <!-- <ItemGroup>

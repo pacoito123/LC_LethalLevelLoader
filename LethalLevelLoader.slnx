@@ -1,0 +1,4 @@
+﻿<Solution>
+	<Project Path="LethalLevelLoader/LethalLevelLoader.csproj" />
+	<Project Path="LethalLevelLoader.Patcher/LethalLevelLoader.Patcher.csproj" />
+</Solution>
