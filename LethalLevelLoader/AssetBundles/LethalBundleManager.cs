@@ -232,6 +232,10 @@ namespace LethalLevelLoader
             {
                 extendedMod = GetOrCreateExtendedMod(source, extendedUnlockableItem.name.RemoveWhitespace());
             }
+            else if (extendedContent is ExtendedFootstepSurface extendedFootstepSurface)
+            {
+                extendedMod = GetOrCreateExtendedMod(source, extendedFootstepSurface.name.RemoveWhitespace());
+            }
 
             if (extendedMod != null)
             {

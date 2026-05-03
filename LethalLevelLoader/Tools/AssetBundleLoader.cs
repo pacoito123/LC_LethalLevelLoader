@@ -700,6 +700,12 @@ namespace LethalLevelLoader
         {
             for (int footstepIndex = 0; footstepIndex < OriginalContent.FootstepSurfaces.Count; footstepIndex++)
             {
+                FootstepSurface vanillaFootstepSurface = OriginalContent.FootstepSurfaces[footstepIndex];
+                if (vanillaFootstepSurface == null) continue;
+
+                if (!Enum.TryParse(vanillaFootstepSurface.surfaceTag, out VanillaSurfaceTags vanillaSurfaceTag))
+                    vanillaSurfaceTag = VanillaSurfaceTags.None;
+                bool allowSinking = footstepIndex is 1 or 4 or 7 or 8; // Gravel, Grass, Tiles, Snow
                 TerrainWithIndices[] terrainWithIndices = footstepIndex switch
                 {
                     // Grass:
@@ -708,13 +714,13 @@ namespace LethalLevelLoader
                     5 => [new("VowTerrain", 2), new("MarchTerrainNew", 1), new("ConstancyTerrain", 1)],
                     _ => null,
                 };
-                CreateVanillaExtendedFootstepSurface(OriginalContent.FootstepSurfaces[footstepIndex], terrainWithIndices);
+                CreateVanillaExtendedFootstepSurface(OriginalContent.FootstepSurfaces[footstepIndex], vanillaSurfaceTag, allowSinking, terrainWithIndices);
             }
         }
 
-        internal static void CreateVanillaExtendedFootstepSurface(FootstepSurface footstepSurface, TerrainWithIndices[] associatedTerrains)
+        internal static void CreateVanillaExtendedFootstepSurface(FootstepSurface footstepSurface, VanillaSurfaceTags useVanillaTag, bool allowSinking, TerrainWithIndices[] associatedTerrains)
         {
-            ExtendedFootstepSurface newExtendedFootstepSurface = ExtendedFootstepSurface.Create(footstepSurface, associatedTerrains);
+            ExtendedFootstepSurface newExtendedFootstepSurface = ExtendedFootstepSurface.Create(footstepSurface, useVanillaTag, allowSinking, associatedTerrains);
             newExtendedFootstepSurface.Initialize();
             PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedFootstepSurface);
             PatchedContent.ExtendedFootstepSurfaces.Add(newExtendedFootstepSurface);

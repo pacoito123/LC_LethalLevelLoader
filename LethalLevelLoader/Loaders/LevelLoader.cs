@@ -244,18 +244,6 @@ namespace LethalLevelLoader
             }
         }
 
-        /* internal static void RefreshFootstepSurfaces()
-        {
-            List<FootstepSurface> activeFootstepSurfaces = new List<FootstepSurface>(defaultFootstepSurfaces);
-            foreach (ExtendedFootstepSurface extendedSurface in LevelManager.CurrentExtendedLevel.ExtendedMod.ExtendedFootstepSurfaces)
-            {
-                extendedSurface.footstepSurface.surfaceTag = "Untagged";
-                activeFootstepSurfaces.Add(extendedSurface.footstepSurface);
-            }
-
-            Patches.StartOfRound.footstepSurfaces = activeFootstepSurfaces.ToArray();
-        } */
-
         private static readonly HashSet<Material> uniqueMaterials = [];
         private static readonly List<GameObject> tempRootObjects = [];
         private static readonly List<Renderer> tempRenderers = [];
@@ -288,21 +276,5 @@ namespace LethalLevelLoader
                             ContentRestorer.TryRestoreShader(sharedMaterial, vanillaWavingGrassShader, vanillaWavingGrassShaderKeywords);
                     }
         }
-
-        /* public static bool TryGetFootstepSurface(Collider collider, out FootstepSurface footstepSurface)
-        {
-            footstepSurface = null;
-
-            if (collider == null)
-                return (false);
-
-            if (cachedLevelColliderMaterialDictionary.TryGetValue(collider, out List<Material> materials))
-                if (materials != null)
-                    foreach (Material material in materials)
-                        if (material != null && !string.IsNullOrEmpty(material.name))
-                            activeExtendedFootstepSurfaceDictionary.TryGetValue(material.name, out footstepSurface);
-
-            return (footstepSurface != null);
-        } */
     }
 }

@@ -901,12 +901,15 @@ if (AssetBundleLoader.noBundlesFound == true)
 
             MethodInfo tryGetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetFootstepSurfaceIndex), BindingFlags.Static | BindingFlags.Public);
             FieldInfo currentFootstepSurfaceIndexInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.Public);
+            FieldInfo standingOnTerrainInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.standingOnTerrain), BindingFlags.Instance | BindingFlags.NonPublic);
             return codeMatcher.CreateLabel(out Label vanillaFootstepsTarget)
             .Insert( // Insert call to 'FootstepSurfaceManager.TryGetFootstepSurfaceIndex()' and jump to vanilla footstep target if false.
                 new(OpCodes.Ldloc_1),
                 new(OpCodes.Ldloc_3),
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldflda, currentFootstepSurfaceIndexInfo),
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldflda, standingOnTerrainInfo),
                 new(OpCodes.Call, tryGetFootstepSurfaceIndexInfo),
                 new(OpCodes.Brfalse, vanillaFootstepsTarget),
                 new(OpCodes.Ret))

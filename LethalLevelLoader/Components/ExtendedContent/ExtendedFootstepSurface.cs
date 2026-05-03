@@ -8,6 +8,7 @@ namespace LethalLevelLoader
     public class ExtendedFootstepSurface : ExtendedContent
     {
         [field: Header("General Settings")]
+        [field: SerializeField] public VanillaSurfaceTags UseVanillaTag { get; set; } = VanillaSurfaceTags.None;
         [field: SerializeField] public FootstepSurface FootstepSurface { get; set; }
 
         [field: Header("Extended Feature Settings")]
@@ -22,11 +23,17 @@ namespace LethalLevelLoader
         [Obsolete] public FootstepSurface footstepSurface;
         [Obsolete] public List<Material> associatedMaterials;
 
-        internal static ExtendedFootstepSurface Create(FootstepSurface newFootstepSurface, params TerrainWithIndices[] newAssociatedTerrains)
+        internal static ExtendedFootstepSurface Create(FootstepSurface newFootstepSurface, VanillaSurfaceTags useVanillaTag, bool allowSinking, params TerrainWithIndices[] newAssociatedTerrains)
         {
             ExtendedFootstepSurface newExtendedFootstepSurface = ScriptableObject.CreateInstance<ExtendedFootstepSurface>();
             newExtendedFootstepSurface.FootstepSurface = newFootstepSurface;
 
+            if (useVanillaTag is not VanillaSurfaceTags.None)
+                newExtendedFootstepSurface.UseVanillaTag = useVanillaTag;
+            else
+                newExtendedFootstepSurface.ContentType = ContentType.External;
+
+            newExtendedFootstepSurface.AllowSinking = allowSinking;
             if (newAssociatedTerrains != null)
                 newExtendedFootstepSurface.AssociatedTerrains = [.. newAssociatedTerrains];
             return (newExtendedFootstepSurface);
@@ -65,11 +72,40 @@ namespace LethalLevelLoader
             if (FootstepSurface == null)
                 return ((false, "FootstepSurface Was Null"));
 
-            // TODO: Some more validation.
-
             if (string.IsNullOrEmpty(FootstepSurface.surfaceTag))
                 FootstepSurface.surfaceTag = "Untagged";
+
+            if (UseVanillaTag is VanillaSurfaceTags.None)
+            {
+                if (FootstepSurface.clips == null || FootstepSurface.clips.Length == 0)
+                    return ((false, "FootstepSurface Clips Were Null Or Empty"));
+                for (int i = 0; i < FootstepSurface.clips.Length; i++)
+                    if (FootstepSurface.clips[i] == null)
+                        return ((false, "A FootstepSurface Clip Was Null Or Missing"));
+                if (FootstepSurface.hitSurfaceSFX == null)
+                    return ((false, "FootstepSurface Hit SFX Was Null Or Missing"));
+                for (int i = 0; i < FootstepSurface.jumpLandSFX?.Length; i++)
+                    if (FootstepSurface.jumpLandSFX[i] == null)
+                        return ((false, "A FootstepSurface Landing SFX Clip Was Null Or Missing"));
+            }
+
             return (base.TryValidateContent());
+        }
+
+        internal override void ConvertObsoleteValues()
+        {
+            if (footstepSurface != null && (footstepSurface.clips?.Length > 0 || footstepSurface.jumpLandSFX?.Length > 0 || footstepSurface.hitSurfaceSFX != null))
+            {
+                DebugHelper.LogWarning("ExtendedFootstepSurface.footstepSurface is Obsolete and will be removed in following releases, Please use ExtendedFootstepSurface.FootstepSurface instead.", DebugType.Developer);
+                FootstepSurface = new()
+                {
+                    surfaceTag = footstepSurface.surfaceTag,
+                    clips = [.. footstepSurface.clips ?? []],
+                    hitSurfaceSFX = footstepSurface.hitSurfaceSFX,
+                    jumpLandSFX = [.. footstepSurface.jumpLandSFX ?? []],
+                };
+                footstepSurface = null;
+            }
         }
     }
 
@@ -94,4 +130,7 @@ namespace LethalLevelLoader
             return indexMask;
         }
     }
+
+    // All Vanilla FootstepSurface tags.
+    public enum VanillaSurfaceTags { None = -1, Concrete, Gravel, Catwalk, Aluminum, Grass, Rock, Puddle, Tiles, Snow, Carpet, Untagged, Wood, Slime, Tree }
 }

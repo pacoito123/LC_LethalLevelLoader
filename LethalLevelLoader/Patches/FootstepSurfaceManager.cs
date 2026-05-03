@@ -20,16 +20,15 @@ namespace LethalLevelLoader
 
         internal static void MergeExtendedFootstepSurfaces()
         {
-            int mergedSurfaces = 0;
-
             foreach (ExtendedFootstepSurface vanillaExtendedFootstepSurface in PatchedContent.VanillaExtendedFootstepSurfaces)
                 if (!surfaceTagExtendedFootstepDict.TryAdd(vanillaExtendedFootstepSurface.FootstepSurface.surfaceTag, vanillaExtendedFootstepSurface))
-                    DebugHelper.LogWarning("", DebugType.Developer);
+                    DebugHelper.LogWarning($"Could not add vanilla tag '{vanillaExtendedFootstepSurface.FootstepSurface.surfaceTag}' to surface tag dictionary.", DebugType.Developer);
 
+            int mergedSurfaces = 0;
             foreach (ExtendedFootstepSurface customExtendedFootstepSurface in PatchedContent.CustomExtendedFootstepSurfaces)
             {
-                string vanillaName = customExtendedFootstepSurface.FootstepSurface.surfaceTag.Split('/')[^1];
-                if (surfaceTagExtendedFootstepDict.TryGetValue(vanillaName, out ExtendedFootstepSurface existingFootstepSurface)
+                if ((customExtendedFootstepSurface.UseVanillaTag is not VanillaSurfaceTags.None
+                    && surfaceTagExtendedFootstepDict.TryGetValue($"{customExtendedFootstepSurface.UseVanillaTag}", out ExtendedFootstepSurface existingFootstepSurface))
                     || surfaceTagExtendedFootstepDict.TryGetValue(customExtendedFootstepSurface.FootstepSurface.surfaceTag, out existingFootstepSurface))
                 {
                     existingFootstepSurface.AssociatedTerrains.AddRange(customExtendedFootstepSurface.AssociatedTerrains);
@@ -38,19 +37,30 @@ namespace LethalLevelLoader
                     continue;
                 }
                 if (!surfaceTagExtendedFootstepDict.TryAdd(customExtendedFootstepSurface.FootstepSurface.surfaceTag, customExtendedFootstepSurface))
-                    DebugHelper.LogWarning("", DebugType.Developer);
+                    DebugHelper.LogWarning($"Could not add custom tag '{customExtendedFootstepSurface.FootstepSurface.surfaceTag}' to surface tag dictionary.", DebugType.Developer);
             }
+            if (mergedSurfaces > 0)
+                DebugHelper.Log($"Merged '{mergedSurfaces}' ExtendedFootstepSurface assets!", DebugType.Developer);
 
             PatchedContent.ExtendedFootstepSurfaces = [.. surfaceTagExtendedFootstepDict.Values];
-            PatchedContent.ExtendedFootstepSurfaces.ForEach(static surface => surface.RefreshAssociatedTerrainNames());
+            foreach (ExtendedFootstepSurface extendedFootstepSurface in PatchedContent.ExtendedFootstepSurfaces)
+                extendedFootstepSurface.RefreshAssociatedTerrainNames();
         }
 
-        public static bool TryGetFootstepSurfaceIndex(TerrainData terrainData, int terrainLayer, out int footstepSurfaceIndex)
+        public static bool TryGetFootstepSurfaceIndex(TerrainData terrainData, int terrainLayer, out int footstepSurfaceIndex, out bool allowSinking)
         {
             footstepSurfaceIndex = -1;
-            if (TerrainManager.TerrainFootstepsDict.TryGetValue(terrainData, out ExtendedFootstepSurface[] extendedFootsteps))
-                if (terrainLayer < extendedFootsteps.Length)
-                    footstepSurfaceIndex = extendedFootsteps[terrainLayer].SurfaceIndex;
+            allowSinking = true;
+            if (TerrainManager.TerrainFootstepsDict.TryGetValue(terrainData, out ExtendedFootstepSurface[] extendedFootsteps)
+                && terrainLayer < extendedFootsteps.Length)
+            {
+                ExtendedFootstepSurface extendedFootstepSurface = extendedFootsteps[terrainLayer];
+                if (extendedFootstepSurface != null)
+                {
+                    footstepSurfaceIndex = extendedFootstepSurface.SurfaceIndex;
+                    allowSinking = extendedFootstepSurface.AllowSinking;
+                }
+            }
             return (footstepSurfaceIndex > 0);
         }
     }
