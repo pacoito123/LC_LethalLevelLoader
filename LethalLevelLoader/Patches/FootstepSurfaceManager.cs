@@ -47,10 +47,8 @@ namespace LethalLevelLoader
                 extendedFootstepSurface.RefreshAssociatedTerrainNames();
         }
 
-        public static bool TryGetFootstepSurfaceIndex(TerrainData terrainData, int terrainLayer, out int footstepSurfaceIndex, out bool allowSinking)
+        public static bool TryGetAndSetFootstepSurfaceIndex(TerrainData terrainData, int terrainLayer, ref int footstepSurfaceIndex, ref bool allowSinking)
         {
-            footstepSurfaceIndex = -1;
-            allowSinking = true;
             if (TerrainManager.TerrainFootstepsDict.TryGetValue(terrainData, out ExtendedFootstepSurface[] extendedFootsteps)
                 && terrainLayer < extendedFootsteps.Length)
             {
@@ -59,9 +57,10 @@ namespace LethalLevelLoader
                 {
                     footstepSurfaceIndex = extendedFootstepSurface.SurfaceIndex;
                     allowSinking = extendedFootstepSurface.AllowSinking;
+                    return true;
                 }
             }
-            return (footstepSurfaceIndex > 0);
+            return false;
         }
     }
 }

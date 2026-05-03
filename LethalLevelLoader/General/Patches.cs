@@ -858,27 +858,11 @@ if (AssetBundleLoader.noBundlesFound == true)
                 return instructions;
             }
 
-            MethodInfo swapTerrainAlphaMapInfo = typeof(Patches).GetMethod(nameof(SwapTerrainAlphaMap), BindingFlags.Static | BindingFlags.NonPublic);
+            MethodInfo swapTerrainAlphaMapInfo = typeof(TerrainManager).GetMethod(nameof(TerrainManager.SwapTerrainAlphaMap), BindingFlags.Static | BindingFlags.NonPublic);
             return codeMatcher.Insert(
                 new(OpCodes.Ldloc_0),
                 new(OpCodes.Call, swapTerrainAlphaMapInfo))
             .InstructionEnumeration();
-        }
-
-        private static void SwapTerrainAlphaMap(Terrain terrain)
-        {
-            if (TerrainManager.CurrentTerrain == terrain) return;
-            TerrainManager.CurrentTerrain = terrain;
-
-            if (!TerrainManager.TerrainAlphaMaps.TryGetValue(terrain, out float[,,] alphaMaps))
-            {
-                TerrainData terrainData = terrain.terrainData;
-                alphaMaps = terrainData.GetAlphamaps(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
-                TerrainManager.TerrainAlphaMaps[terrain] = alphaMaps;
-            }
-
-            StartOfRound.Instance.currentTerrainAlphaMaps = alphaMaps;
-            StartOfRound.Instance.gotCurrentTerrainAlphamaps = alphaMaps != null;
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.GetCurrentMaterialStandingOn)), HarmonyTranspiler, HarmonyPriority(priority)]
@@ -899,7 +883,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                 return instructions;
             }
 
-            MethodInfo tryGetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetFootstepSurfaceIndex), BindingFlags.Static | BindingFlags.Public);
+            MethodInfo tryGetAndSetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetAndSetFootstepSurfaceIndex), BindingFlags.Static | BindingFlags.Public);
             FieldInfo currentFootstepSurfaceIndexInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.Public);
             FieldInfo standingOnTerrainInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.standingOnTerrain), BindingFlags.Instance | BindingFlags.NonPublic);
             return codeMatcher.CreateLabel(out Label vanillaFootstepsTarget)
@@ -910,7 +894,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                 new(OpCodes.Ldflda, currentFootstepSurfaceIndexInfo),
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldflda, standingOnTerrainInfo),
-                new(OpCodes.Call, tryGetFootstepSurfaceIndexInfo),
+                new(OpCodes.Call, tryGetAndSetFootstepSurfaceIndexInfo),
                 new(OpCodes.Brfalse, vanillaFootstepsTarget),
                 new(OpCodes.Ret))
             .InstructionEnumeration();
@@ -953,6 +937,54 @@ if (AssetBundleLoader.noBundlesFound == true)
             .CreateLabel(out Label checkStandingOnTerrainTarget)
             .Advance(-2)
             .SetOperandAndAdvance(checkStandingOnTerrainTarget) // Update target position of the matched 'brfalse' instruction.
+            .InstructionEnumeration();
+        }
+
+        [HarmonyPatch(typeof(SandWormAI), nameof(SandWormAI.StartEmergeAnimation)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> SandWormAIStartEmergeAnimation_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            MethodInfo raycastHitColliderGetter = typeof(RaycastHit).GetProperty(nameof(RaycastHit.collider), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            MethodInfo gameObjectGetter = typeof(Component).GetProperty(nameof(Component.gameObject), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            MethodInfo activeTerrainGetter = typeof(Terrain).GetProperty(nameof(Terrain.activeTerrain), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
+            MethodInfo equalityInfo = typeof(UnityEngine.Object).GetMethod("op_Equality", BindingFlags.Static | BindingFlags.Public);
+            CodeMatcher codeMatcher = new CodeMatcher(instructions, generator).MatchForward(useEnd: false,
+                new(OpCodes.Call, raycastHitColliderGetter),
+                new(OpCodes.Callvirt, gameObjectGetter),
+                new(OpCodes.Call, activeTerrainGetter), // Match Terrain.activeTerrain GameObject comparison.
+                new(OpCodes.Callvirt, gameObjectGetter),
+                new(OpCodes.Call, equalityInfo));
+
+            if (codeMatcher.Advance(1).IsInvalid)
+            {
+                DebugHelper.LogError("Could not match active Terrain equality check.", DebugType.User);
+                return instructions;
+            }
+            CodeInstruction raycastHitLocalInstruction = codeMatcher.InstructionAt(-2); // Obtain instruction for getting RaycastHit local variable.
+            LocalBuilder terrainLocal = generator.DeclareLocal(typeof(Terrain)); // Create local variable for Terrain obtained from the Raycast.
+
+            Type genericType = Type.MakeGenericMethodParameter(0).MakeByRefType();
+            MethodInfo terrainTryGetComponentInfo = typeof(Component).GetMethod(nameof(Component.TryGetComponent), 1, [genericType]).MakeGenericMethod(typeof(Terrain));
+            _ = codeMatcher.RemoveInstructions(4) // Remove Terrain.activeTerrain GameObject comparison instructions.
+            .InsertAndAdvance(
+                new(OpCodes.Ldloca_S, terrainLocal),
+                new(OpCodes.Callvirt, terrainTryGetComponentInfo)) // Insert TryGetComponent<Terrain>() call.
+            .MatchForward(useEnd: false,
+                new(OpCodes.Ldc_I4_1), // Match local variable being set to true.
+                new(OpCodes.Stloc_2));
+
+            if (codeMatcher.IsInvalid)
+            {
+                DebugHelper.LogError("Could not match local variable true assignment.", DebugType.User);
+                return instructions;
+            }
+
+            MethodInfo raycastHitPointGetter = typeof(RaycastHit).GetProperty(nameof(RaycastHit.point), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            MethodInfo canWormEmergeFromPointInfo = typeof(TerrainManager).GetMethod(nameof(TerrainManager.CanWormEmergeFromPoint), BindingFlags.Static | BindingFlags.Public);
+            return codeMatcher.SetInstructionAndAdvance(raycastHitLocalInstruction)
+            .Insert(
+                new(OpCodes.Call, raycastHitPointGetter),
+                new(OpCodes.Ldloc_S, terrainLocal),
+                new(OpCodes.Call, canWormEmergeFromPointInfo)) // Insert call to 'TerrainManager.CanWormEmergeFromPoint()' and set local variable to its result.
             .InstructionEnumeration();
         }
 
