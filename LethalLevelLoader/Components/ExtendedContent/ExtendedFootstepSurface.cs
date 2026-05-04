@@ -15,6 +15,7 @@ namespace LethalLevelLoader
         [field: SerializeField] public List<TerrainWithIndices> AssociatedTerrains { get; set; } = [];
         [field: SerializeField] public bool AllowSinking { get; set; } = true;
         [field: SerializeField] public bool AllowEarthLeviathanEmerge { get; set; } = true;
+        [field: SerializeField] public bool AllowMaskedFootsteps { get; set; } = true;
 
         [HideInInspector] public Dictionary<string, byte> AssociatedTerrainNames { get; } = [];
         [HideInInspector] public int SurfaceIndex { get; internal set; } = -1;

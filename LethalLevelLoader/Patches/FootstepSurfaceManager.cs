@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GameNetcodeStuff;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -47,16 +48,29 @@ namespace LethalLevelLoader
                 extendedFootstepSurface.RefreshAssociatedTerrainNames();
         }
 
-        public static bool TryGetAndSetFootstepSurfaceIndex(TerrainData terrainData, int terrainLayer, ref int footstepSurfaceIndex, ref bool allowSinking)
+        public static bool TryGetAndSetFootstepSurfaceIndex(Terrain terrain, int terrainLayer, PlayerControllerB player)
         {
-            if (TerrainManager.TerrainFootstepsDict.TryGetValue(terrainData, out ExtendedFootstepSurface[] extendedFootsteps)
-                && terrainLayer < extendedFootsteps.Length)
+            if (TerrainManager.TerrainFootstepsDict.TryGetValue(terrain.terrainData, out ExtendedFootstepSurface[] extendedFootsteps) && terrainLayer >= 0 && terrainLayer < extendedFootsteps.Length)
             {
                 ExtendedFootstepSurface extendedFootstepSurface = extendedFootsteps[terrainLayer];
                 if (extendedFootstepSurface != null)
                 {
-                    footstepSurfaceIndex = extendedFootstepSurface.SurfaceIndex;
-                    allowSinking = extendedFootstepSurface.AllowSinking;
+                    player.currentFootstepSurfaceIndex = extendedFootstepSurface.SurfaceIndex;
+                    player.standingOnTerrain = extendedFootstepSurface.AllowSinking;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool TryGetAndSetFootstepSurfaceIndex(Terrain terrain, int terrainLayer, MaskedPlayerEnemy masked)
+        {
+            if (TerrainManager.TerrainFootstepsDict.TryGetValue(terrain.terrainData, out ExtendedFootstepSurface[] extendedFootsteps) && terrainLayer >= 0 && terrainLayer < extendedFootsteps.Length)
+            {
+                ExtendedFootstepSurface extendedFootstepSurface = extendedFootsteps[terrainLayer];
+                if (extendedFootstepSurface != null && extendedFootstepSurface.AllowMaskedFootsteps)
+                {
+                    masked.currentFootstepSurfaceIndex = extendedFootstepSurface.SurfaceIndex;
                     return true;
                 }
             }

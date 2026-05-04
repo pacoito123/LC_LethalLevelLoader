@@ -46,20 +46,20 @@ namespace LethalLevelLoader
             StartOfRound.Instance.gotCurrentTerrainAlphamaps = alphaMaps != null;
         }
 
-        public static int ObtainTerrainLayerAtPoint(Vector3 point, Terrain terrain)
+        public static bool TryObtainTerrainLayerAtPoint(Vector3 point, Terrain terrain, out int terrainLayer)
         {
             TerrainData terrainData = terrain.terrainData;
             Vector3 terrainPos = terrain.transform.position;
+            terrainLayer = -1;
 
             Vector3 splatMapCoordinate = Vector3.zero;
             splatMapCoordinate.x = (point.x - terrainPos.x) / terrainData.size.x * terrainData.alphamapWidth;
             splatMapCoordinate.z = (point.z - terrainPos.z) / terrainData.size.z * terrainData.alphamapHeight;
 
             if (!TerrainAlphaMaps.TryGetValue(terrain, out float[,,] terrainAlphaMaps))
-                return -1;
+                return (false);
 
             float largestLayerBlend = 0.0f;
-            int terrainLayer = -1;
             int terrainLayers = terrainAlphaMaps.Length / (terrainData.alphamapWidth * terrainData.alphamapHeight);
             for (int i = 0; i < terrainLayers; i++)
             {
@@ -67,7 +67,7 @@ namespace LethalLevelLoader
                 if (currentLayerBlend == 1.0f)
                 {
                     terrainLayer = i;
-                    break;
+                    return (true);
                 }
                 if (largestLayerBlend < currentLayerBlend)
                 {
@@ -75,31 +75,19 @@ namespace LethalLevelLoader
                     terrainLayer = i;
                 }
             }
-            return terrainLayer;
+            return (terrainLayer >= 0);
         }
 
         public static bool TryObtainFootstepSurfaceAtPoint(Vector3 point, Terrain terrain, out ExtendedFootstepSurface footstepSurface)
         {
-            footstepSurface = null;
-
-            int terrainLayer = ObtainTerrainLayerAtPoint(point, terrain);
-            if (terrainLayer == -1)
-                return false;
-
-            if (!TerrainFootstepsDict.TryGetValue(terrain.terrainData, out ExtendedFootstepSurface[] extendedFootsteps)
-                || terrainLayer >= extendedFootsteps.Length)
-            {
-                return false;
-            }
-
-            footstepSurface = extendedFootsteps[terrainLayer];
-            return footstepSurface != null;
+            footstepSurface = (TerrainFootstepsDict.TryGetValue(terrain.terrainData, out ExtendedFootstepSurface[] extendedFootsteps)
+                && TryObtainTerrainLayerAtPoint(point, terrain, out int terrainLayer) && terrainLayer < extendedFootsteps.Length) ? extendedFootsteps[terrainLayer] : null;
+            return (footstepSurface != null);
         }
 
         public static bool CanWormEmergeFromPoint(Vector3 point, Terrain terrain)
         {
-            return TryObtainFootstepSurfaceAtPoint(point, terrain, out ExtendedFootstepSurface footstepSurface)
-                && footstepSurface.AllowEarthLeviathanEmerge;
+            return TryObtainFootstepSurfaceAtPoint(point, terrain, out ExtendedFootstepSurface footstepSurface) && footstepSurface.AllowEarthLeviathanEmerge;
         }
 
         internal static void CleanupTerrainFootsteps(Scene _)

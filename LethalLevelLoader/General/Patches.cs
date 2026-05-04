@@ -984,7 +984,59 @@ if (AssetBundleLoader.noBundlesFound == true)
             .Insert(
                 new(OpCodes.Call, raycastHitPointGetter),
                 new(OpCodes.Ldloc_S, terrainLocal),
-                new(OpCodes.Call, canWormEmergeFromPointInfo)) // Insert call to 'TerrainManager.CanWormEmergeFromPoint()' and set local variable to its result.
+                new(OpCodes.Call, canWormEmergeFromPointInfo)) // Insert call to 'TerrainManager.CanWormEmergeFromPoint()'.
+            .InstructionEnumeration();
+        }
+
+        [HarmonyPatch(typeof(MaskedPlayerEnemy), nameof(MaskedPlayerEnemy.GetMaterialStandingOn)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> MaskedPlayerEnemyGetMaterialStandingOn_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            FieldInfo enemyRayHitInfo = typeof(MaskedPlayerEnemy).GetField(nameof(MaskedPlayerEnemy.enemyRayHit), BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo raycastHitColliderGetter = typeof(RaycastHit).GetProperty(nameof(RaycastHit.collider), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            MethodInfo startOfRoundGetter = typeof(StartOfRound).GetProperty(nameof(StartOfRound.Instance), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
+            FieldInfo footstepSurfacesInfo = typeof(StartOfRound).GetField(nameof(StartOfRound.footstepSurfaces), BindingFlags.Instance | BindingFlags.Public);
+            CodeMatcher codeMatcher = new CodeMatcher(instructions, generator).MatchForward(useEnd: false,
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldflda, enemyRayHitInfo),
+                new(OpCodes.Call, raycastHitColliderGetter), // Match RaycastHit collider getter.
+                new(OpCodes.Call, startOfRoundGetter),
+                new(OpCodes.Ldfld, footstepSurfacesInfo));
+
+            if (codeMatcher.Advance(3).IsInvalid)
+            {
+                DebugHelper.LogError("Could not match RaycastHit collider getter.", DebugType.User);
+                return instructions;
+            }
+            LocalBuilder terrainLocal = generator.DeclareLocal(typeof(Terrain)); // Create local variable for the Terrain obtained from the Raycast.
+            LocalBuilder terrainLayerLocal = generator.DeclareLocal(typeof(int)); // Create local variable for storing the Terrain layer.
+
+            Type genericType = Type.MakeGenericMethodParameter(0).MakeByRefType();
+            MethodInfo terrainTryGetComponentInfo = typeof(Component).GetMethod(nameof(Component.TryGetComponent), 1, [genericType]).MakeGenericMethod(typeof(Terrain));
+            MethodInfo raycastHitPointGetter = typeof(RaycastHit).GetProperty(nameof(RaycastHit.point), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            MethodInfo tryObtainTerrainLayerAtPointInfo = typeof(TerrainManager).GetMethod(nameof(TerrainManager.TryObtainTerrainLayerAtPoint), BindingFlags.Static | BindingFlags.Public);
+            MethodInfo tryGetAndSetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetAndSetFootstepSurfaceIndex), [typeof(Terrain), typeof(int), typeof(MaskedPlayerEnemy)]);
+            return codeMatcher.Insert(
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldflda, enemyRayHitInfo),
+                new(OpCodes.Call, raycastHitColliderGetter))
+            .CreateLabel(out Label vanillaFootstep)
+            .InsertAndAdvance(
+                new(OpCodes.Ldloca_S, terrainLocal),
+                new(OpCodes.Callvirt, terrainTryGetComponentInfo), // Insert TryGetComponent<Terrain>() call.
+                new(OpCodes.Brfalse_S, vanillaFootstep), // Return to vanilla behaviour if no Terrain is obtained.
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldflda, enemyRayHitInfo),
+                new(OpCodes.Call, raycastHitPointGetter),
+                new(OpCodes.Ldloc_S, terrainLocal),
+                new(OpCodes.Ldloca_S, terrainLayerLocal),
+                new(OpCodes.Call, tryObtainTerrainLayerAtPointInfo), // Insert TryObtainTerrainLayerAtPoint() call.
+                new(OpCodes.Brfalse_S, vanillaFootstep), // Return to vanilla behaviour if layer could not be obtained.
+                new(OpCodes.Ldloc_S, terrainLocal),
+                new(OpCodes.Ldloc_S, terrainLayerLocal),
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Call, tryGetAndSetFootstepSurfaceIndexInfo), // Insert TryGetAndSetFootstepSurfaceIndex() call.
+                new(OpCodes.Brfalse_S, vanillaFootstep), // Return to vanilla behaviour if footstep surface could not be obtained.
+                new(OpCodes.Ret))
             .InstructionEnumeration();
         }
 
