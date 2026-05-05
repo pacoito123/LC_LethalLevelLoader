@@ -765,8 +765,6 @@ if (AssetBundleLoader.noBundlesFound == true)
             Scene scene = SceneManager.GetSceneByName(__instance.currentLevel.sceneName);
             if (!scene.isLoaded) return;
 
-            // LevelLoader.RefreshFootstepSurfaces();
-            // LevelLoader.BakeSceneColliderMaterialData(scene);
             LevelLoader.TryRestoreShaders(scene);
             ApplyCameraDistanceOverride();
         }
@@ -824,33 +822,41 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static IEnumerable<CodeInstruction> SwapActiveTerrain_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             MethodInfo terrainGetComponentInfo = typeof(Component).GetMethod(nameof(Component.GetComponent), 1, []).MakeGenericMethod(typeof(Terrain));
+            MethodInfo inequalityInfo = typeof(UnityEngine.Object).GetMethod("op_Inequality", BindingFlags.Static | BindingFlags.Public);
             CodeMatcher codeMatcher = new CodeMatcher(instructions).MatchForward(useEnd: false,
                 new(OpCodes.Callvirt, terrainGetComponentInfo),
                 new(OpCodes.Ldnull),
-                new(OpCodes.Call));
+                new(OpCodes.Call, inequalityInfo)); // Match GetComponent<Terrain>() null comparison.
 
             if (codeMatcher.IsInvalid)
             {
-                DebugHelper.LogError("Could not match GetComponent<Terrain>() call.", DebugType.User);
+                DebugHelper.LogError("Could not match Terrain null comparison.", DebugType.User);
                 return instructions;
             }
 
             Type genericType = Type.MakeGenericMethodParameter(0).MakeByRefType();
             MethodInfo terrainTryGetComponentInfo = typeof(Component).GetMethod(nameof(Component.TryGetComponent), 1, [genericType]).MakeGenericMethod(typeof(Terrain));
-            _ = codeMatcher.RemoveInstructions(3)
+            MethodInfo activeTerrainGetter = typeof(Terrain).GetProperty(nameof(Terrain.activeTerrain), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
+            _ = codeMatcher.RemoveInstructions(3) // Remove GetComponent<Terrain>() null comparison.
             .InsertAndAdvance(
                 new(OpCodes.Ldloca_S, (sbyte)0),
-                new(OpCodes.Callvirt, terrainTryGetComponentInfo))
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Stloc_0));
+                new(OpCodes.Callvirt, terrainTryGetComponentInfo)) // Insert call to TryGetComponent<Terrain>() and set local variable to obtained value.
+            .MatchForward(useEnd: true,
+                new(OpCodes.Call, activeTerrainGetter), // Match Terrain.activeTerrain local variable assignment.
+                new CodeMatch(OpCodes.Stloc_0));
 
             if (codeMatcher.IsInvalid)
             {
-                DebugHelper.LogError("Could not match Terrain local variable assignment.", DebugType.User);
+                DebugHelper.LogError("Could not match active Terrain local variable assignment.", DebugType.User);
                 return instructions;
             }
 
+            MethodInfo terrainDataGetter = typeof(Terrain).GetProperty(nameof(Terrain.terrainData), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
             _ = codeMatcher.SetOpcodeAndAdvance(OpCodes.Pop) // Not removing Terrain.activeTerrain call before this in case any other Transpiler expects it to still be there.
-            .MatchForward(useEnd: false, new CodeMatch(OpCodes.Stloc_1));
+            .MatchForward(useEnd: true,
+                new(OpCodes.Ldloc_0),
+                new(OpCodes.Callvirt, terrainDataGetter), // Match TerrainData local variable assignment.
+                new(OpCodes.Stloc_1));
 
             if (codeMatcher.Advance(1).IsInvalid)
             {
@@ -861,7 +867,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             MethodInfo swapTerrainAlphaMapInfo = typeof(TerrainManager).GetMethod(nameof(TerrainManager.SwapTerrainAlphaMap), BindingFlags.Static | BindingFlags.NonPublic);
             return codeMatcher.Insert(
                 new(OpCodes.Ldloc_0),
-                new(OpCodes.Call, swapTerrainAlphaMapInfo))
+                new(OpCodes.Call, swapTerrainAlphaMapInfo)) // Insert call to 'TerrainManager.SwapTerrainAlphaMap()' before alphamaps are obtained.
             .InstructionEnumeration();
         }
 
@@ -883,18 +889,13 @@ if (AssetBundleLoader.noBundlesFound == true)
                 return instructions;
             }
 
-            MethodInfo tryGetAndSetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetAndSetFootstepSurfaceIndex), BindingFlags.Static | BindingFlags.Public);
-            FieldInfo currentFootstepSurfaceIndexInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.Public);
-            FieldInfo standingOnTerrainInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.standingOnTerrain), BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo tryGetAndSetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetAndSetFootstepSurfaceIndex), [typeof(Terrain), typeof(int), typeof(PlayerControllerB)]);
             return codeMatcher.CreateLabel(out Label vanillaFootstepsTarget)
-            .Insert( // Insert call to 'FootstepSurfaceManager.TryGetFootstepSurfaceIndex()' and jump to vanilla footstep target if false.
-                new(OpCodes.Ldloc_1),
+            .Insert(
+                new(OpCodes.Ldloc_0),
                 new(OpCodes.Ldloc_3),
                 new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldflda, currentFootstepSurfaceIndexInfo),
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldflda, standingOnTerrainInfo),
-                new(OpCodes.Call, tryGetAndSetFootstepSurfaceIndexInfo),
+                new(OpCodes.Call, tryGetAndSetFootstepSurfaceIndexInfo), // Insert call to 'FootstepSurfaceManager.TryGetFootstepSurfaceIndex()' and jump to vanilla footstep target if false.
                 new(OpCodes.Brfalse, vanillaFootstepsTarget),
                 new(OpCodes.Ret))
             .InstructionEnumeration();
@@ -967,7 +968,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             _ = codeMatcher.RemoveInstructions(4) // Remove Terrain.activeTerrain GameObject comparison instructions.
             .InsertAndAdvance(
                 new(OpCodes.Ldloca_S, terrainLocal),
-                new(OpCodes.Callvirt, terrainTryGetComponentInfo)) // Insert TryGetComponent<Terrain>() call.
+                new(OpCodes.Callvirt, terrainTryGetComponentInfo)) // Insert call to TryGetComponent<Terrain>() and set local variable to obtained value.
             .MatchForward(useEnd: false,
                 new(OpCodes.Ldc_I4_1), // Match local variable being set to true.
                 new(OpCodes.Stloc_2));
@@ -998,7 +999,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             CodeMatcher codeMatcher = new CodeMatcher(instructions, generator).MatchForward(useEnd: false,
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldflda, enemyRayHitInfo),
-                new(OpCodes.Call, raycastHitColliderGetter), // Match RaycastHit collider getter.
+                new(OpCodes.Call, raycastHitColliderGetter), // Match 'enemyRayHit' collider getter.
                 new(OpCodes.Call, startOfRoundGetter),
                 new(OpCodes.Ldfld, footstepSurfacesInfo));
 
@@ -1019,23 +1020,23 @@ if (AssetBundleLoader.noBundlesFound == true)
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldflda, enemyRayHitInfo),
                 new(OpCodes.Call, raycastHitColliderGetter))
-            .CreateLabel(out Label vanillaFootstep)
+            .CreateLabel(out Label vanillaFootstepTarget)
             .InsertAndAdvance(
                 new(OpCodes.Ldloca_S, terrainLocal),
                 new(OpCodes.Callvirt, terrainTryGetComponentInfo), // Insert TryGetComponent<Terrain>() call.
-                new(OpCodes.Brfalse_S, vanillaFootstep), // Return to vanilla behaviour if no Terrain is obtained.
+                new(OpCodes.Brfalse_S, vanillaFootstepTarget), // Return to vanilla behaviour if no Terrain is obtained.
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldflda, enemyRayHitInfo),
                 new(OpCodes.Call, raycastHitPointGetter),
                 new(OpCodes.Ldloc_S, terrainLocal),
                 new(OpCodes.Ldloca_S, terrainLayerLocal),
                 new(OpCodes.Call, tryObtainTerrainLayerAtPointInfo), // Insert TryObtainTerrainLayerAtPoint() call.
-                new(OpCodes.Brfalse_S, vanillaFootstep), // Return to vanilla behaviour if layer could not be obtained.
+                new(OpCodes.Brfalse_S, vanillaFootstepTarget), // Return to vanilla behaviour if layer could not be obtained.
                 new(OpCodes.Ldloc_S, terrainLocal),
                 new(OpCodes.Ldloc_S, terrainLayerLocal),
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Call, tryGetAndSetFootstepSurfaceIndexInfo), // Insert TryGetAndSetFootstepSurfaceIndex() call.
-                new(OpCodes.Brfalse_S, vanillaFootstep), // Return to vanilla behaviour if footstep surface could not be obtained.
+                new(OpCodes.Brfalse_S, vanillaFootstepTarget), // Return to vanilla behaviour if footstep surface could not be obtained.
                 new(OpCodes.Ret))
             .InstructionEnumeration();
         }
