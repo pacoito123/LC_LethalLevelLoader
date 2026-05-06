@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace LethalLevelLoader
 {
@@ -165,6 +166,13 @@ namespace LethalLevelLoader
         public static List<DungeonFlow> GetDungeonFlows(this RoundManager roundManager)
         {
             return roundManager.dungeonFlowTypes.Select(i => i.dungeonFlow).ToList();
+        }
+
+        public static T TryAddComponent<T>(this GameObject gameObject) where T : Component
+        {
+            if (!gameObject.TryGetComponent(out T component))
+                component = gameObject.AddComponent<T>();
+            return component;
         }
     }
 }

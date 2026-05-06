@@ -12,11 +12,11 @@ namespace LethalLevelLoader
         {
             get
             {
-                if (Patches.StartOfRound == null || Patches.StartOfRound.currentLevel == null) return null;
+                if (Patches.StartOfRound == null || Patches.StartOfRound.currentLevel == null) return (null);
                 if (field == null || Patches.StartOfRound.currentLevel != field.SelectableLevel)
                     if (PatchedContent.TryGetExtendedContent(Patches.StartOfRound.currentLevel, out field))
                         DebugHelper.Log($"Level switched to: {field.SelectableLevel.PlanetName}", DebugType.IAmBatby);
-                return field;
+                return (field);
             }
         }
         public static LevelEvents GlobalLevelEvents = new LevelEvents();
@@ -103,7 +103,7 @@ namespace LethalLevelLoader
 
         public static bool TryGetExtendedLevel(SelectableLevel selectableLevel, out ExtendedLevel returnExtendedLevel, ContentType levelType = ContentType.Any)
         {
-            return PatchedContent.TryGetExtendedContent(selectableLevel, out returnExtendedLevel);
+            return (PatchedContent.TryGetExtendedContent(selectableLevel, out returnExtendedLevel));
         }
 
         public static ExtendedLevel GetExtendedLevel(SelectableLevel selectableLevel)

@@ -72,6 +72,9 @@ namespace LethalLevelLoader
         internal static LocalKeyword[] vanillaWaterShaderKeywords;
         internal static LocalKeyword[] vanillaWavingGrassShaderKeywords;
 
+        // Scene stuff
+        internal static Scene currentLevelScene;
+
         internal static void RefreshShipAnimatorClips(ExtendedLevel extendedLevel)
         {
             DebugHelper.Log("Refreshing Ship Animator Clips!", DebugType.Developer);
@@ -245,24 +248,22 @@ namespace LethalLevelLoader
         }
 
         private static readonly HashSet<Material> uniqueMaterials = [];
-        private static readonly List<GameObject> tempRootObjects = [];
         private static readonly List<Renderer> tempRenderers = [];
 
-        internal static void TryRestoreShaders(Scene scene)
+        internal static void RestoreShaders()
         {
             foreach (Terrain terrain in Terrain.activeTerrains)
                 foreach (DetailPrototype detailPrototype in terrain.terrainData.detailPrototypes)
-                    TryRestoreShaders(detailPrototype.prototype);
+                    RestoreShaders(detailPrototype.prototype);
 
-            scene.GetRootGameObjects(tempRootObjects);
-            tempRootObjects.ForEach(TryRestoreShaders);
+            foreach (GameObject rootObject in currentLevelScene.GetRootGameObjects())
+                RestoreShaders(rootObject);
 
             uniqueMaterials.Clear();
-            tempRootObjects.Clear();
             tempRenderers.Clear();
         }
 
-        private static void TryRestoreShaders(GameObject gameObject)
+        private static void RestoreShaders(GameObject gameObject)
         {
             if (gameObject == null) return;
             gameObject.GetComponentsInChildren(includeInactive: true, tempRenderers);
@@ -275,6 +276,42 @@ namespace LethalLevelLoader
                         if (vanillaWavingGrassShader != null && vanillaWavingGrassShaderKeywords?.Length > 0)
                             ContentRestorer.TryRestoreShader(sharedMaterial, vanillaWavingGrassShader, vanillaWavingGrassShaderKeywords);
                     }
+        }
+
+        private static readonly List<SpawnSyncedObject> tempSpawnSyncedObjects = [];
+        private static readonly List<RandomScrapSpawn> tempRandomScrapSpawns = [];
+        private static readonly List<RandomMapObject> tempRandomMapObjects = [];
+        private static readonly List<BridgeTrigger> tempBridgeTriggers = [];
+
+        internal static void RestoreSceneBlankReferences()
+        {
+            foreach (GameObject rootObject in currentLevelScene.GetRootGameObjects())
+                RestoreSceneBlankReferences(rootObject);
+
+            tempSpawnSyncedObjects.Clear();
+            tempRandomScrapSpawns.Clear();
+            tempRandomMapObjects.Clear();
+            tempBridgeTriggers.Clear();
+        }
+
+        private static void RestoreSceneBlankReferences(GameObject gameObject)
+        {
+            if (gameObject == null) return;
+            gameObject.GetComponentsInChildren(includeInactive: true, tempSpawnSyncedObjects);
+            foreach (SpawnSyncedObject spawnSyncedObject in tempSpawnSyncedObjects)
+                ContentRestorer.TryRestoreSpawnSyncedObject(spawnSyncedObject);
+
+            gameObject.GetComponentsInChildren(includeInactive: true, tempRandomScrapSpawns);
+            foreach (RandomScrapSpawn randomScrapSpawn in tempRandomScrapSpawns)
+                ContentRestorer.TryRestoreRandomScrapSpawn(randomScrapSpawn);
+
+            gameObject.GetComponentsInChildren(includeInactive: true, tempRandomMapObjects);
+            foreach (RandomMapObject randomMapObject in tempRandomMapObjects)
+                ContentRestorer.RestoreRandomMapObject(randomMapObject);
+
+            gameObject.GetComponentsInChildren(includeInactive: true, tempBridgeTriggers);
+            foreach (BridgeTrigger bridgeTrigger in tempBridgeTriggers)
+                ContentRestorer.RestoreBridgeTrigger(bridgeTrigger);
         }
     }
 }

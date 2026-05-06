@@ -6,6 +6,10 @@ namespace LethalLevelLoader
 {
     public class EnemyManager
     {
+        public static HashSet<EnemyType> TinyEnemyTypes { get; } = [];
+        public static HashSet<EnemyType> GiantEnemyTypes { get; } = [];
+        public static HashSet<EnemyType> MediumEnemyTypes { get; } = [];
+
         public static void RefreshDynamicEnemyTypeRarityOnAllExtendedLevels()
         {
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
@@ -87,11 +91,6 @@ namespace LethalLevelLoader
 
         internal static void UpdateEnemyIDs()
         {
-            /*foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.VanillaExtendedEnemyTypes)
-            {
-
-            }*/
-
             List<ExtendedEnemyType> vanillaEnemyTypes = PatchedContent.VanillaExtendedEnemyTypes;
             List<ExtendedEnemyType> customEnemyTypes = PatchedContent.CustomExtendedEnemyTypes;
             int highestVanillaEnemyScanNodeCreatureID = -1;
@@ -99,7 +98,6 @@ namespace LethalLevelLoader
             foreach (ExtendedEnemyType extendedEnemyType in vanillaEnemyTypes)
                 if (extendedEnemyType.EnemyID > highestVanillaEnemyScanNodeCreatureID)
                     highestVanillaEnemyScanNodeCreatureID = extendedEnemyType.EnemyID;
-
 
             int counter = 1; //we want this to be 1
             foreach (ExtendedEnemyType extendedEnemyType in customEnemyTypes)
@@ -128,6 +126,28 @@ namespace LethalLevelLoader
                     quickMenuManager.testAllEnemiesLevel.Enemies.Add(spawnableEnemyWithRarity);
                     quickMenuManager.testAllEnemiesLevel.OutsideEnemies.Add(spawnableEnemyWithRarity);
                     quickMenuManager.testAllEnemiesLevel.DaytimeEnemies.Add(spawnableEnemyWithRarity);
+                }
+            }
+        }
+
+        internal static void PopulateEnemySizeLists()
+        {
+            foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.ExtendedEnemyTypes)
+            {
+                if (extendedEnemyType == null || extendedEnemyType.EnemyType == null) continue;
+                switch (extendedEnemyType.EnemyType.EnemySize)
+                {
+                    case EnemySize.Tiny:
+                        TinyEnemyTypes.Add(extendedEnemyType.EnemyType);
+                        break;
+                    case EnemySize.Giant:
+                        GiantEnemyTypes.Add(extendedEnemyType.EnemyType);
+                        break;
+                    case EnemySize.Medium:
+                        MediumEnemyTypes.Add(extendedEnemyType.EnemyType);
+                        break;
+                    default:
+                        break;
                 }
             }
         }

@@ -11,6 +11,8 @@ namespace LethalLevelLoader.Tools
 {
     internal static class ContentRestorer
     {
+        // Keep a dictionary of commonly-used NetworkPrefabs to restore (e.g. 'EntranceTeleportA') for faster lookup.
+        internal static readonly Dictionary<string, GameObject> cachedNetworkPrefabs = [];
         internal static readonly HashSet<Object> objectsToDestroy = [];
 
         internal static void RestoreVanillaDungeonAssetReferences(ExtendedDungeonFlow extendedDungeonFlow)
@@ -31,34 +33,12 @@ namespace LethalLevelLoader.Tools
             {
                 tile.GetComponentsInChildren(includeInactive: true, tileScrapSpawns);
                 foreach (RandomScrapSpawn randomScrapSpawn in tileScrapSpawns)
-                {
-                    if (randomScrapSpawn.spawnableItems != null && randomScrapSpawn.spawnableItems.name != null)
-                    {
-                        ItemGroup vanillaItemGroup = OriginalContent.ItemGroups.Find(itemGroup => itemGroup.name == randomScrapSpawn.spawnableItems.name);
-                        if (vanillaItemGroup != null)
-                            randomScrapSpawn.spawnableItems = RestoreAsset(randomScrapSpawn.spawnableItems, vanillaItemGroup, destroyOnReplace: false);
-                    }
-                }
+                    TryRestoreRandomScrapSpawn(randomScrapSpawn);
                 RestoreAudioAssetReferencesInParent(tile.gameObject);
             }
 
             foreach (RandomMapObject randomMapObject in extendedDungeonFlow.DungeonFlow.GetRandomMapObjects(extendedDungeonFlow.AllTiles))
-            {
-                for (int i = 0; i < randomMapObject.spawnablePrefabs?.Count; i++)
-                {
-                    GameObject spawnablePrefab = randomMapObject.spawnablePrefabs[i];
-                    if (spawnablePrefab == null)
-                    {
-                        DebugHelper.LogWarning("Map Object Restoration Warning: " + randomMapObject.gameObject.name + " Has Missing RandomMapObject", DebugType.Developer);
-                        randomMapObject.spawnablePrefabs.RemoveAt(i--);
-                        continue;
-                    }
-
-                    IndoorMapHazardType vanillaHazardType = OriginalContent.IndoorMapHazards.Find(hazardType => hazardType != null && hazardType.prefabToSpawn != null && hazardType.prefabToSpawn.name == spawnablePrefab.name);
-                    if (vanillaHazardType != null)
-                        randomMapObject.spawnablePrefabs[i] = RestoreAsset(spawnablePrefab, vanillaHazardType.prefabToSpawn, destroyOnReplace: false);
-                }
-            }
+                RestoreRandomMapObject(randomMapObject);
         }
 
         internal static void RestoreVanillaLevelAssetReferences(ExtendedLevel extendedLevel)
@@ -295,18 +275,6 @@ namespace LethalLevelLoader.Tools
             }
         }
 
-        internal static void DestroyRestoredAssets(bool debugAction = false)
-        {
-            foreach (Object objectToDestroy in objectsToDestroy)
-            {
-                if (objectToDestroy == null) continue;
-                if (debugAction == true)
-                    DebugHelper.Log("Destroying: " + objectToDestroy.name, DebugType.Developer);
-                Object.DestroyImmediate(objectToDestroy);
-            }
-            objectsToDestroy.Clear();
-        }
-
         internal static void TryRestoreShader(Material customMaterial, Shader vanillaShader, LocalKeyword[] enabledKeywords = null)
         {
             if (vanillaShader == null || customMaterial == null || customMaterial.shader == null)
@@ -321,6 +289,105 @@ namespace LethalLevelLoader.Tools
 
                 if (enabledKeywords != null)
                     customMaterial.enabledKeywords = enabledKeywords;
+            }
+        }
+
+        internal static bool TryRestoreNetworkPrefab(GameObject prefab, out GameObject registeredPrefab)
+        {
+            registeredPrefab = null;
+            if (prefab == null || string.IsNullOrEmpty(prefab.name)) return (false);
+            if (!cachedNetworkPrefabs.TryGetValue(prefab.name, out registeredPrefab))
+            {
+                foreach (NetworkPrefab networkPrefab in NetworkManager.Singleton.NetworkConfig.Prefabs.m_Prefabs)
+                {
+                    if (string.Equals(networkPrefab.Prefab.name, prefab.name, StringComparison.Ordinal))
+                    {
+                        cachedNetworkPrefabs.Add(prefab.name, networkPrefab.Prefab);
+                        registeredPrefab = RestoreAsset(prefab, networkPrefab.Prefab);
+                        break;
+                    }
+                }
+            }
+            return (registeredPrefab != null);
+        }
+
+        internal static bool TryRestoreSpawnSyncedObject(SpawnSyncedObject spawnSyncedObject)
+        {
+            if (spawnSyncedObject != null && TryRestoreNetworkPrefab(spawnSyncedObject.spawnPrefab, out GameObject registeredPrefab))
+            {
+                spawnSyncedObject.spawnPrefab = registeredPrefab;
+                return (true);
+            }
+            return (false);
+        }
+
+        internal static bool TryRestoreRandomScrapSpawn(RandomScrapSpawn randomScrapSpawn)
+        {
+            if (randomScrapSpawn != null && randomScrapSpawn.spawnableItems != null && !string.IsNullOrEmpty(randomScrapSpawn.spawnableItems.name))
+            {
+                ItemGroup vanillaItemGroup = OriginalContent.ItemGroups.Find(itemGroup => string.Equals(itemGroup.name, randomScrapSpawn.spawnableItems.name, StringComparison.Ordinal));
+                if (vanillaItemGroup != null)
+                {
+                    randomScrapSpawn.spawnableItems = RestoreAsset(randomScrapSpawn.spawnableItems, vanillaItemGroup);
+                    return (true);
+                }
+            }
+            return (false);
+        }
+
+        internal static void RestoreRandomMapObject(RandomMapObject randomMapObject)
+        {
+            if (randomMapObject == null) return;
+            randomMapObject.spawnablePrefabs ??= [];
+
+            for (int i = 0; i < randomMapObject.spawnablePrefabs.Count; i++)
+            {
+                GameObject spawnablePrefab = randomMapObject.spawnablePrefabs[i];
+                if (spawnablePrefab == null)
+                {
+                    DebugHelper.LogWarning("Map Object Restoration Warning: " + randomMapObject.name + " Has Missing RandomMapObject", DebugType.Developer);
+                    randomMapObject.spawnablePrefabs.RemoveAt(i--);
+                    continue;
+                }
+
+                IndoorMapHazardType vanillaHazardType = OriginalContent.IndoorMapHazards.Find(hazardType => hazardType != null && hazardType.prefabToSpawn != null && hazardType.prefabToSpawn.name == spawnablePrefab.name);
+                if (vanillaHazardType != null)
+                    randomMapObject.spawnablePrefabs[i] = RestoreAsset(spawnablePrefab, vanillaHazardType.prefabToSpawn, destroyOnReplace: false);
+            }
+        }
+
+        internal static void RestoreBridgeTrigger(BridgeTrigger bridgeTrigger)
+        {
+            if (bridgeTrigger == null) return;
+            if (bridgeTrigger.giantTypes == null || bridgeTrigger.giantTypes.Length == 0)
+            {
+                bridgeTrigger.giantTypes = [.. EnemyManager.GiantEnemyTypes];
+                return;
+            }
+            List<EnemyType> giantTypes = [.. bridgeTrigger.giantTypes];
+            for (int i = 0; i < giantTypes.Count; i++)
+            {
+                EnemyType giantType = bridgeTrigger.giantTypes[i];
+                if (giantType == null)
+                {
+                    DebugHelper.LogWarning("Bridge Trigger Object Restoration Warning: " + bridgeTrigger.name + " Has Missing EnemyType", DebugType.Developer);
+                    giantTypes.RemoveAt(i--);
+                    continue;
+                }
+                if (EnemyManager.GiantEnemyTypes.Contains(giantType)) continue;
+                bool found = false;
+                foreach (EnemyType enemyType in EnemyManager.GiantEnemyTypes)
+                    if (string.Equals(giantType.name, enemyType.name, StringComparison.Ordinal))
+                    {
+                        giantTypes[i] = RestoreAsset(giantTypes[i], enemyType);
+                        found = true;
+                        break;
+                    }
+                if (!found)
+                {
+                    DebugHelper.LogWarning("Bridge Trigger Object Restoration Warning: " + bridgeTrigger.name + " Has Missing EnemyType " + giantTypes[i].name, DebugType.Developer);
+                    giantTypes.RemoveAt(i--);
+                }
             }
         }
 
@@ -340,6 +407,18 @@ namespace LethalLevelLoader.Tools
             else
                 DebugHelper.LogWarning("Asset Restoration Failed, Null Reference Found!", DebugType.Developer);
             return (newAsset);
+        }
+
+        internal static void DestroyRestoredAssets(bool debugAction = false)
+        {
+            foreach (Object objectToDestroy in objectsToDestroy)
+            {
+                if (objectToDestroy == null) continue;
+                if (debugAction == true)
+                    DebugHelper.Log("Destroying: " + objectToDestroy.name, DebugType.Developer);
+                Object.DestroyImmediate(objectToDestroy);
+            }
+            objectsToDestroy.Clear();
         }
     }
 }

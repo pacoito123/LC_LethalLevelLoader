@@ -317,11 +317,14 @@ if (AssetBundleLoader.noBundlesFound == true)
             //Patch The Base game References To EnemyTypes's To Include Enabled Custom EnemyTypes.
             EnemyManager.UpdateEnemyIDs(); //Might only need to do once?
 
-            foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.CustomExtendedEnemyTypes)
-                TerminalManager.CreateEnemyTypeTerminalData(extendedEnemyType); //Might only need to do once?
-
             if (Plugin.IsSetupComplete == false)
-                EnemyManager.AddCustomEnemyTypesToTestAllEnemiesLevel(); //Might only need to do once?
+            {
+                foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.CustomExtendedEnemyTypes)
+                    TerminalManager.CreateEnemyTypeTerminalData(extendedEnemyType);
+
+                EnemyManager.AddCustomEnemyTypesToTestAllEnemiesLevel();
+                EnemyManager.PopulateEnemySizeLists();
+            }
 
             DebugStopwatch.StartStopWatch("ExtendedItem Injection");
 
@@ -549,8 +552,12 @@ if (AssetBundleLoader.noBundlesFound == true)
         {
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel == null || currentLevel.IsLevelLoaded == false || currentLevel.ContentType is ContentType.External) return;
-            foreach (GameObject rootObject in SceneManager.GetSceneByName(currentLevel.SelectableLevel.sceneName).GetRootGameObjects())
+            LevelLoader.currentLevelScene = scene;
+
+            foreach (GameObject rootObject in LevelLoader.currentLevelScene.GetRootGameObjects())
                 ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
+            LevelLoader.RestoreSceneBlankReferences();
+
             LevelLoader.RefreshShipAnimatorClips(currentLevel);
             LevelLoader.RefreshWeatherEffects(currentLevel);
             LevelLoader.RefreshTimeOfDayMusic(currentLevel);
@@ -765,7 +772,7 @@ if (AssetBundleLoader.noBundlesFound == true)
             Scene scene = SceneManager.GetSceneByName(__instance.currentLevel.sceneName);
             if (!scene.isLoaded) return;
 
-            LevelLoader.TryRestoreShaders(scene);
+            LevelLoader.RestoreShaders();
             ApplyCameraDistanceOverride();
         }
 
