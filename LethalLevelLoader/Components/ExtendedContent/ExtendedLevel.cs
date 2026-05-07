@@ -252,15 +252,15 @@ namespace LethalLevelLoader
                 return string.Empty;
         }
 
-        internal void SetLevelID()
+        internal void SetLevelID(int levelId)
         {
             if (ContentType is ContentType.Custom)
             {
-                SelectableLevel.levelID = PatchedContent.ExtendedLevels.IndexOf(this);
+                SelectableLevel.levelID = levelId;
                 if (RouteNode != null)
-                    RouteNode.displayPlanetInfo = SelectableLevel.levelID;
+                    RouteNode.displayPlanetInfo = levelId;
                 if (RouteConfirmNode != null)
-                    RouteConfirmNode.buyRerouteToMoon = SelectableLevel.levelID;
+                    RouteConfirmNode.buyRerouteToMoon = levelId;
             }
         }
 

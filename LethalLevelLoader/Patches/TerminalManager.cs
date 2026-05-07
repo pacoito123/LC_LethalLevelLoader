@@ -1,14 +1,10 @@
 ﻿#if !HARMONY_DISABLED
 using HarmonyLib;
-using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http.Headers;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace LethalLevelLoader
 {
@@ -719,6 +715,12 @@ namespace LethalLevelLoader
 
         internal static void CreateStoryLogTerminalData(ExtendedStoryLog newStoryLog)
         {
+            if (Plugin.IsSetupComplete)
+            {
+                Terminal.logEntryFiles.Add(newStoryLog.assignedNode);
+                return;
+            }
+
             TerminalKeyword newStoryLogKeyword = CreateNewTerminalKeyword();
             newStoryLogKeyword.word = newStoryLog.terminalKeywordNoun;
             newStoryLogKeyword.name = newStoryLog.terminalKeywordNoun + "Keyword";
@@ -738,9 +740,7 @@ namespace LethalLevelLoader
 
         internal static void CreateItemTerminalData(ExtendedItem extendedItem)
         {
-            int buyableItemIndex = Terminal.buyableItemsList.Count();
-
-
+            int buyableItemIndex = Terminal.buyableItemsList.Length;
 
             //Terminal Buy Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
@@ -817,9 +817,6 @@ namespace LethalLevelLoader
                 }
             }
 
-
-            //Population Into Base game
-
             terminalNodeBuy.AddCompatibleNoun(routeConfirmKeyword, terminalNodeBuyConfirm);
             terminalNodeBuy.AddCompatibleNoun(routeDenyKeyword, cancelPurchaseNode);
             buyKeyword.AddCompatibleNoun(terminalKeyword, terminalNodeBuy);
@@ -829,12 +826,17 @@ namespace LethalLevelLoader
             extendedItem.BuyNode = terminalNodeBuy;
             extendedItem.BuyConfirmNode = terminalNodeBuyConfirm;
             extendedItem.BuyInfoNode = terminalNodeInfo;
-
-            Terminal.buyableItemsList = Terminal.buyableItemsList.AddItem(extendedItem.Item).ToArray();
         }
 
         internal static void CreateEnemyTypeTerminalData(ExtendedEnemyType extendedEnemyType)
         {
+            if (Plugin.IsSetupComplete)
+            {
+                // Load ExtendedEnemyType beastiary entry.
+                Patches.Terminal.enemyFiles.Add(extendedEnemyType.EnemyInfoNode);
+                return;
+            }
+
             TerminalKeyword newEnemyInfoKeyword = CreateNewTerminalKeyword();
             newEnemyInfoKeyword.name = extendedEnemyType.name + "BestiaryKeyword";
             newEnemyInfoKeyword.word = extendedEnemyType.EnemyDisplayName.ToLower();

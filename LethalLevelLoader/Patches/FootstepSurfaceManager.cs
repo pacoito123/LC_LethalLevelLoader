@@ -10,6 +10,9 @@ namespace LethalLevelLoader
 
         internal static void PatchVanillaFootstepSurfaceLists()
         {
+            if (Plugin.IsSetupComplete == false)
+                MergeExtendedFootstepSurfaces();
+
             List<FootstepSurface> footstepSurfaces = new(PatchedContent.ExtendedFootstepSurfaces.Count);
             foreach (ExtendedFootstepSurface extendedFootstepSurface in PatchedContent.ExtendedFootstepSurfaces)
             {
@@ -19,7 +22,7 @@ namespace LethalLevelLoader
             Patches.StartOfRound.footstepSurfaces = [.. footstepSurfaces];
         }
 
-        internal static void MergeExtendedFootstepSurfaces()
+        private static void MergeExtendedFootstepSurfaces()
         {
             foreach (ExtendedFootstepSurface vanillaExtendedFootstepSurface in PatchedContent.VanillaExtendedFootstepSurfaces)
                 if (!surfaceTagExtendedFootstepDict.TryAdd(vanillaExtendedFootstepSurface.FootstepSurface.surfaceTag, vanillaExtendedFootstepSurface))

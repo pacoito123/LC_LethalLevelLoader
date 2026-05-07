@@ -1,10 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace LethalLevelLoader
 {
     public static class ItemManager
     {
+        internal static void PatchVanillaBuyableItemsLists()
+        {
+            // Load ExtendedItem store page entries.
+            List<Item> buyableItems = [.. Patches.Terminal.buyableItemsList];
+            foreach (ExtendedItem extendedItem in PatchedContent.CustomExtendedItems)
+                if (extendedItem.IsBuyableItem)
+                    buyableItems.Add(extendedItem.Item);
+            Patches.Terminal.buyableItemsList = [.. buyableItems];
+        }
+
         public static void RefreshDynamicItemRarityOnAllExtendedLevels()
         {
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)

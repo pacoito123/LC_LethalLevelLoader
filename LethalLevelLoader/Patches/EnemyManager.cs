@@ -91,16 +91,13 @@ namespace LethalLevelLoader
 
         internal static void UpdateEnemyIDs()
         {
-            List<ExtendedEnemyType> vanillaEnemyTypes = PatchedContent.VanillaExtendedEnemyTypes;
-            List<ExtendedEnemyType> customEnemyTypes = PatchedContent.CustomExtendedEnemyTypes;
             int highestVanillaEnemyScanNodeCreatureID = -1;
-
-            foreach (ExtendedEnemyType extendedEnemyType in vanillaEnemyTypes)
+            foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.VanillaExtendedEnemyTypes)
                 if (extendedEnemyType.EnemyID > highestVanillaEnemyScanNodeCreatureID)
                     highestVanillaEnemyScanNodeCreatureID = extendedEnemyType.EnemyID;
 
             int counter = 1; //we want this to be 1
-            foreach (ExtendedEnemyType extendedEnemyType in customEnemyTypes)
+            foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.CustomExtendedEnemyTypes)
             {
                 ScanNodeProperties enemyScanNode = extendedEnemyType.EnemyType.enemyPrefab.GetComponentInChildren<ScanNodeProperties>();
                 if (enemyScanNode != null)
