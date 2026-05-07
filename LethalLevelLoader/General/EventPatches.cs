@@ -3,10 +3,8 @@ using GameNetcodeStuff;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace LethalLevelLoader
 {
@@ -16,70 +14,57 @@ namespace LethalLevelLoader
     internal class EventPatches
     {
         internal static DayMode previousDayMode = DayMode.None;
-        internal static bool firedDawnEvent = false;
+        internal static readonly List<GrabbableObject> scrapSpawnedThisRound = [];
+        internal static readonly List<GameObject> spawnedMapObjects = [];
+
         ////////// Level Patches //////////
-
-        internal static void InvokeExtendedEvent<T>(ExtendedEvent<T> extendedEvent, T eventParameter)
-        {
-            extendedEvent.Invoke(eventParameter);
-        }
-
-        internal static void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
-        {
-            if (LevelManager.CurrentExtendedLevel != null && LevelManager.CurrentExtendedLevel.IsLevelLoaded)
-            {
-                previousDayMode = DayMode.None;
-
-                LevelManager.CurrentExtendedLevel.LevelEvents.onLevelLoaded.Invoke();
-                LevelManager.GlobalLevelEvents.onLevelLoaded.Invoke();
-            }
-        }
-
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(StoryLog), "CollectLog")]
+        [HarmonyPatch(typeof(StoryLog), nameof(StoryLog.CollectLog))]
         [HarmonyPrefix]
         internal static void StoryLogCollectLog_Prefix(StoryLog __instance)
         {
-            if (LevelManager.CurrentExtendedLevel != null && __instance.IsServer)
+            if (LevelManager.CurrentExtendedLevel != null)
             {
                 LevelManager.CurrentExtendedLevel.LevelEvents.onStoryLogCollected.Invoke(__instance);
                 LevelManager.GlobalLevelEvents.onStoryLogCollected.Invoke(__instance);
             }
         }
-        /*
-        [HarmonyPriority(Patches.harmonyPriority)]
-        [HarmonyPatch(typeof(RoundManager), "SpawnRandomDaytimeEnemy")]
+
+        [HarmonyPriority(Patches.priority)]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnRandomDaytimeEnemy))]
         [HarmonyPostfix]
-        internal static void RoundManagerSpawnRandomDaytimeEnemy_Postfix(RoundManager __instance, GameObject __result)
+        internal static void RoundManagerSpawnRandomDaytimeEnemy_Postfix(RoundManager __instance, bool __result)
         {
-            if (LevelManager.CurrentExtendedLevel != null && __instance.IsServer)
-                if (__result != null && __result.TryGetComponent(out EnemyAI enemyAI))
+            if (__result && LevelManager.CurrentExtendedLevel != null)
+            {
+                EnemyAI spawnedEnemy = (__instance.SpawnedEnemies.Count > 0) ? __instance.SpawnedEnemies[^1] : null;
+                if (spawnedEnemy != null)
                 {
-                    LevelManager.CurrentExtendedLevel.LevelEvents.onDaytimeEnemySpawn.Invoke(enemyAI);
-                    LevelManager.GlobalLevelEvents.onDaytimeEnemySpawn.Invoke(enemyAI);
+                    LevelManager.CurrentExtendedLevel.LevelEvents.onDaytimeEnemySpawn.Invoke(spawnedEnemy); // TODO: Send to clients?
+                    LevelManager.GlobalLevelEvents.onDaytimeEnemySpawn.Invoke(spawnedEnemy);
                 }
+            }
         }
 
-        [HarmonyPriority(Patches.harmonyPriority)]
-        [HarmonyPatch(typeof(RoundManager), "SpawnRandomOutsideEnemy")]
+        [HarmonyPriority(Patches.priority)]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnRandomOutsideEnemy))]
         [HarmonyPostfix]
-        internal static void RoundManagerSpawnRandomOutsideEnemy_Postfix(RoundManager __instance, GameObject __result)
+        internal static void RoundManagerSpawnRandomOutsideEnemy_Postfix(RoundManager __instance, bool __result)
         {
-            if (LevelManager.CurrentExtendedLevel != null && __instance.IsServer)
-                if (__result != null && __result.TryGetComponent(out EnemyAI enemyAI))
+            if (__result && LevelManager.CurrentExtendedLevel != null)
+            {
+                EnemyAI spawnedEnemy = (__instance.SpawnedEnemies.Count > 0) ? __instance.SpawnedEnemies[^1] : null;
+                if (spawnedEnemy != null)
                 {
-                    LevelManager.CurrentExtendedLevel.LevelEvents.onNighttimeEnemySpawn.Invoke(enemyAI);
-                    LevelManager.GlobalLevelEvents.onNighttimeEnemySpawn.Invoke(enemyAI);
+                    LevelManager.CurrentExtendedLevel.LevelEvents.onNighttimeEnemySpawn.Invoke(spawnedEnemy); // TODO: Send to clients?
+                    LevelManager.GlobalLevelEvents.onNighttimeEnemySpawn.Invoke(spawnedEnemy);
                 }
-        }*/
-
-
-
+            }
+        }
 
         ////////// Dungeon Patches //////////
-
         [HarmonyPriority(Patches.priority + 1)] // +1 Because this needs to run after the Patch in Patches, second patch here for consistency.
-        [HarmonyPatch(typeof(DungeonGenerator), "Generate")]
+        [HarmonyPatch(typeof(DungeonGenerator), nameof(DungeonGenerator.Generate))]
         [HarmonyPrefix]
         internal static void DungeonGeneratorGenerate_Prefix()
         {
@@ -91,7 +76,7 @@ namespace LethalLevelLoader
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(RoundManager), "SwitchPower")]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SwitchPower))]
         [HarmonyPrefix]
         internal static void RoundManagerSwitchPower_Prefix(bool on)
         {
@@ -108,33 +93,35 @@ namespace LethalLevelLoader
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(RoundManager), "SpawnScrapInLevel")]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnScrapInLevel))]
         [HarmonyPostfix]
         internal static void RoundManagerSpawnScrapInLevel_Postfix()
         {
             if (DungeonManager.CurrentExtendedDungeonFlow != null)
             {
-                List<GrabbableObject> scrap = UnityEngine.Object.FindObjectsOfType<GrabbableObject>().ToList();
-                DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onSpawnedScrapObjects.Invoke(scrap);
-                DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.Invoke(scrap);
+                scrapSpawnedThisRound.Clear();
+                scrapSpawnedThisRound.AddRange(UnityEngine.Object.FindObjectsByType<GrabbableObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None));
+                scrapSpawnedThisRound.RemoveAll(item => item.isInElevator || item.isInShipRoom || item.scrapPersistedThroughRounds);
+                DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onSpawnedScrapObjects.Invoke(scrapSpawnedThisRound); // TODO: Send to clients?
+                DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.Invoke(scrapSpawnedThisRound);
             }
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(RoundManager), "SpawnSyncedProps")]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnSyncedProps))]
         [HarmonyPostfix]
         internal static void RoundManagerSpawnSyncedProps_Postfix()
         {
             if (DungeonManager.CurrentExtendedDungeonFlow != null)
             {
-                DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onSpawnedSyncedObjects.Invoke(Patches.RoundManager.spawnedSyncedObjects);
+                DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onSpawnedSyncedObjects.Invoke(Patches.RoundManager.spawnedSyncedObjects); // TODO: Send to clients?
                 DungeonManager.GlobalDungeonEvents.onSpawnedSyncedObjects.Invoke(Patches.RoundManager.spawnedSyncedObjects);
             }
         }
 
         private static EnemyVent cachedSelectedVent;
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(RoundManager), "SpawnEnemyFromVent")]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnEnemyFromVent))]
         [HarmonyPrefix]
         internal static void RoundManagerSpawnEventFromVent_Prefix(EnemyVent vent)
         {
@@ -143,37 +130,37 @@ namespace LethalLevelLoader
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(RoundManager), "SpawnEnemyGameObject")]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnEnemyGameObject))]
         [HarmonyPostfix]
         internal static void RoundManagerSpawnEventFromVent_Postfix()
         {
             if (DungeonManager.CurrentExtendedDungeonFlow != null && cachedSelectedVent != null)
             {
-                DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onEnemySpawnedFromVent.Invoke((cachedSelectedVent, Patches.RoundManager.SpawnedEnemies.Last()));
-                DungeonManager.GlobalDungeonEvents.onEnemySpawnedFromVent.Invoke((cachedSelectedVent, Patches.RoundManager.SpawnedEnemies.Last()));
+                DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onEnemySpawnedFromVent.Invoke((cachedSelectedVent, Patches.RoundManager.SpawnedEnemies[^1]));
+                DungeonManager.GlobalDungeonEvents.onEnemySpawnedFromVent.Invoke((cachedSelectedVent, Patches.RoundManager.SpawnedEnemies[^1]));
                 cachedSelectedVent = null;
             }
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(RoundManager), "SpawnMapObjects")]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnMapObjects))]
         [HarmonyPostfix]
         internal static void RoundManagerSpawnMapObjects_Postfix()
         {
             if (DungeonManager.CurrentExtendedDungeonFlow != null)
             {
-                List<GameObject> mapObjects = new List<GameObject>();
-                foreach (GameObject rootObject in SceneManager.GetSceneByName(LevelManager.CurrentExtendedLevel.SelectableLevel.sceneName).GetRootGameObjects())
-                    foreach (SpawnableMapObject randomMapObject in LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableMapObjects)
-                        if (rootObject.name.ContainsSanitized(randomMapObject.prefabToSpawn.name)) //To ensure were only getting the Dungeon relevant objects.
-                            mapObjects.Add(rootObject);
-                DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onSpawnedMapObjects.Invoke(mapObjects);
-                DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.Invoke(mapObjects);
+                spawnedMapObjects.Clear();
+                foreach (GameObject rootObjects in LevelLoader.currentLevelScene.GetRootGameObjects())
+                    foreach (IIndoorMapHazard indoorMapHazard in rootObjects.GetComponentsInChildren<IIndoorMapHazard>(includeInactive: false))
+                        if (indoorMapHazard is Behaviour indoorMapHazardScript)
+                            spawnedMapObjects.Add(indoorMapHazardScript.transform.root.gameObject);
+                DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onSpawnedMapObjects.Invoke(spawnedMapObjects); // TODO: Send to clients?
+                DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.Invoke(spawnedMapObjects);
             }
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(StartOfRound), "OnShipLandedMiscEvents")]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnShipLandedMiscEvents))]
         [HarmonyPrefix]
         internal static void StartOfRoundOnShipLandedMiscEvents_Prefix()
         {
@@ -190,7 +177,7 @@ namespace LethalLevelLoader
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(StartOfRound), "ShipLeave")]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ShipLeave))]
         [HarmonyPrefix]
         internal static void StartOfRoundShipLeave_Prefix()
         {
@@ -207,7 +194,7 @@ namespace LethalLevelLoader
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(EntranceTeleport), "TeleportPlayerServerRpc")]
+        [HarmonyPatch(typeof(EntranceTeleport), nameof(EntranceTeleport.TeleportPlayerServerRpc))]
         [HarmonyPrefix]
         internal static void EntranceTeleportTeleportPlayerServerRpc_Prefix(EntranceTeleport __instance, int playerObj)
         {
@@ -250,11 +237,11 @@ namespace LethalLevelLoader
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(LungProp), "EquipItem")]
+        [HarmonyPatch(typeof(LungProp), nameof(LungProp.EquipItem))]
         [HarmonyPrefix]
         internal static void LungPropEquipItem_Prefix(LungProp __instance)
         {
-            if (__instance.IsServer == true && __instance.isLungDocked)
+            if (__instance.isLungDocked)
             {
                 if (DungeonManager.CurrentExtendedDungeonFlow != null)
                 {
@@ -270,18 +257,17 @@ namespace LethalLevelLoader
         }
 
         [HarmonyPriority(Patches.priority)]
-        [HarmonyPatch(typeof(TimeOfDay), "GetDayPhase")]
+        [HarmonyPatch(typeof(TimeOfDay), nameof(TimeOfDay.GetDayPhase))]
         [HarmonyPostfix]
         internal static void TimeOfDayGetDayPhase_Postfix(DayMode __result)
         {
-            if (previousDayMode == DayMode.None || previousDayMode != __result)
+            if (previousDayMode is DayMode.None || previousDayMode != __result)
             {
                 LevelManager.CurrentExtendedLevel.LevelEvents.onDayModeToggle.Invoke(__result);
                 LevelManager.GlobalLevelEvents.onDayModeToggle.Invoke(__result);
             }
 
             previousDayMode = __result;
-
         }
     }
 

@@ -173,9 +173,6 @@ if (AssetBundleLoader.noBundlesFound == true)
             Terminal = UnityEngine.Object.FindFirstObjectByType<Terminal>(FindObjectsInactive.Exclude);
             TimeOfDay = UnityEngine.Object.FindFirstObjectByType<TimeOfDay>(FindObjectsInactive.Exclude);
 
-            SceneManager.sceneLoaded += OnSceneLoaded;
-            SceneManager.sceneLoaded += EventPatches.OnSceneLoaded;
-
             currentClientId = NetworkManager.Singleton.LocalClientId;
 
             //Removing the broken cardboard box item please understand 
@@ -547,8 +544,8 @@ if (AssetBundleLoader.noBundlesFound == true)
             return false;
         }
 
-        //Called via SceneManager event.
-        internal static void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
+        [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.Internal_SceneLoaded)), HarmonyPrefix, HarmonyPriority(priority)]
+        internal static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel == null || currentLevel.IsLevelLoaded == false || currentLevel.ContentType is ContentType.External) return;
@@ -566,6 +563,10 @@ if (AssetBundleLoader.noBundlesFound == true)
                 TerrainManager.BakeTerrainFootsteps();
                 SceneManager.sceneUnloaded += TerrainManager.CleanupTerrainFootsteps;
             }
+
+            EventPatches.previousDayMode = DayMode.None;
+            LevelManager.CurrentExtendedLevel.LevelEvents.onLevelLoaded.Invoke();
+            LevelManager.GlobalLevelEvents.onLevelLoaded.Invoke();
         }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), HarmonyPrefix, HarmonyPriority(priority)]
