@@ -91,8 +91,8 @@ namespace LethalLevelLoader
             newExtendedDungeonFlow.RestrictBounds = newRestrictBounds;
             newExtendedDungeonFlow.CullingTileDepth = newCullingTileDepth;
 
-            if (newExtendedDungeonFlow.LevelMatchingProperties == null)
-                newExtendedDungeonFlow.LevelMatchingProperties = LevelMatchingProperties.Create(newExtendedDungeonFlow);
+            newExtendedDungeonFlow.TryCreateMatchingProperties();
+
             return (newExtendedDungeonFlow);
         }
 

@@ -266,15 +266,30 @@ namespace LethalLevelLoader
 
         internal void SetExtendedDungeonFlowMatches()
         {
-            foreach (IntWithRarity intWithRarity in SelectableLevel.dungeonFlowTypes)
-                if (DungeonManager.TryGetExtendedDungeonFlow(Patches.RoundManager.dungeonFlowTypes[intWithRarity.id].dungeonFlow, out ExtendedDungeonFlow extendedDungeonFlow))
-                    extendedDungeonFlow.LevelMatchingProperties.planetNames.Add(new StringWithRarity(NumberlessPlanetName, intWithRarity.rarity));
+            List<IntWithRarity> dungeonFlowTypes = [.. SelectableLevel.dungeonFlowTypes];
+            for (int i = 0; i < SelectableLevel.dungeonFlowTypes?.Length; i++)
+            {
+                IntWithRarity dungeonWithRarity = SelectableLevel.dungeonFlowTypes[i];
+                if (dungeonWithRarity != null)
+                {
+                    ExtendedDungeonFlow extendedDungeonFlow = PatchedContent.ExtendedDungeonFlows.Find(extendedDungeonFlow => extendedDungeonFlow.DungeonID == dungeonWithRarity.id);
+                    if (extendedDungeonFlow != null)
+                    {
+                        extendedDungeonFlow.LevelMatchingProperties.planetNames.Add(new(NumberlessPlanetName, dungeonWithRarity.id));
+                        continue;
+                    }
+                }
+                Debug.LogWarning($"Invalid DungeonFlow entry at index '{i}' for SelectableLevel: {SelectableLevel.name}");
+                dungeonFlowTypes.RemoveAt(i--);
+            }
 
-            if (SelectableLevel.sceneName == "Level4March")
-                foreach (IndoorMapType indoorMapType in Patches.RoundManager.dungeonFlowTypes)
-                    if (indoorMapType.dungeonFlow.name == "Level1Flow3Exits")
-                        if (DungeonManager.TryGetExtendedDungeonFlow(indoorMapType.dungeonFlow, out ExtendedDungeonFlow marchDungeonFlow))
-                            marchDungeonFlow.LevelMatchingProperties.planetNames.Add(new StringWithRarity(NumberlessPlanetName, 300));
+            if (SelectableLevel.name.Equals("MarchLevel", StringComparison.Ordinal))
+            {
+                ExtendedDungeonFlow marchDungeonFlow = PatchedContent.ExtendedDungeonFlows.Find(extendedDungeonFlow =>
+                    string.Equals(extendedDungeonFlow.DungeonFlow.name, "Level1Flow3Exits", StringComparison.Ordinal));
+                if (marchDungeonFlow != null)
+                    marchDungeonFlow.LevelMatchingProperties.planetNames.Add(new(NumberlessPlanetName, 300));
+            }
         }
 
         internal void GetVanillaInfoNode()

@@ -473,7 +473,7 @@ namespace LethalLevelLoader
         {
             foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods)
             {
-                foreach (ExtendedLevel extendedLevel in extendedMod.ExtendedLevels)
+                foreach (ExtendedLevel extendedLevel in extendedMod.ExtendedLevels) // TODO: Null checks?
                 {
                     extendedLevel.ContentType = ContentType.Custom;
                     extendedLevel.Initialize(extendedLevel.name, generateTerminalAssets: true);
@@ -483,7 +483,6 @@ namespace LethalLevelLoader
                 {
                     extendedDungeonFlow.ContentType = ContentType.Custom;
                     extendedDungeonFlow.Initialize();
-                    //extendedDungeonFlow.manualPlanetNameReferenceList.Add(new StringWithRarity("Tenebrous", 1000));
                     PatchedContent.ExtendedDungeonFlows.Add(extendedDungeonFlow);
                 }
                 foreach (ExtendedItem extendedItem in extendedMod.ExtendedItems)
@@ -564,7 +563,7 @@ namespace LethalLevelLoader
 
         internal static void CreateVanillaExtendedDungeonFlows()
         {
-            //DebugHelper.Log("Creating ExtendedDungeonFlows For Vanilla DungeonFlows");
+            DebugHelper.Log("Creating ExtendedDungeonFlows For Vanilla DungeonFlows", DebugType.Developer);
 
             if (Patches.RoundManager.dungeonFlowTypes != null)
                 foreach (IndoorMapType indoorMapType in Patches.RoundManager.dungeonFlowTypes)
