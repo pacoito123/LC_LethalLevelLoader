@@ -1,5 +1,6 @@
 ﻿using DunGen;
 using DunGen.Adapters;
+using DunGen.Generation;
 using GameNetcodeStuff;
 using HarmonyLib;
 using LethalLevelLoader.Compatibility;
@@ -12,9 +13,7 @@ using System.Reflection.Emit;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Utilities;
 using UnityEngine.SceneManagement;
-using NetworkManager = Unity.Netcode.NetworkManager;
 
 namespace LethalLevelLoader
 {
@@ -445,7 +444,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                     if (extendedLevel.SelectableLevel.name == SaveManager.currentSaveFile.CurrentLevelName)
                     {
                         DebugHelper.Log("Loading Previously Saved SelectableLevel: " + extendedLevel.SelectableLevel.PlanetName, DebugType.User);
-                        levelID = StartOfRound.levels.ToList().IndexOf(extendedLevel.SelectableLevel);
+                        levelID = Array.FindIndex(StartOfRound.levels, level => extendedLevel.SelectableLevel);
                         hasInitiallyChangedLevel = true;
                         return (true);
                     }
@@ -637,7 +636,9 @@ if (AssetBundleLoader.noBundlesFound == true)
                 counter++;
             }
 
-            int[] sceneSelections = extendedLevel.SceneSelections.Select(s => s.Rarity).ToArray();
+            int[] sceneSelections = new int[extendedLevel.SceneSelections.Count];
+            for (int i = 0; i < sceneSelections.Length; i++)
+                sceneSelections[i] = extendedLevel.SceneSelections[i]?.Rarity ?? -1;
             int selectedSceneIndex = RoundManager.GetRandomWeightedIndex(sceneSelections, levelRandom);
             extendedLevel.SelectableLevel.sceneName = extendedLevel.SceneSelections[selectedSceneIndex].Name;
             DebugHelper.Log("Selected SceneName: " + extendedLevel.SelectableLevel.sceneName + " For ExtendedLevel: " + extendedLevel.NumberlessPlanetName, DebugType.Developer);
@@ -647,11 +648,12 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static void StartOfRoundOnLoadComplete_Prefix(string sceneName)
         {
             ExtendedLevel extendedLevel = LevelManager.CurrentExtendedLevel;
-            if (extendedLevel == null || extendedLevel.SelectableLevel.sceneName == sceneName) return;
+            if (extendedLevel == null || string.Equals(extendedLevel.SelectableLevel.sceneName, sceneName, StringComparison.Ordinal)) return;
 
-            if (extendedLevel.SceneSelections.Select(scene => scene.Name).Contains(sceneName)) // Check if a valid scene loaded.
+            int sceneSelectionIndex = extendedLevel.SceneSelections.FindIndex(scene => string.Equals(scene.Name, sceneName, StringComparison.Ordinal));
+            if (sceneSelectionIndex != -1) // Check if a valid scene loaded.
                 extendedLevel.SelectableLevel.sceneName = sceneName; // Update current level's scene name, so the round can end properly.
-            else if (sceneName != "SampleSceneRelay")
+            else if (!string.Equals(sceneName, "SampleSceneRelay", StringComparison.Ordinal))
                 DebugHelper.LogFatal($"Critical Failure! Scene '{sceneName}' has no selection entry for ExtendedLevel {extendedLevel.NumberlessPlanetName}!", DebugType.User);
         }
 
@@ -1088,23 +1090,21 @@ if (AssetBundleLoader.noBundlesFound == true)
             return true;
         }
 
-        /* //DunGen Optimization Patches (Credit To LadyRaphtalia, Author Of Scarlet Devil Mansion)
-        [HarmonyPatch(typeof(DoorwayPairFinder), "GetDoorwayPairs"), HarmonyPrefix, HarmonyPriority(priority)] // TODO: Check if still needed
-        public static bool GetDoorwayPairsPatch(ref DoorwayPairFinder __instance, int? maxCount, ref Queue<DoorwayPair> __result)
+        //DunGen Optimization Patches (Credit To LadyRaphtalia, Author Of Scarlet Devil Mansion)
+        [HarmonyPatch(typeof(DoorwayPairFinder), nameof(DoorwayPairFinder.GetDoorwayPairs)), HarmonyPrefix, HarmonyPriority(priority)]
+        internal static bool GetDoorwayPairsPatch(DoorwayPairFinder __instance, int? maxCount, ref Queue<DoorwayPair> __result)
         {
-
             __instance.tileOrder = __instance.CalculateOrderedListOfTiles();
-            var doorwayPairs = __instance.PreviousTile == null ?
+            IEnumerable<DoorwayPair> doorwayPairs = (__instance.PreviousTile == null) ?
               __instance.GetPotentialDoorwayPairsForFirstTile() :
               __instance.GetPotentialDoorwayPairsForNonFirstTile();
 
-            var num = doorwayPairs.Count();
+            int num = doorwayPairs.Count();
             if (maxCount != null)
                 num = Mathf.Min(num, maxCount.Value);
             __result = new Queue<DoorwayPair>(num);
 
-            var newList = OrderDoorwayPairs(doorwayPairs, num);
-            foreach (var item in newList)
+            foreach (DoorwayPair item in OrderDoorwayPairs(doorwayPairs, num))
                 __result.Enqueue(item);
 
             return false;
@@ -1112,17 +1112,38 @@ if (AssetBundleLoader.noBundlesFound == true)
 
         private class DoorwayPairComparer : IComparer<DoorwayPair>
         {
-            public int Compare(DoorwayPair x, DoorwayPair y)
+            public int Compare(DoorwayPair a, DoorwayPair b)
             {
-                var tileWeight = y.TileWeight.CompareTo(x.TileWeight);
-                if (tileWeight == 0) return y.DoorwayWeight.CompareTo(x.DoorwayWeight);
+                int tileWeight = b.TileWeight.CompareTo(a.TileWeight);
+                if (tileWeight == 0) return b.DoorwayWeight.CompareTo(a.DoorwayWeight);
                 return tileWeight;
             }
         }
 
         private static IEnumerable<DoorwayPair> OrderDoorwayPairs(IEnumerable<DoorwayPair> list, int num)
         {
-            return list.OrderBy(x => x, new DoorwayPairComparer()).Take(num);
+            return list.OrderBy(static doorwayPair => doorwayPair, new DoorwayPairComparer()).Take(num);
+        }
+
+        /* [HarmonyPatch(typeof(DungeonGenerator), MethodType.Constructor), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> DungeonGenerator_Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return new CodeMatcher(instructions).MatchForward(useEnd: true,
+                new(OpCodes.Ldnull),
+                new(OpCodes.Ldc_I4_0))
+            .SetOpcodeAndAdvance(OpCodes.Ldc_I4_8) // Could be neat to have Tiles able to specify their initial capacity for object pooling.
+            .InstructionEnumeration();
+        }
+
+        [HarmonyPatch(typeof(TileInstanceSource), MethodType.Constructor), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> TileInstanceSource_Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return new CodeMatcher(instructions).MatchForward(useEnd: true,
+                new(OpCodes.Ldnull),
+                new(OpCodes.Ldnull),
+                new(OpCodes.Ldc_I4_0))
+            .SetOpcodeAndAdvance(OpCodes.Ldc_I4_8)
+            .InstructionEnumeration();
         } */
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.LoadPlanetsMoldSpreadData))]
