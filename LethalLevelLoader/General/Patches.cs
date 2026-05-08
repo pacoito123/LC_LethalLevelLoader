@@ -14,6 +14,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace LethalLevelLoader
 {
@@ -487,8 +488,6 @@ if (AssetBundleLoader.noBundlesFound == true)
             }
         }
 
-        internal static bool ranLethalLevelLoaderTerminalEvent;
-
         [HarmonyPatch(typeof(Terminal), "RunTerminalEvents"), HarmonyPrefix, HarmonyPriority(priority)]
         internal static bool TerminalRunTerminalEvents_Prefix(Terminal __instance, TerminalNode node)
         {
@@ -499,6 +498,7 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static bool TerminalLoadNewNode_Prefix(Terminal __instance, ref TerminalNode node)
         {
             TerminalManager.moonsInCataloguePage = 0;
+            TerminalManager.linesInCataloguePage = 0;
             return (TerminalManager.OnBeforeLoadNewNode(ref node));
         }
 
@@ -508,16 +508,51 @@ if (AssetBundleLoader.noBundlesFound == true)
             TerminalManager.OnLoadNewNode(ref node);
         }
 
-        [HarmonyPatch(typeof(PlayerControllerB), "ScrollMouse_performed"), HarmonyPrefix, HarmonyPriority(priority)]
-        internal static bool TerminalScrollMouse_Prefix(PlayerControllerB __instance, InputAction.CallbackContext context)
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.ScrollMouse_performed)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> TerminalScrollMouse_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            if (!__instance.inTerminalMenu || TerminalManager.moonsInCataloguePage == 0) return true;
+            FieldInfo terminalScrollVerticalInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.terminalScrollVertical), BindingFlags.Instance | BindingFlags.Public);
+            MethodInfo scrollbarValueGetter = typeof(Scrollbar).GetProperty(nameof(Scrollbar.value), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            MethodInfo scrollbarValueSetter = typeof(Scrollbar).GetProperty(nameof(Scrollbar.value), BindingFlags.Instance | BindingFlags.Public).GetSetMethod();
+            CodeMatcher codeMatcher = new CodeMatcher(instructions, generator).MatchForward(useEnd: false,
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, terminalScrollVerticalInfo),
+                new(OpCodes.Dup),
+                new(OpCodes.Callvirt, scrollbarValueGetter),
+                new(OpCodes.Ldloc_0),
+                new(OpCodes.Ldc_R4, (float)3),
+                new(OpCodes.Div),
+                new(OpCodes.Add),
+                new(OpCodes.Callvirt, scrollbarValueSetter));
 
-            float scrollAmount = 15 / (float)TerminalManager.moonsInCataloguePage; // Scroll 15 moons at a time, instead of a third of the page.
-            float scrollDirection = context.ReadValue<float>();
+            if (codeMatcher.IsInvalid)
+            {
+                DebugHelper.LogError("Could not match 1/3 Terminal scroll amount.", DebugType.User);
+                return instructions;
+            }
 
-            __instance.terminalScrollVertical.value += scrollAmount * scrollDirection;
-            return false;
+            MethodInfo tryAdaptTerminalScrollingInfo = typeof(Patches).GetMethod(nameof(TryAdaptTerminalScrolling), BindingFlags.Static | BindingFlags.NonPublic);
+            return codeMatcher.InsertAndAdvance(
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, terminalScrollVerticalInfo),
+                new(OpCodes.Ldloc_0),
+                new(OpCodes.Call, tryAdaptTerminalScrollingInfo),
+                new(OpCodes.Brfalse_S), // vanillaScrolling
+                new(OpCodes.Ret))
+            .CreateLabel(out Label vanillaScrolling)
+            .Advance(-2)
+            .SetOperandAndAdvance(vanillaScrolling)
+            .InstructionEnumeration();
+        }
+
+        private static bool TryAdaptTerminalScrolling(Scrollbar scrollbar, float scrollDirection)
+        {
+            if (TerminalManager.moonsInCataloguePage == 0) return false;
+            if (TerminalManager.linesInCataloguePage == 0)
+                TerminalManager.linesInCataloguePage = Terminal.currentText.Split('\n', StringSplitOptions.None).Length;
+
+            scrollbar.value += scrollDirection * (TerminalManager.linesToScroll / TerminalManager.linesInCataloguePage);
+            return true;
         }
 
         [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.Internal_SceneLoaded)), HarmonyPrefix, HarmonyPriority(priority)]

@@ -27,6 +27,8 @@ namespace LethalLevelLoader
         public static MoonsCataloguePage defaultMoonsCataloguePage { get; internal set; }
         public static MoonsCataloguePage currentMoonsCataloguePage { get; internal set; }
         internal static int moonsInCataloguePage;
+        internal static int linesInCataloguePage;
+        internal static float linesToScroll = 20.0f; // TODO: Make configurable maybe?
 
         //Cached References To Important Base-Game TerminalKeywords;
         internal static TerminalKeyword routeKeyword;
