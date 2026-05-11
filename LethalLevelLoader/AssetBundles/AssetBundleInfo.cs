@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
+using LethalLevelLoader.Compatibility;
 using UnityEngine;
-using UnityEngine.ProBuilder.MeshOperations;
-using Debug = UnityEngine.Debug;
 
 namespace LethalLevelLoader.AssetBundles
 {
@@ -198,7 +195,10 @@ namespace LethalLevelLoader.AssetBundles
                 bundleLoadStopwatch.Stop();
                 LastTimeLoaded = Time.time;
                 DebugHelper.LogError("AssetBundleInfo: " + AssetBundleFileName + " failed to load or is already loaded. Skipping...", DebugType.User);
-                AssetBundleLoader.Instance.AssetBundleInfos.Remove(this);
+                if (DawnLibCompatibility.Enabled)
+                    DawnLibCompatibility.RefreshLocalClientBundleState(3); // Error
+                if (hasInitialized == false)
+                    AssetBundleLoader.Instance.AssetBundleInfos.Remove(this);
             }
         }
 
@@ -212,7 +212,7 @@ namespace LethalLevelLoader.AssetBundles
             yield return activeUnloadRequest;
             if (activeUnloadRequest.isDone)
             {
-                UnityEngine.Object.Destroy(assetBundle);
+                Object.Destroy(assetBundle);
                 assetBundle = null; // I think we need to do this so it isn't deemed missing (?)
                 activeUnloadRequest = null;
                 bundleUnloadStopwatch.Stop();
@@ -220,7 +220,7 @@ namespace LethalLevelLoader.AssetBundles
                 DebugHelper.Log(AssetBundleFileName + " Unloaded (" + LastUnloadTime + ")", DebugType.User);
                 OnBundeUnloaded.Invoke(this);
             }
-            
+
         }
 
         ////////// AssetBundle Middle-Man'd Functions //////////

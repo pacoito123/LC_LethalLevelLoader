@@ -1,4 +1,5 @@
 ﻿using LethalLevelLoader.AssetBundles;
+using LethalLevelLoader.Compatibility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,6 +68,9 @@ namespace LethalLevelLoader
             }
             AssetBundles.AssetBundleLoader.OnBundleLoaded.AddListener(Instance.RefreshLoadStatus);
             AssetBundles.AssetBundleLoader.OnBundleUnloaded.AddListener(Instance.RefreshLoadStatus);
+
+            if (DawnLibCompatibility.Enabled)
+                allowedToLoadLevel.OnValueChanged += (previousValue, newValue) => DawnLibCompatibility.RefreshLocalClientBundleState(newValue ? 4 : 0); // Done, Queued
         }
 
         public override void OnDestroy()
@@ -97,8 +101,8 @@ namespace LethalLevelLoader
             if (currentRouteRequestor != null)
                 previousGroups = GetRouteGroups(currentRouteRequestor);
 
-            // Only unload when about to load a different level.
-            if (currentLevel != null && currentRouteRequestor != currentLevel)
+            // Only unload when about to load a different level, OR a level not registered by LLL.
+            if (currentLevel != null && (currentRouteRequestor != currentLevel || currentLevel.ContentType is ContentType.External))
             {
                 foreach (AssetBundleGroup bundleGroup in previousGroups)
                     if (!newGroups.Contains(bundleGroup))
@@ -153,7 +157,11 @@ namespace LethalLevelLoader
                 {
                     loadedStatus = false;
                     if (routeGroup.LoadingStatus != AssetBundleGroupLoadingStatus.Loading)
+                    {
+                        if (DawnLibCompatibility.Enabled)
+                            DawnLibCompatibility.RefreshLocalClientBundleState(2); // Loading
                         routeGroup.TryLoadGroup();
+                    }
                 }
             DebugHelper.Log("Sending LoadedStatus: " + loadedStatus + " To Server!", DebugType.User);
             SetLoadedStatusServerRpc(NetworkManager.LocalClientId, loadedStatus);

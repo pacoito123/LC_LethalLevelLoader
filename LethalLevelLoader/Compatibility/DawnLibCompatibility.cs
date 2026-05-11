@@ -1,5 +1,8 @@
+using System;
 using System.Runtime.CompilerServices;
 using Dawn;
+using Dawn.Internal;
+using Dawn.Utils;
 
 namespace LethalLevelLoader.Compatibility
 {
@@ -63,6 +66,16 @@ namespace LethalLevelLoader.Compatibility
                 PatchedContent.ExtendedLevels.Add(dawnExtendedLevel);
                 dawnExtendedMod.RegisterExtendedContent(dawnExtendedLevel);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal static void RefreshLocalClientBundleState(int state)
+        {
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null) return;
+            PlayerControllerReference player = GameNetworkManager.Instance.localPlayerController;
+
+            if (Enum.IsDefined(typeof(DawnMoonNetworker.BundleState), state))
+                DawnMoonNetworker.Instance.PlayerSetBundleStateRpc(player, (DawnMoonNetworker.BundleState)state);
         }
 
         /* // TODO: Extension method makes soft compat angry?

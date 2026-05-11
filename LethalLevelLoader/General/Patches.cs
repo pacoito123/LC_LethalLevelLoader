@@ -1,6 +1,5 @@
 ﻿using DunGen;
 using DunGen.Adapters;
-using DunGen.Generation;
 using GameNetcodeStuff;
 using HarmonyLib;
 using LethalLevelLoader.Compatibility;
@@ -12,7 +11,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -239,10 +237,10 @@ if (AssetBundleLoader.noBundlesFound == true)
                 //Initialize ExtendedContent Objects For Custom Content.
                 AssetBundleLoader.InitializeBundles();
 
-                PatchedContent.PopulateContentDictionaries();
-
                 if (DawnLibCompatibility.Enabled)
                     DawnLibCompatibility.RegisterDawnExtendedLevels(); // Create ExtendedLevel for DawnLib moons.
+
+                PatchedContent.PopulateContentDictionaries();
 
                 string debugString = "LethalLevelLoader Loaded The Following ExtendedLevels:" + '\n';
                 for (int i = 0; i < PatchedContent.ExtendedLevels.Count; i++)
@@ -460,7 +458,7 @@ if (AssetBundleLoader.noBundlesFound == true)
         }
 
 
-        [HarmonyPatch(typeof(StartOfRound), "ChangeLevel"), HarmonyPostfix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ChangeLevel)), HarmonyPostfix, HarmonyPriority(priority)]
         public static void StartOfRoundChangeLevel_Postfix(int levelID)
         {
             NetworkBundleManager.Instance.Refresh();
