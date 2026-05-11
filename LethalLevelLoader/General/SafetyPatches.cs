@@ -1,26 +1,23 @@
-﻿using HarmonyLib;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections;
+using HarmonyLib;
 
 namespace LethalLevelLoader
 {
     internal class SafetyPatches
     {
-        internal const int harmonyPriority = 250;
-
-        [HarmonyPriority(harmonyPriority)]
+        /* [HarmonyPriority(harmonyPriority)]
         [HarmonyPatch(typeof(StartOfRound), "ChangeLevel")]
         [HarmonyPrefix]
         internal static void StartOfRoundChangeLevel_Prefix(ref int levelID)
         {
-           /* if (levelID >= Patches.StartOfRound.levels.Length)
+           if (levelID >= Patches.StartOfRound.levels.Length)
             {
                 DebugHelper.LogWarning("Lethal Company attempted to load a saved current level that has not yet been loaded");
                 DebugHelper.LogWarning(levelID + " / " + (Patches.StartOfRound.levels.Length));
                 LevelManager.invalidSaveLevelID = levelID;
                 levelID = 0;
-            }*/
-        }
+            }
+        } */
 
         // static List<SpawnableMapObject> temporarySpawnableMapObjectList = new List<SpawnableMapObject>();
 
@@ -82,8 +79,8 @@ namespace LethalLevelLoader
             temporarySpawnableMapObjectList.Clear();
         } */
 
-        [HarmonyPriority(harmonyPriority)]
-        [HarmonyPatch(typeof(TimeOfDay), "SetWeatherBasedOnVariables")]
+        [HarmonyPriority(Patches.priority)]
+        [HarmonyPatch(typeof(TimeOfDay), nameof(TimeOfDay.SetWeatherBasedOnVariables))]
         [HarmonyPrefix]
         internal static void TimeOfDaySetWeatherBasedOnVariables_Prefix(TimeOfDay __instance)
         {
@@ -102,6 +99,23 @@ namespace LethalLevelLoader
                     __instance.currentWeatherVariable2 = 10f;
                 }
             }
+        }
+
+        [HarmonyPriority(Patches.priority)]
+        [HarmonyPatch(typeof(SoundManager), nameof(SoundManager.ResetValues))]
+        [HarmonyPostfix]
+        internal static void SoundManagerResetValues_Postfix(SoundManager __instance)
+        {
+            // Potential fix for that one rare audio bug at the start of a round caused by something with the Chorus effect in the SFX AudioMixerGroup.
+            __instance.StartCoroutine(AttemptToFixPotentialAudioBug(__instance));
+        }
+
+        private static IEnumerator AttemptToFixPotentialAudioBug(SoundManager soundManager)
+        {
+            yield return null;
+            soundManager.SetDiageticMixerSnapshot(4, 1000.0f); // This is REALLY dumb...
+            yield return null;
+            soundManager.SetDiageticMixerSnapshot(0, 1.0f);
         }
     }
 }
