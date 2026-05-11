@@ -557,8 +557,9 @@ if (AssetBundleLoader.noBundlesFound == true)
         internal static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
-            if (currentLevel == null || currentLevel.IsLevelLoaded == false || currentLevel.ContentType is ContentType.External) return;
+            if (currentLevel == null || currentLevel.IsLevelLoaded == false) return;
             LevelLoader.currentLevelScene = scene;
+            if (currentLevel.ContentType is ContentType.External) return;
 
             foreach (GameObject rootObject in LevelLoader.currentLevelScene.GetRootGameObjects())
                 ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
@@ -909,15 +910,33 @@ if (AssetBundleLoader.noBundlesFound == true)
                 return instructions;
             }
 
+            FieldInfo currentFootstepSurfaceIndexInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.Public);
             MethodInfo tryGetAndSetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetAndSetFootstepSurfaceIndex), [typeof(Terrain), typeof(int), typeof(PlayerControllerB)]);
-            return codeMatcher.CreateLabel(out Label vanillaFootstepsTarget)
-            .Insert(
+            _ = codeMatcher.CreateLabel(out Label vanillaFootstepsTarget)
+            .InsertAndAdvance(
                 new(OpCodes.Ldloc_0),
                 new(OpCodes.Ldloc_3),
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Call, tryGetAndSetFootstepSurfaceIndexInfo), // Insert call to 'FootstepSurfaceManager.TryGetFootstepSurfaceIndex()' and jump to vanilla footstep target if false.
                 new(OpCodes.Brfalse, vanillaFootstepsTarget),
                 new(OpCodes.Ret))
+            .MatchForward(useEnd: true,
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, currentFootstepSurfaceIndexInfo),
+                new(OpCodes.Ldc_I4_S, (sbyte)12), // Match immediately after Gunkfish slime footstep check.
+                new(OpCodes.Beq));
+
+            if (codeMatcher.Advance(1).IsInvalid)
+            {
+                DebugHelper.LogError("Could not match Gunkfish slime footstep check when replacing footsteps.", DebugType.User);
+                return instructions;
+            }
+
+            MethodInfo switchToUntaggedIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.SwitchToUntaggedIndex), BindingFlags.Static | BindingFlags.NonPublic);
+            return codeMatcher.InsertAndAdvance(
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldflda, currentFootstepSurfaceIndexInfo),
+                new(OpCodes.Call, switchToUntaggedIndexInfo)) // Insert call to 'FootstepSurfaceManager.SwitchToUntaggedIndex()'.
             .InstructionEnumeration();
         }
 
@@ -933,7 +952,7 @@ if (AssetBundleLoader.noBundlesFound == true)
 
             if (codeMatcher.IsInvalid)
             {
-                DebugHelper.LogError("Could not match Gunkfish slime footstep check.", DebugType.User);
+                DebugHelper.LogError("Could not match Gunkfish slime footstep check when restoring footsteps.", DebugType.User);
                 return instructions;
             }
 

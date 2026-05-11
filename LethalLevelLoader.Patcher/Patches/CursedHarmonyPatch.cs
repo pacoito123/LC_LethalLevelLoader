@@ -27,6 +27,9 @@ namespace LethalLevelLoader.Patcher
         [HarmonyPriority(Priority.First)]
         internal static void ChainloaderInitialized()
         {
+            string harmonyBackend = Environment.GetEnvironmentVariable("MONOMOD_DMD_TYPE"); // Only needs to run if set to either 'auto' (blank) or 'dynamicmethod'.
+            if (!string.IsNullOrEmpty(harmonyBackend) && !string.Equals(harmonyBackend, "dynamicmethod", StringComparison.Ordinal)) return;
+
             Type cursedType = null; // 'ILManipulator+<>c__DisplayClass14_0'
             MethodInfo cursedMethod = null; // '<ReadBody>g__ReadInstruction|0'
 

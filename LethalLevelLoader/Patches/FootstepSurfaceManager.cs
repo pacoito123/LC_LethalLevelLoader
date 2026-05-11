@@ -79,5 +79,12 @@ namespace LethalLevelLoader
             }
             return false;
         }
+
+        internal static void SwitchToUntaggedIndex(ref int currentFootstepSurfaceIndex)
+        {
+            if (currentFootstepSurfaceIndex < 0 || currentFootstepSurfaceIndex >= PatchedContent.ExtendedFootstepSurfaces.Count) return;
+            if (PatchedContent.ExtendedFootstepSurfaces[currentFootstepSurfaceIndex].ContentType is ContentType.Custom)
+                currentFootstepSurfaceIndex = (int)VanillaSurfaceTags.Untagged; // Swap tag to Untagged to avoid (harmless) error message when comparing tag.
+        }
     }
 }

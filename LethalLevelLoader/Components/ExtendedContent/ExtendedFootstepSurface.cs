@@ -134,5 +134,5 @@ namespace LethalLevelLoader
     }
 
     // All Vanilla FootstepSurface tags.
-    public enum VanillaSurfaceTags { None = -1, Concrete, Gravel, Catwalk, Aluminum, Grass, Rock, Puddle, Tiles, Snow, Carpet, Untagged, Wood, Slime, Tree }
+    public enum VanillaSurfaceTags : sbyte { None = -1, Concrete, Gravel, Catwalk, Aluminum, Grass, Rock, Puddle, Tiles, Snow, Carpet, Untagged, Wood, Slime, Tree }
 }
