@@ -26,9 +26,9 @@ outdir = "../dist"
 source = "../LethalLevelLoader/bin/Release/netstandard2.1/LethalLevelLoader.dll"
 target = "/BepInEx/plugins/"
 
-# [[build.copy]]
-# source = "../LethalLevelLoader.Patcher/bin/Release/netstandard2.1/LethalLevelLoader.Patcher.dll"
-# target = "/BepInEx/patchers/LethalLevelLoader/"
+[[build.copy]]
+source = "../LethalLevelLoader.Patcher/bin/Release/netstandard2.1/LethalLevelLoader.Patcher.dll"
+target = "/BepInEx/patchers/LethalLevelLoader/"
 
 [[build.copy]]
 source = "../CHANGELOG.md"

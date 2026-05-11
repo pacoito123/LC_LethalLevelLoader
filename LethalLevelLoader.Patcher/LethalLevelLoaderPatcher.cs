@@ -1,7 +1,9 @@
+using HarmonyLib;
 using Mono.Cecil;
 using System.Collections.Generic;
+using System.Diagnostics;
 
-using static FixPluginTypesSerialization.FixPluginTypesSerializationPatcher;
+// using static FixPluginTypesSerialization.FixPluginTypesSerializationPatcher;
 
 namespace LethalLevelLoader.Patcher
 {
@@ -9,12 +11,21 @@ namespace LethalLevelLoader.Patcher
     {
         public static IEnumerable<string> TargetDLLs { get; } = [];
 
+        internal static Harmony Harmony { get; } = new(nameof(LethalLevelLoaderPatcher));
+
         public static void Initialize()
         {
-            InitializeInternal();
+            Trace.TraceInformation("[LethalLevelLoader.Patcher] Initializing...");
         }
 
-        /// <summary>
+        private static void Finish()
+        {
+            Trace.TraceInformation("[LethalLevelLoader.Patcher] Patching...");
+            Harmony.PatchAll(typeof(CursedHarmonyPatch));
+            Trace.TraceInformation("[LethalLevelLoader.Patcher] Done!");
+        }
+
+        /* /// <summary>
         ///     Admittedly a bit wonky, but it works.
         /// </summary>
         /// <remarks>This'll need to be removed once <c>LethalLevelLoader</c> updates.</remarks>
@@ -29,7 +40,7 @@ namespace LethalLevelLoader.Patcher
                 PluginPaths.RemoveAt(oldLLL);
                 PluginNames.RemoveAt(oldLLL);
             }
-        }
+        } */
 
         public static void Patch(AssemblyDefinition _) { }
     }

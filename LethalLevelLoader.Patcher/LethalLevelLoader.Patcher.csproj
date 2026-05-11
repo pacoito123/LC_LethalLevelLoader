@@ -27,11 +27,12 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="HarmonyX" Version="2.7.*" PrivateAssets="all" Publicize="true" />
         <PackageReference Include="BepInEx.Core" Version="5.*" PrivateAssets="all" />
 
-        <Reference Include="FixPluginTypesSerialization" Publicize="true" >
+        <!-- <Reference Include="FixPluginTypesSerialization" Publicize="true">
             <PrivateAssets>all</PrivateAssets>
             <HintPath>managed\FixPluginTypesSerialization.dll</HintPath>
-        </Reference>
+        </Reference> -->
     </ItemGroup>
 </Project>
