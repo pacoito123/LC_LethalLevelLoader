@@ -101,6 +101,9 @@ namespace LethalLevelLoader
         {
             if (LethalLibCompatibility.Enabled)
                 Harmony.PatchAll(typeof(LethalLibCompatibility));
+
+            if (DeepSewersCompatibility.Enabled)
+                DeepSewersCompatibility.FixDeepSewersGeneration();
         }
     }
 }
