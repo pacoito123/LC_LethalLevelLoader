@@ -12,7 +12,7 @@ namespace LethalLevelLoader.Patcher
     {
         public static IEnumerable<string> TargetDLLs { get; } = [];
 
-        internal static Harmony Harmony { get; } = new(nameof(LethalLevelLoaderPatcher));
+        internal static Harmony Harmony { get; } = new("imabatby.lethallevelloader.patcher");
 
         public static event Action onChainloaderFinish;
 

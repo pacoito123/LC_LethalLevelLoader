@@ -1,10 +1,9 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
-using BepInEx.Configuration;
 using HarmonyLib;
+using LethalLevelLoader.Compatibility;
+using LethalLevelLoader.Patcher;
 using LethalLevelLoader.Tools;
 using System;
-using System.Reflection;
 using Unity.Netcode;
 using UnityEngine;
 using Application = UnityEngine.Application;
@@ -12,7 +11,6 @@ using Application = UnityEngine.Application;
 namespace LethalLevelLoader
 {
     [BepInPlugin(ModGUID, ModName, ModVersion)]
-    [BepInDependency(LethalLib.Plugin.ModGUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(LethalModDataLib.PluginInfo.PLUGIN_GUID)]
     public class Plugin : BaseUnityPlugin
     {
@@ -22,7 +20,6 @@ namespace LethalLevelLoader
 
         internal static Plugin Instance;
 
-        internal static AssetBundle MainAssets;
         internal static readonly Harmony Harmony = new Harmony(ModGUID);
 
         internal static BepInEx.Logging.ManualLogSource logger;
@@ -32,8 +29,6 @@ namespace LethalLevelLoader
         public static event Action onLobbyInitialized; //Happens per lobby in a session
         public static bool IsSetupComplete { get; private set; } = false;
         public static bool IsLobbyInitialized { get; internal set; } = false;
-
-        internal static GameObject networkManagerPrefab;
 
         private void Awake()
         {
@@ -51,7 +46,7 @@ namespace LethalLevelLoader
             Harmony.PatchAll(typeof(EventPatches));
             Harmony.PatchAll(typeof(SafetyPatches));
 
-            TrySoftPatch(LethalLib.Plugin.ModGUID, typeof(LethalLibPatches));
+            LethalLevelLoaderPatcher.onChainloaderFinish += HandleAdditionalCompatibilities;
 
             NetworkScenePatcher.Patch();
 
@@ -92,7 +87,7 @@ namespace LethalLevelLoader
         internal static void CompleteSetup()
         {
             DebugHelper.Log("LethalLevelLoader Has Finished Initializing.", DebugType.User);
-            Plugin.IsSetupComplete = true;
+            IsSetupComplete = true;
             onSetupComplete?.Invoke();
         }
 
@@ -102,14 +97,10 @@ namespace LethalLevelLoader
             onLobbyInitialized?.Invoke();
         }
 
-        internal static void TrySoftPatch(string pluginName, Type type)
+        private static void HandleAdditionalCompatibilities()
         {
-            if (Chainloader.PluginInfos.ContainsKey(pluginName))
-            {
-                Harmony.CreateClassProcessor(type, true).Patch();
-                DebugHelper.Log(pluginName + "found, enabling compatability patches.", DebugType.User);
-            }
-
+            if (LethalLibCompatibility.Enabled)
+                Harmony.PatchAll(typeof(LethalLibCompatibility));
         }
     }
 }

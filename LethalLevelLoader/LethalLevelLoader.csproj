@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.*" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Evaisa.LethalLib" Version="1.2.*" PrivateAssets="all" />
+    <PackageReference Include="Evaisa.LethalLib" Version="1.2.*" PrivateAssets="all" Publicize="true" />
     <PackageReference Include="TeamXiaolan.DawnLib" Version="0.9.*" PrivateAssets="all" />
     <PackageReference Include="MinVer" Version="4.*" PrivateAssets="all" Private="false" />
   </ItemGroup>
@@ -70,9 +70,8 @@
   <ItemGroup>
     <ProjectReference Include="..\LethalLevelLoader.Patcher\LethalLevelLoader.Patcher.csproj">
       <PrivateAssets>all</PrivateAssets>
-      <Project>{61D32BE1-468B-4F5F-9B30-11B4760235BE}</Project>
       <Name>LethalLevelLoader.Patcher</Name>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
 
