@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Mono.Cecil;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -13,7 +14,9 @@ namespace LethalLevelLoader.Patcher
 
         internal static Harmony Harmony { get; } = new(nameof(LethalLevelLoaderPatcher));
 
-        public static void Initialize()
+        public static event Action onChainloaderFinish;
+
+        private static void Initialize()
         {
             Trace.TraceInformation("[LethalLevelLoader.Patcher] Initializing...");
         }
@@ -21,8 +24,22 @@ namespace LethalLevelLoader.Patcher
         private static void Finish()
         {
             Trace.TraceInformation("[LethalLevelLoader.Patcher] Patching...");
+            Harmony.PatchAll(typeof(ChainloaderEventPatch));
             Harmony.PatchAll(typeof(CursedHarmonyPatch));
             Trace.TraceInformation("[LethalLevelLoader.Patcher] Done!");
+        }
+
+        private static void ChainloaderFinish()
+        {
+            try
+            {
+                onChainloaderFinish?.Invoke();
+                onChainloaderFinish = null;
+            }
+            catch (Exception exception)
+            {
+                Trace.TraceError("[LethalLevelLoader.Patcher] Error during Chainloader event invokation: " + exception);
+            }
         }
 
         /* /// <summary>

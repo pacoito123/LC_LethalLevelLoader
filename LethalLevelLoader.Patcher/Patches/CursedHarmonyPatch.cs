@@ -12,7 +12,7 @@ namespace LethalLevelLoader.Patcher
 {
     internal static class CursedHarmonyPatch
     {
-        private static void CreateDynamicMethodReference(Mono.Cecil.Cil.Instruction ins)
+        private static void ReadInstruction_Prefix(Mono.Cecil.Cil.Instruction ins)
         {
             if (ins.Operand is DynamicMethod dynamicMethod) // DynamicMethod is received when a MonoMod Transpiler creates an ILLabel for a method.
             {
@@ -25,7 +25,7 @@ namespace LethalLevelLoader.Patcher
         [HarmonyPatch(typeof(Chainloader), nameof(Chainloader.Initialize))]
         [HarmonyPostfix]
         [HarmonyPriority(Priority.First)]
-        internal static void ChainloaderInitialized()
+        private static void ChainloaderInitialize_Postfix()
         {
             string harmonyBackend = Environment.GetEnvironmentVariable("MONOMOD_DMD_TYPE"); // Only needs to run if set to either 'auto' (blank) or 'dynamicmethod'.
             if (!string.IsNullOrEmpty(harmonyBackend) && !string.Equals(harmonyBackend, "dynamicmethod", StringComparison.Ordinal)) return;
@@ -49,7 +49,7 @@ namespace LethalLevelLoader.Patcher
             }
             if (cursedMethod == null) return;
 
-            HarmonyMethod prefix = new(typeof(CursedHarmonyPatch), nameof(CreateDynamicMethodReference));
+            HarmonyMethod prefix = new(typeof(CursedHarmonyPatch), nameof(ReadInstruction_Prefix));
             LethalLevelLoaderPatcher.Harmony.Patch(cursedMethod, prefix);
         }
     }
