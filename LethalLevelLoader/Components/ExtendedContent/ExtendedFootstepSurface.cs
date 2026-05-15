@@ -8,13 +8,14 @@ namespace LethalLevelLoader
     public class ExtendedFootstepSurface : ExtendedContent
     {
         [field: Header("General Settings")]
-        [field: SerializeField] public VanillaSurfaceTags UseVanillaTag { get; set; } = VanillaSurfaceTags.None;
         [field: SerializeField] public FootstepSurface FootstepSurface { get; set; }
 
         [field: Header("Extended Feature Settings")]
-        [field: SerializeField] public List<TerrainWithIndices> AssociatedTerrains { get; set; } = [];
+        [field: Tooltip("Allow Quicksand to affect players while on this ExtendedFootstepSurface.")]
         [field: SerializeField] public bool AllowSinking { get; set; } = true;
+        [field: Tooltip("Allow Earth Leviathans to emerge out of this ExtendedFootstepSurface.")]
         [field: SerializeField] public bool AllowEarthLeviathanEmerge { get; set; } = true;
+        [field: Tooltip("Allow Masked to use this ExtendedFootstepSurface, otherwise GameObject tag is used.")]
         [field: SerializeField] public bool AllowMaskedFootsteps { get; set; } = true;
 
         [HideInInspector] public Dictionary<string, byte> AssociatedTerrainNames { get; } = [];
@@ -25,19 +26,17 @@ namespace LethalLevelLoader
         [Obsolete] public FootstepSurface footstepSurface;
         [Obsolete] public List<Material> associatedMaterials;
 
-        internal static ExtendedFootstepSurface Create(FootstepSurface newFootstepSurface, VanillaSurfaceTags useVanillaTag, bool allowSinking, params TerrainWithIndices[] newAssociatedTerrains)
+        internal static ExtendedFootstepSurface Create(FootstepSurface newFootstepSurface, bool allowSinking, params TerrainWithIndices[] newAssociatedTerrains)
         {
-            ExtendedFootstepSurface newExtendedFootstepSurface = ScriptableObject.CreateInstance<ExtendedFootstepSurface>();
+            ExtendedFootstepSurface newExtendedFootstepSurface = CreateInstance<ExtendedFootstepSurface>();
             newExtendedFootstepSurface.FootstepSurface = newFootstepSurface;
-
-            if (useVanillaTag is not VanillaSurfaceTags.None)
-                newExtendedFootstepSurface.UseVanillaTag = useVanillaTag;
-            else
-                newExtendedFootstepSurface.ContentType = ContentType.External;
-
             newExtendedFootstepSurface.AllowSinking = allowSinking;
-            if (newAssociatedTerrains != null)
-                newExtendedFootstepSurface.AssociatedTerrains = [.. newAssociatedTerrains];
+            for (int i = 0; i < newAssociatedTerrains?.Length; i++)
+            {
+                TerrainWithIndices terrainWithIndices = newAssociatedTerrains[i];
+                if (!string.IsNullOrEmpty(terrainWithIndices.terrainName) && terrainWithIndices.layerIndices?.Length > 0)
+                    newExtendedFootstepSurface.AssociatedTerrainNames[terrainWithIndices.terrainName] = terrainWithIndices.GetIndexMask();
+            }
             return (newExtendedFootstepSurface);
         }
 
@@ -58,14 +57,6 @@ namespace LethalLevelLoader
             }
         }
 
-        internal void RefreshAssociatedTerrainNames()
-        {
-            AssociatedTerrainNames.Clear();
-            foreach (TerrainWithIndices associatedTerrain in AssociatedTerrains)
-                if (!AssociatedTerrainNames.TryAdd(associatedTerrain.terrainName, associatedTerrain.GetIndexMask())) // TODO: Handle duplicate names better...
-                    DebugHelper.LogWarning($"Terrain name {associatedTerrain.terrainName} registered more than once in FootstepSurface: {name}", DebugType.Developer);
-        }
-
         internal bool IsTerrainMatch(TerrainData terrainData) => AssociatedTerrainNames.ContainsKey(terrainData.name);
         internal bool IsTerrainMatch(TerrainData terrainData, int terrainLayer) => AssociatedTerrainNames.TryGetValue(terrainData.name, out byte terrainMask) && ((byte)(1 << terrainLayer) & terrainMask) != 0;
 
@@ -76,20 +67,6 @@ namespace LethalLevelLoader
 
             if (string.IsNullOrEmpty(FootstepSurface.surfaceTag))
                 FootstepSurface.surfaceTag = "Untagged";
-
-            if (UseVanillaTag is VanillaSurfaceTags.None)
-            {
-                if (FootstepSurface.clips == null || FootstepSurface.clips.Length == 0)
-                    return ((false, "FootstepSurface Clips Were Null Or Empty"));
-                for (int i = 0; i < FootstepSurface.clips.Length; i++)
-                    if (FootstepSurface.clips[i] == null)
-                        return ((false, "A FootstepSurface Clip Was Null Or Missing"));
-                if (FootstepSurface.hitSurfaceSFX == null)
-                    return ((false, "FootstepSurface Hit SFX Was Null Or Missing"));
-                for (int i = 0; i < FootstepSurface.jumpLandSFX?.Length; i++)
-                    if (FootstepSurface.jumpLandSFX[i] == null)
-                        return ((false, "A FootstepSurface Landing SFX Clip Was Null Or Missing"));
-            }
 
             return (base.TryValidateContent());
         }

@@ -24,18 +24,11 @@ namespace LethalLevelLoader
 
         private static void MergeExtendedFootstepSurfaces()
         {
-            foreach (ExtendedFootstepSurface vanillaExtendedFootstepSurface in PatchedContent.VanillaExtendedFootstepSurfaces)
-                if (!surfaceTagExtendedFootstepDict.TryAdd(vanillaExtendedFootstepSurface.FootstepSurface.surfaceTag, vanillaExtendedFootstepSurface))
-                    DebugHelper.LogWarning($"Could not add vanilla tag '{vanillaExtendedFootstepSurface.FootstepSurface.surfaceTag}' to surface tag dictionary.", DebugType.Developer);
-
             int mergedSurfaces = 0;
-            foreach (ExtendedFootstepSurface customExtendedFootstepSurface in PatchedContent.CustomExtendedFootstepSurfaces)
+            foreach (ExtendedFootstepSurface customExtendedFootstepSurface in PatchedContent.ExtendedFootstepSurfaces)
             {
-                if ((customExtendedFootstepSurface.UseVanillaTag is not VanillaSurfaceTags.None
-                    && surfaceTagExtendedFootstepDict.TryGetValue($"{customExtendedFootstepSurface.UseVanillaTag}", out ExtendedFootstepSurface existingFootstepSurface))
-                    || surfaceTagExtendedFootstepDict.TryGetValue(customExtendedFootstepSurface.FootstepSurface.surfaceTag, out existingFootstepSurface))
+                if (surfaceTagExtendedFootstepDict.TryGetValue(customExtendedFootstepSurface.FootstepSurface.surfaceTag, out ExtendedFootstepSurface _))
                 {
-                    existingFootstepSurface.AssociatedTerrains.AddRange(customExtendedFootstepSurface.AssociatedTerrains);
                     Object.Destroy(customExtendedFootstepSurface); // TODO: Add to a List to destroy later perhaps.
                     mergedSurfaces++;
                     continue;
@@ -45,10 +38,6 @@ namespace LethalLevelLoader
             }
             if (mergedSurfaces > 0)
                 DebugHelper.Log($"Merged '{mergedSurfaces}' ExtendedFootstepSurface assets!", DebugType.Developer);
-
-            PatchedContent.ExtendedFootstepSurfaces = [.. surfaceTagExtendedFootstepDict.Values];
-            foreach (ExtendedFootstepSurface extendedFootstepSurface in PatchedContent.ExtendedFootstepSurfaces)
-                extendedFootstepSurface.RefreshAssociatedTerrainNames();
         }
 
         public static bool TryGetAndSetFootstepSurfaceIndex(Terrain terrain, int terrainLayer, PlayerControllerB player)
