@@ -66,7 +66,7 @@ namespace LethalLevelLoader
                 int layerWithSurfaceIndex = AssignedLayerSurfaces.FindIndex(surface => surface.terrainLayer == terrainLayer);
                 if (layerWithSurfaceIndex == -1)
                 {
-                    DebugHelper.Log($"No surface specified for Terrain layer '{terrainLayer.name}' at index '{i}', GameObject tag footsteps will be used for it instead.", DebugType.Developer);
+                    DebugHelper.LogDebug($"No surface specified for Terrain layer '{terrainLayer.name}' at index '{i}', GameObject tag footsteps will be used for it instead.", DebugType.Developer);
                     continue;
                 }
 

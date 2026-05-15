@@ -261,7 +261,7 @@ namespace LethalLevelLoader.AssetBundles
 
             foreach (List<AssetBundleInfo> groupedInfos in uniqueSceneGroups.Select(s => s.AssetBundleInfosInGroup).Concat(nonSceneBundlesDict))
             {
-                if (ValidatePotentialAssetBundleGroup(groupedInfos))
+                if (groupedInfos.Count > 0)
                 {
                     AssetBundleGroup newGroup = new AssetBundleGroup(groupedInfos);
                     Instance.AssetBundleGroups.Add(newGroup);
@@ -302,56 +302,6 @@ namespace LethalLevelLoader.AssetBundles
 
             foreach (AssetBundleInfo info in Instance.AssetBundleInfos)
                 info.TryUnloadBundle();
-        }
-
-        private static bool ValidatePotentialAssetBundleGroup(List<AssetBundleInfo> assetBundleInfos)
-        {
-            if (assetBundleInfos.Count == 0)
-                return (false);
-            else
-                return (true);
-
-
-            if (assetBundleInfos.Count == 0)
-            {
-                Debug.Log("Could Not Make Grouping (No Matches)");
-                return (false);
-            }
-
-            //LC specific validation because we don't want to load up any SelectableLevels's that don't have scenes with them
-            int highestStandardSceneNamesCount = 0;
-            int highestStreamingSceneNamesCount = 0;
-
-            for (int i = 0; i < assetBundleInfos.Count; i++)
-            {
-                int sceneCount = assetBundleInfos[i].GetSceneNames().Count;
-                if (assetBundleInfos[i].AssetBundleMode == AssetBundleType.Standard)
-                {
-                    if (sceneCount > highestStandardSceneNamesCount)
-                        highestStandardSceneNamesCount = sceneCount;
-                }
-                else if (assetBundleInfos[i].AssetBundleMode == AssetBundleType.Streaming)
-                {
-                    if (sceneCount > highestStreamingSceneNamesCount)
-                        highestStreamingSceneNamesCount = sceneCount;
-                }
-            }
-
-            //TODO - LLL Scene Selection support
-            /*if (highestStreamingSceneNamesCount != highestStandardSceneNamesCount)
-            {
-                Debug.Log("Could Not Make Grouping (Matching AssetBundleInfo's Have Inequal Scene Counts)");
-                return (false);
-            }*/
-
-            //This validates under the assumption this system may support loading new scenes from things that are not SelectableLevels
-            if (highestStreamingSceneNamesCount < highestStandardSceneNamesCount)
-            {
-                Debug.Log("Could Not Make Grouping (Standard Bundles Requesting More Scenes Than Streaming Bundles Have)");
-                return (false);
-            }
-
-            return (true);
         }
 
         public static int GetAssetBundleLoadingCount()

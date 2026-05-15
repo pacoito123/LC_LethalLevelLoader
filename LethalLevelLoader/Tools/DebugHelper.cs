@@ -89,6 +89,18 @@ namespace LethalLevelLoader
             }
         }
 
+        public static void LogDebug(string log, DebugType debugType)
+        {
+            if (!string.IsNullOrEmpty(log) && (int)Settings.debugType >= (int)debugType)
+            {
+                string logString = log;
+                if (Plugin.logger != null)
+                    Plugin.logger.LogDebug(logString);
+                else
+                    UnityEngine.Debug.Log("(Debug) LethalLevelLoader Fallback Logger: " + logString);
+            }
+        }
+
         public static void DebugTerminalKeyword(TerminalKeyword terminalKeyword)
         {
             if (terminalKeyword != null)

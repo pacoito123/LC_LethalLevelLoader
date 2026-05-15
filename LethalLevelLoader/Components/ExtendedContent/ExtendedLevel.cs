@@ -210,6 +210,10 @@ namespace LethalLevelLoader
 
         internal override (bool result, string log) TryValidateContent()
         {
+            int removedScenes = SceneSelections.RemoveAll(sceneSelection => sceneSelection == null || string.IsNullOrEmpty(sceneSelection.Name));
+            if (removedScenes > 0)
+                DebugHelper.LogWarning($"Removed '{removedScenes}' missing or empty scene selections in ExtendedLevel: {name}", DebugType.User);
+
             if (SelectableLevel == null)
                 return ((false, "SelectableLevel Was Null"));
             else if (string.IsNullOrEmpty(SelectableLevel.sceneName))
