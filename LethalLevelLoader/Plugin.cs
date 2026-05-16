@@ -99,11 +99,15 @@ namespace LethalLevelLoader
 
         private static void HandleAdditionalCompatibilities()
         {
+            Harmony.PatchAll(typeof(TimeOfDayPatches));
+
             if (LethalLibCompatibility.Enabled)
                 Harmony.PatchAll(typeof(LethalLibCompatibility));
 
             if (DeepSewersCompatibility.Enabled)
                 DeepSewersCompatibility.FixDeepSewersGeneration();
+
+            DebugHelper.Log("Additional LethalLevelLoader Compatibilities Done.", DebugType.User);
         }
     }
 }

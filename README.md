@@ -72,4 +72,5 @@ You should be now set up, and ready compile your fork of LethalLevelLoader on yo
 * **狐萝卜呀**, **tumbleweed**, **Corey**, **Ritskee**, **Altan**, **qxZap**, **Salamander**, **Chiseled Cactus**, **Phantom139**, **ImmaBawss**, **takeothewolf**, **zuzaratrust**, **Hackattack242**, **Mail Me Dabs**, **Kyros**, **SourceShard** & **Chupacabra** *(For playtesting and reporting bugs on experimental 1.2.0 builds.)*
 * **Lunxara** *(For the heavy, rapid testing throughout all the experimental 1.2.0 builds.)*
 * **Adi**, **Hamunii**, **Xu Xiaolan** & **Wherget** *(For various new contributions in the forms of direct suggestions and pull requests.)*
+* **WhiteSpike** *(For the original implementation of the moon day speed multiplier patch.)*
 * **pacoito** *(Active developer/maintainer. Made temporary v73 fork and various other contributions.)*
