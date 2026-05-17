@@ -1,5 +1,4 @@
 ﻿using DunGen;
-using DunGen.Adapters;
 using GameNetcodeStuff;
 using HarmonyLib;
 using LethalLevelLoader.Compatibility;
@@ -559,80 +558,38 @@ if (AssetBundleLoader.noBundlesFound == true)
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel == null || currentLevel.IsLevelLoaded == false) return;
             LevelLoader.currentLevelScene = scene;
-            if (currentLevel.ContentType is ContentType.External) return;
 
-            foreach (GameObject rootObject in LevelLoader.currentLevelScene.GetRootGameObjects())
-                ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
-            LevelLoader.RestoreSceneBlankReferences();
-
-            LevelLoader.RefreshShipAnimatorClips(currentLevel);
-            LevelLoader.RefreshWeatherEffects(currentLevel);
-            LevelLoader.RefreshTimeOfDayMusic(currentLevel);
-            if (currentLevel.UseTerrainFootsteps)
+            if (currentLevel.ContentType is not ContentType.External)
             {
-                TerrainManager.BakeTerrainFootsteps();
-                SceneManager.sceneUnloaded += TerrainManager.CleanupTerrainFootsteps;
+                foreach (GameObject rootObject in scene.GetRootGameObjects())
+                    ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
+                LevelLoader.RestoreSceneBlankReferences();
+
+                LevelLoader.RefreshWeatherEffects(currentLevel);
+                LevelLoader.RefreshTimeOfDayMusic(currentLevel);
+                if (currentLevel.UseTerrainFootsteps)
+                {
+                    TerrainManager.BakeTerrainFootsteps();
+                    SceneManager.sceneUnloaded += TerrainManager.CleanupTerrainFootsteps;
+                }
             }
 
             EventPatches.previousDayMode = DayMode.None;
-            LevelManager.CurrentExtendedLevel.LevelEvents.onLevelLoaded.Invoke();
+            currentLevel.LevelEvents.onLevelLoaded.Invoke();
             LevelManager.GlobalLevelEvents.onLevelLoaded.Invoke();
         }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), HarmonyPrefix, HarmonyPriority(priority)]
-        internal static void GenerateNewLevelClientRpc_Prefix(RoundManager __instance)
+        internal static void GenerateNewLevelClientRpc_Prefix(RoundManager __instance, int randomSeed)
         {
             // Don't run on the server.
             if (__instance.__rpc_exec_stage is not NetworkBehaviour.__RpcExecStage.Execute) return;
 
-            RestoreRuntimeDungeon();
-        }
-
-        private static void RestoreRuntimeDungeon()
-        {
-            GameObject dungeonGenerator = GameObject.FindGameObjectWithTag("DungeonGenerator");
-            if (dungeonGenerator == null)
+            ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
+            if (currentLevel != null && currentLevel.IsLevelLoaded && currentLevel.ContentType is not ContentType.External)
             {
-                DebugHelper.LogFatal("Could not find a GameObject with a DungeonGenerator tag in the current moon!", DebugType.User);
-                return;
-            }
-
-            Transform levelGenerationContainer = dungeonGenerator.transform.GetParent();
-            if (!dungeonGenerator.TryGetComponent(out RuntimeDungeon _))
-            {
-                DebugHelper.LogWarning("RuntimeDungeon component missing! Creating a replacement to allow landing...", DebugType.User);
-
-                RuntimeDungeon dungeon = dungeonGenerator.AddComponent<RuntimeDungeon>();
-                UnityNavMeshAdapter navMeshAdapter = dungeonGenerator.AddComponent<UnityNavMeshAdapter>();
-
-                for (int i = 0; i < levelGenerationContainer.childCount; i++)
-                {
-                    // Try to find LevelGenerationRoot in the hierarchy.
-                    if (levelGenerationContainer.GetChild(i).name.Contains("Root", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        dungeon.Root = levelGenerationContainer.GetChild(i).gameObject;
-                        break;
-                    }
-                }
-
-                if (dungeon.Root == null)
-                {
-                    DebugHelper.LogWarning("Could not locate LevelGenerationRoot GameObject, creating one as well...", DebugType.User);
-
-                    Transform newDungeonRoot = new GameObject("LevelGenerationRoot").transform;
-                    newDungeonRoot.SetParent(levelGenerationContainer, worldPositionStays: false);
-                    newDungeonRoot.localPosition = new(12, -218, 12);
-
-                    dungeon.Root = newDungeonRoot.gameObject;
-                }
-
-                navMeshAdapter.BakeMode = UnityNavMeshAdapter.RuntimeNavMeshBakeMode.FullDungeonBake;
-                navMeshAdapter.LayerMask = LayerMask.GetMask("Default", "Room", "Colliders", "NavigationSurface"); // 35072
-
-                dungeon.Generator.AllowTilePooling = true; // Yippee!
-                dungeon.Generator.GenerateAsynchronously = true;
-
-                DebugHelper.Log("RuntimeDungeon created, proceeding as usual!", DebugType.User);
+                LevelLoader.RefreshShipAnimatorClips(currentLevel, randomSeed);
+                LevelLoader.RestoreRuntimeDungeon();
             }
         }
 
@@ -777,26 +734,17 @@ if (AssetBundleLoader.noBundlesFound == true)
         }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc)), HarmonyPostfix, HarmonyPriority(priority)]
-        internal static void RoundManagerFinishGeneratingNewLevelClientRpc_Postfix(RoundManager __instance, bool __state)
+        internal static void RoundManagerFinishGeneratingNewLevelClientRpc_Postfix(bool __state)
         {
             // Don't run on the server.
             if (__state) return;
 
-            if (__instance.currentLevel == null || string.IsNullOrEmpty(__instance.currentLevel.sceneName)) return;
-            Scene scene = SceneManager.GetSceneByName(__instance.currentLevel.sceneName);
-            if (!scene.isLoaded) return;
-
-            LevelLoader.RestoreShaders();
-            ApplyCameraDistanceOverride();
-        }
-
-        internal static void ApplyCameraDistanceOverride()
-        {
-            float newDistance = 0;
-            if (LevelManager.CurrentExtendedLevel.OverrideCameraMaxDistance > 400f || (DungeonManager.CurrentExtendedDungeonFlow != null && DungeonManager.CurrentExtendedDungeonFlow.OverrideCameraMaxDistance > 400f))
-                newDistance = Mathf.Max(LevelManager.CurrentExtendedLevel.OverrideCameraMaxDistance, DungeonManager.CurrentExtendedDungeonFlow.OverrideCameraMaxDistance);
-            foreach (KeyValuePair<Camera, float> cameraPair in playerCameras)
-                cameraPair.Key.farClipPlane = Mathf.Max(cameraPair.Value, newDistance);
+            ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
+            if (currentLevel != null && currentLevel.IsLevelLoaded && currentLevel.ContentType is not ContentType.External)
+            {
+                LevelLoader.RestoreShaders();
+                LevelLoader.ApplyCameraDistanceOverride();
+            }
         }
 
         [HarmonyPatch(typeof(StoryLog), "Start"), HarmonyPrefix, HarmonyPriority(priority)]

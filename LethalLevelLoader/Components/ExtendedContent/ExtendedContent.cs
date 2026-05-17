@@ -105,4 +105,18 @@ namespace LethalLevelLoader
             _rarity = newRarity;
         }
     }
+
+    [Serializable]
+    public struct ClipWithRarity(AnimationClip clip, int rarity)
+    {
+        [SerializeField]
+        private AnimationClip _clip = clip;
+
+        [SerializeField]
+        [Range(0, 300)]
+        private int _rarity = rarity;
+
+        [HideInInspector] public AnimationClip Clip { readonly get => (_clip); set => _clip = value; }
+        [HideInInspector] public int Rarity { readonly get => (_rarity); set => _rarity = value; }
+    }
 }

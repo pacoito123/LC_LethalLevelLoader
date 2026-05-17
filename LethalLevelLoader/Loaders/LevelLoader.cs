@@ -1,9 +1,11 @@
-﻿using UnityEngine;
-using UnityEngine.SceneManagement;
-using System.Collections.Generic;
-using UnityEngine.Rendering.HighDefinition;
-using UnityEngine.Rendering;
+﻿using System.Collections.Generic;
+using DunGen;
+using DunGen.Adapters;
 using LethalLevelLoader.Tools;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.SceneManagement;
 
 namespace LethalLevelLoader
 {
@@ -75,7 +77,7 @@ namespace LethalLevelLoader
         // Scene stuff
         internal static Scene currentLevelScene;
 
-        internal static void RefreshShipAnimatorClips(ExtendedLevel extendedLevel)
+        internal static void RefreshShipAnimatorClips(ExtendedLevel extendedLevel, int randomSeed)
         {
             DebugHelper.Log("Refreshing Ship Animator Clips!", DebugType.Developer);
 
@@ -91,8 +93,22 @@ namespace LethalLevelLoader
             AnimatorOverrideController overrideController = new AnimatorOverrideController(shipAnimator.runtimeAnimatorController);
             shipAnimator.runtimeAnimatorController = overrideController;
 
-            overrideController["HangarShipLandB"] = extendedLevel.ShipFlyToMoonClip;
-            overrideController["ShipLeave"] = extendedLevel.ShipFlyFromMoonClip;
+            System.Random shipAnimatorRandom = new System.Random(randomSeed + 33);
+            overrideController["HangarShipLandB"] = GetRandomWeightedClip(extendedLevel.ShipFlyToMoonClips, shipAnimatorRandom);
+            overrideController["ShipLeave"] = GetRandomWeightedClip(extendedLevel.ShipFlyFromMoonClips, shipAnimatorRandom);
+        }
+
+        private static AnimationClip GetRandomWeightedClip(List<ClipWithRarity> clipSelections, System.Random random = null)
+        {
+            if (clipSelections.Count == 1)
+                return (clipSelections[0].Clip);
+
+            int[] clipWeights = new int[clipSelections.Count];
+            for (int i = 0; i < clipWeights.Length; i++)
+                clipWeights[i] = clipSelections[i].Rarity;
+
+            int selectedClipIndex = Patches.RoundManager.GetRandomWeightedIndex(clipWeights, random);
+            return (clipSelections[selectedClipIndex].Clip);
         }
 
         internal static void RefreshWeatherEffects(ExtendedLevel extendedLevel)
@@ -236,6 +252,15 @@ namespace LethalLevelLoader
             }
         }
 
+        internal static void ApplyCameraDistanceOverride() // TODO: Overhaul!
+        {
+            float newDistance = 0;
+            if (LevelManager.CurrentExtendedLevel.OverrideCameraMaxDistance > 400f || (DungeonManager.CurrentExtendedDungeonFlow != null && DungeonManager.CurrentExtendedDungeonFlow.OverrideCameraMaxDistance > 400f))
+                newDistance = Mathf.Max(LevelManager.CurrentExtendedLevel.OverrideCameraMaxDistance, DungeonManager.CurrentExtendedDungeonFlow.OverrideCameraMaxDistance);
+            foreach (KeyValuePair<Camera, float> cameraPair in Patches.playerCameras)
+                cameraPair.Key.farClipPlane = Mathf.Max(cameraPair.Value, newDistance);
+        }
+
         internal static void RefreshTimeOfDayMusic(ExtendedLevel extendedLevel)
         {
             if (Patches.TimeOfDay.timeOfDayCues != null && Patches.TimeOfDay.timeOfDayCues.Length == 4)
@@ -312,6 +337,54 @@ namespace LethalLevelLoader
             gameObject.GetComponentsInChildren(includeInactive: true, tempBridgeTriggers);
             foreach (BridgeTrigger bridgeTrigger in tempBridgeTriggers)
                 ContentRestorer.RestoreBridgeTrigger(bridgeTrigger);
+        }
+
+        internal static void RestoreRuntimeDungeon()
+        {
+            GameObject dungeonGenerator = GameObject.FindGameObjectWithTag("DungeonGenerator");
+            if (dungeonGenerator == null)
+            {
+                DebugHelper.LogFatal("Could not find a GameObject with a DungeonGenerator tag in the current moon!", DebugType.User);
+                return;
+            }
+
+            Transform levelGenerationContainer = dungeonGenerator.transform.GetParent();
+            if (!dungeonGenerator.TryGetComponent(out RuntimeDungeon _))
+            {
+                DebugHelper.LogWarning("RuntimeDungeon component missing! Creating a replacement to allow landing...", DebugType.User);
+
+                RuntimeDungeon dungeon = dungeonGenerator.AddComponent<RuntimeDungeon>();
+                UnityNavMeshAdapter navMeshAdapter = dungeonGenerator.AddComponent<UnityNavMeshAdapter>();
+
+                for (int i = 0; i < levelGenerationContainer.childCount; i++)
+                {
+                    // Try to find LevelGenerationRoot in the hierarchy.
+                    if (levelGenerationContainer.GetChild(i).name.Contains("Root", System.StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        dungeon.Root = levelGenerationContainer.GetChild(i).gameObject;
+                        break;
+                    }
+                }
+
+                if (dungeon.Root == null)
+                {
+                    DebugHelper.LogWarning("Could not locate LevelGenerationRoot GameObject, creating one as well...", DebugType.User);
+
+                    Transform newDungeonRoot = new GameObject("LevelGenerationRoot").transform;
+                    newDungeonRoot.SetParent(levelGenerationContainer, worldPositionStays: false);
+                    newDungeonRoot.localPosition = new(12, -218, 12);
+
+                    dungeon.Root = newDungeonRoot.gameObject;
+                }
+
+                navMeshAdapter.BakeMode = UnityNavMeshAdapter.RuntimeNavMeshBakeMode.FullDungeonBake;
+                navMeshAdapter.LayerMask = LayerMask.GetMask("Default", "Room", "Colliders", "NavigationSurface"); // 35072
+
+                dungeon.Generator.AllowTilePooling = true; // Yippee!
+                dungeon.Generator.GenerateAsynchronously = true;
+
+                DebugHelper.Log("RuntimeDungeon created, proceeding as usual!", DebugType.User);
+            }
         }
     }
 }

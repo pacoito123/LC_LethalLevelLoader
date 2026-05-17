@@ -31,8 +31,8 @@ namespace LethalLevelLoader
 
         [field: Space(5)]
 
-        [field: SerializeField] public AnimationClip ShipFlyToMoonClip { get; set; }
-        [field: SerializeField] public AnimationClip ShipFlyFromMoonClip { get; set; }
+        [field: SerializeField] public List<ClipWithRarity> ShipFlyToMoonClips { get; set; } = new List<ClipWithRarity>();
+        [field: SerializeField] public List<ClipWithRarity> ShipFlyFromMoonClips { get; set; } = new List<ClipWithRarity>();
 
         [field: Space(5)]
 
@@ -100,6 +100,8 @@ namespace LethalLevelLoader
         [Obsolete] public SelectableLevel selectableLevel;
         [Obsolete][Space(5)] public string contentSourceName = string.Empty; //Levels from AssetBundles will have this as their Assembly Name.
         [Obsolete][Space(5)] public List<string> levelTags = new List<string>();
+        [Obsolete][field: SerializeField] public AnimationClip ShipFlyToMoonClip { get; set; }
+        [Obsolete][field: SerializeField] public AnimationClip ShipFlyFromMoonClip { get; set; }
 
         //Runtime Stuff
         public int RoutePrice
@@ -178,10 +180,10 @@ namespace LethalLevelLoader
                     SceneSelections.Remove(sceneSelection);
                 }
 
-            if (ShipFlyToMoonClip == null)
-                ShipFlyToMoonClip = LevelLoader.defaultShipFlyToMoonClip;
-            if (ShipFlyFromMoonClip == null)
-                ShipFlyFromMoonClip = LevelLoader.defaultShipFlyFromMoonClip;
+            if (ShipFlyToMoonClips.Count == 0)
+                ShipFlyToMoonClips.Add(new ClipWithRarity(LevelLoader.defaultShipFlyToMoonClip, 300));
+            if (ShipFlyFromMoonClips.Count == 0)
+                ShipFlyFromMoonClips.Add(new ClipWithRarity(LevelLoader.defaultShipFlyFromMoonClip, 300));
 
             if (OverrideStartOfDayMusic == null)
                 OverrideStartOfDayMusic = LevelLoader.defaultStartOfDayMusic;
@@ -213,6 +215,14 @@ namespace LethalLevelLoader
             int removedScenes = SceneSelections.RemoveAll(sceneSelection => sceneSelection == null || string.IsNullOrEmpty(sceneSelection.Name));
             if (removedScenes > 0)
                 DebugHelper.LogWarning($"Removed '{removedScenes}' missing or empty scene selections in ExtendedLevel: {name}", DebugType.User);
+
+            int removedFlyToMoonClips = ShipFlyToMoonClips.RemoveAll(clipSelection => clipSelection.Clip == null || clipSelection.Rarity == 0);
+            if (removedFlyToMoonClips > 0)
+                DebugHelper.LogWarning($"Removed '{removedFlyToMoonClips}' missing, empty, or zero-rarity ShipFlyToMoon clip overrides in ExtendedLevel: {name}", DebugType.User);
+
+            int removedFlyFromMoonClips = ShipFlyFromMoonClips.RemoveAll(clipSelection => clipSelection.Clip == null || clipSelection.Rarity == 0);
+            if (removedFlyFromMoonClips > 0)
+                DebugHelper.LogWarning($"Removed '{removedFlyFromMoonClips}' missing, empty, or zero-rarity ShipFlyFromMoon clip overrides in ExtendedLevel: {name}", DebugType.User);
 
             if (SelectableLevel == null)
                 return ((false, "SelectableLevel Was Null"));
@@ -246,6 +256,20 @@ namespace LethalLevelLoader
 
             if (!string.IsNullOrEmpty(contentSourceName))
                 DebugHelper.LogWarning("ExtendedLevel.contentSourceName is Obsolete and will be removed in following releases, Please use ExtendedMod.AuthorName instead.", DebugType.Developer);
+
+            if (ShipFlyToMoonClip != null)
+            {
+                DebugHelper.LogWarning("ExtendedLevel.ShipFlyToMoonClip Is Obsolete and will be removed in following releases, Please use ExtendedLevel.ShipFlyToMoonClips instead.", DebugType.Developer);
+                if (ShipFlyToMoonClips.Count == 0)
+                    ShipFlyToMoonClips.Add(new(ShipFlyToMoonClip, 300));
+            }
+
+            if (ShipFlyFromMoonClip != null)
+            {
+                DebugHelper.LogWarning("ExtendedLevel.ShipFlyFromMoonClip Is Obsolete and will be removed in following releases, Please use ExtendedLevel.ShipFlyFromMoonClips instead.", DebugType.Developer);
+                if (ShipFlyFromMoonClips.Count == 0)
+                    ShipFlyFromMoonClips.Add(new(ShipFlyFromMoonClip, 300));
+            }
         }
 
         internal static string GetNumberlessPlanetName(SelectableLevel selectableLevel)
