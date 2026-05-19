@@ -1,4 +1,5 @@
-﻿using Unity.Netcode;
+﻿using LethalLevelLoader.Tools;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -52,6 +53,8 @@ namespace LethalLevelLoader
             DebugHelper.Log("Initializing Custom Enemy: " + EnemyType.enemyName, DebugType.Developer);
 
             TryCreateMatchingProperties();
+
+            ContentRestorer.RestoreAudioAssetReferencesInParent(EnemyType.enemyPrefab);
         }
 
         internal override void TryCreateMatchingProperties()

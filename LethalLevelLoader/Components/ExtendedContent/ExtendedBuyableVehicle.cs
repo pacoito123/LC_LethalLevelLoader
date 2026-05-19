@@ -1,4 +1,5 @@
-﻿using Unity.Netcode;
+﻿using LethalLevelLoader.Tools;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -22,6 +23,12 @@ namespace LethalLevelLoader
             newExtendedBuyableVehicle.BuyableVehicle = newBuyableVehicle;
 
             return (newExtendedBuyableVehicle);
+        }
+
+        public void Initialize()
+        {
+            ContentRestorer.RestoreAudioAssetReferencesInParent(BuyableVehicle.vehiclePrefab);
+            ContentRestorer.RestoreAudioAssetReferencesInParent(BuyableVehicle.secondaryPrefab);
         }
 
         internal override (bool result, string log) TryValidateContent()

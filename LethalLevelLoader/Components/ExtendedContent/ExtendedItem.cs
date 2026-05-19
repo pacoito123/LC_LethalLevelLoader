@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using LethalLevelLoader.Tools;
+using UnityEngine;
 
 namespace LethalLevelLoader
 {
@@ -79,6 +81,18 @@ namespace LethalLevelLoader
                 Patches.StartOfRound.allItemsList.itemsList.Add(Item);
             if (IsBuyableItem)
                 TerminalManager.CreateItemTerminalData(this);
+
+            for (int i = 0; i < Item.spawnPositionTypes?.Count; i++)
+            {
+                ItemGroup targetItemGroup = Item.spawnPositionTypes[i];
+                if (targetItemGroup != null)
+                {
+                    ItemGroup vanillaItemGroup = OriginalContent.ItemGroups.Find(itemGroup => string.Equals(itemGroup.name, targetItemGroup.name, StringComparison.Ordinal));
+                    if (vanillaItemGroup != null)
+                        Item.spawnPositionTypes[i] = ContentRestorer.RestoreAsset(targetItemGroup, vanillaItemGroup);
+                }
+            }
+            ContentRestorer.RestoreAudioAssetReferencesInParent(Item.spawnPrefab);
         }
 
         internal override void TryCreateMatchingProperties()

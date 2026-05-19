@@ -1,3 +1,4 @@
+using LethalLevelLoader.Tools;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -34,6 +35,8 @@ namespace LethalLevelLoader
 
             if (!Patches.StartOfRound.unlockablesList.unlockables.Contains(UnlockableItem))
                 Patches.StartOfRound.unlockablesList.unlockables.Add(UnlockableItem);
+
+            ContentRestorer.RestoreAudioAssetReferencesInParent(UnlockableItem.prefabObject);
         }
 
         internal static ExtendedUnlockableItem Create(UnlockableItem newUnlockableItem, ExtendedMod extendedMod, ContentType contentType)

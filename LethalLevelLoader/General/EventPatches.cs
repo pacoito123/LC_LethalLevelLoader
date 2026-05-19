@@ -147,9 +147,9 @@ namespace LethalLevelLoader
         [HarmonyPostfix]
         internal static void RoundManagerSpawnMapObjects_Postfix()
         {
-            if (DungeonManager.CurrentExtendedDungeonFlow != null)
+            spawnedMapObjects.Clear();
+            if (DungeonManager.CurrentExtendedDungeonFlow != null && LevelLoader.currentLevelScene.isLoaded)
             {
-                spawnedMapObjects.Clear();
                 foreach (GameObject rootObjects in LevelLoader.currentLevelScene.GetRootGameObjects())
                     foreach (IIndoorMapHazard indoorMapHazard in rootObjects.GetComponentsInChildren<IIndoorMapHazard>(includeInactive: false))
                         if (indoorMapHazard is Behaviour indoorMapHazardScript)

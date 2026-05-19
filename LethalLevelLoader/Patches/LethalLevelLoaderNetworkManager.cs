@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
-using JetBrains.Annotations;
 using DunGen.Graph;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System;
 using System.Reflection;
+using LethalLevelLoader.Tools;
 
 namespace LethalLevelLoader
 {
@@ -20,7 +19,7 @@ namespace LethalLevelLoader
             get
             {
                 if (_instance == null)
-                    _instance = UnityEngine.Object.FindObjectOfType<LethalLevelLoaderNetworkManager>();
+                    _instance = FindAnyObjectByType<LethalLevelLoaderNetworkManager>(FindObjectsInactive.Exclude);
                 if (_instance == null)
                     DebugHelper.LogError("LethalLevelLoaderNetworkManager Could Not Be Found! Returning Null!", DebugType.User);
                 return _instance;
@@ -119,25 +118,25 @@ namespace LethalLevelLoader
         }
 
         [Rpc(SendTo.ClientsAndHost)]
-        public void SetRandomExtendedDungeonFlowClientRpc(StringContainer[] dungeonFlowNames, int[] rarities)
+        public void SetRandomExtendedDungeonFlowClientRpc(StringContainer[] dungeonFlowNames, int[] rarities) // TODO: Streamline
         {
             DebugHelper.Log("Setting Random DungeonFlows!", DebugType.User);
             List<IntWithRarity> dungeonFlowsList = new List<IntWithRarity>();
             List<IntWithRarity> cachedDungeonFlowsList = new List<IntWithRarity>();
-            
+
             Dictionary<string, int> dungeonFlowIds = new Dictionary<string, int>();
             int counter = 0;
             foreach (DungeonFlow dungeonFlow in Patches.RoundManager.GetDungeonFlows())
             {
                 dungeonFlowIds.Add(dungeonFlow.name, counter);
                 counter++;
-            }    
+            }
             for (int i = 0; i < dungeonFlowNames.Length; i++)
             {
                 IntWithRarity intWithRarity = new IntWithRarity(dungeonFlowIds[dungeonFlowNames[i].SomeText], rarities[i], null);
                 dungeonFlowsList.Add(intWithRarity);
             }
-            cachedDungeonFlowsList = new List<IntWithRarity>(LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes.ToList());
+            cachedDungeonFlowsList = [.. LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes];
             LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes = dungeonFlowsList.ToArray();
             Patches.RoundManager.GenerateNewFloor();
             LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes = cachedDungeonFlowsList.ToArray();
@@ -208,7 +207,7 @@ namespace LethalLevelLoader
 
             List<GameObject> addedNetworkPrefabs = new List<GameObject>();
 
-            foreach (NetworkPrefab networkPrefab in networkManager.NetworkConfig.Prefabs.Prefabs)
+            foreach (NetworkPrefab networkPrefab in networkManager.NetworkConfig.Prefabs.m_Prefabs)
                 addedNetworkPrefabs.Add(networkPrefab.Prefab);
 
             int debugCounter = 0;
@@ -225,10 +224,12 @@ namespace LethalLevelLoader
                     debugCounter++;
             }
 
+            foreach (GameObject addedNetworkPrefab in addedNetworkPrefabs)
+                ContentRestorer.RestoreAudioAssetReferencesInParent(addedNetworkPrefab);
+
             DebugHelper.Log("Skipped Registering " + debugCounter + " NetworkObjects As They Were Already Registered.", DebugType.User);
 
             networkHasStarted = true;
-            
         }
 
 

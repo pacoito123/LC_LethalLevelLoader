@@ -1,13 +1,8 @@
 ﻿using LethalLevelLoader.AssetBundles;
 using LethalLevelLoader.Compatibility;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Serialization;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace LethalLevelLoader
 {
@@ -20,7 +15,7 @@ namespace LethalLevelLoader
             get
             {
                 if (_instance == null)
-                    _instance = UnityEngine.Object.FindObjectOfType<NetworkBundleManager>();
+                    _instance = FindAnyObjectByType<NetworkBundleManager>(FindObjectsInactive.Exclude);
                 if (_instance == null)
                     DebugHelper.LogError("NetworkBundleManager Could Not Be Found! Returning Null!", DebugType.User);
                 return _instance;
@@ -170,7 +165,7 @@ namespace LethalLevelLoader
         [Rpc(SendTo.Server, RequireOwnership = false)]
         private void SetLoadedStatusServerRpc(ulong clientID, bool status)
         {
-            int index = NetworkManager.ConnectedClientsIds.ToList().IndexOf(clientID);
+            int index = NetworkManager.ConnectionManager.ConnectedClientIds.FindIndex(id => id == clientID);
             if (playersLoadStatus.Count <= index)
             {
                 DebugHelper.LogError("Tried To Set LoadedStatus When List Is Invalid (ClientID: " + clientID + ", Index: " + index + "), Resetting.", DebugType.User);
@@ -189,16 +184,14 @@ namespace LethalLevelLoader
 
         private List<AssetBundleGroup> GetRouteGroups(ExtendedLevel route)
         {
-            List<AssetBundleGroup> returnList = new List<AssetBundleGroup>();
             if (route == null)
-                return (returnList);
-            List<string> levelScenes = route.SceneSelections.Select(s => s.Name).ToList();
-            foreach (string levelScene in levelScenes)
-                if (assetBundleGroupSceneDict.TryGetValue(levelScene, out List<AssetBundleGroup> groups))
-                    foreach (AssetBundleGroup group in groups)
-                        if (!returnList.Contains(group))
-                            returnList.Add(group);
-            return (returnList);
+                return ([]);
+
+            HashSet<AssetBundleGroup> returnList = new HashSet<AssetBundleGroup>();
+            foreach (StringWithRarity sceneSelection in route.SceneSelections)
+                if (assetBundleGroupSceneDict.TryGetValue(sceneSelection.Name, out List<AssetBundleGroup> groups))
+                    returnList.UnionWith(groups);
+            return ([.. returnList]);
         }
 
         private void GenerateSceneDict()

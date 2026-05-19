@@ -111,19 +111,22 @@ if (AssetBundleLoader.noBundlesFound == true)
             delayedSceneLoadingName = string.Empty;
         }
 
-        [HarmonyPatch(typeof(GameNetworkManager), "Start"), HarmonyPrefix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static void GameNetworkManagerStart_Prefix(GameNetworkManager __instance)
         {
             if (LethalBundleManager.HasFinalisedFoundContent == false)
                 LethalBundleManager.FinialiseFoundContent();
             if (Plugin.IsSetupComplete == false)
             {
-                LethalLevelLoaderNetworkManager.networkManager = __instance.GetComponent<NetworkManager>();
-                NetworkBundleManager.networkManager = __instance.GetComponent<NetworkManager>();
-                foreach (NetworkPrefab networkPrefab in __instance.GetComponent<NetworkManager>().NetworkConfig.Prefabs.Prefabs)
-                    if (networkPrefab.Prefab.name.Contains("EntranceTeleport"))
-                        if (networkPrefab.Prefab.GetComponent<AudioSource>() != null)
-                            OriginalContent.AudioMixers.Add(networkPrefab.Prefab.GetComponent<AudioSource>().outputAudioMixerGroup.audioMixer);
+                NetworkManager networkManager = __instance.GetComponent<NetworkManager>();
+                LethalLevelLoaderNetworkManager.networkManager = networkManager;
+                NetworkBundleManager.networkManager = networkManager;
+                foreach (NetworkPrefab networkPrefab in NetworkBundleManager.networkManager.NetworkConfig.Prefabs.m_Prefabs)
+                    if (networkPrefab.Prefab.TryGetComponent(out AudioSource audioSource))
+                    {
+                        OriginalContent.AudioMixers.Add(audioSource.outputAudioMixerGroup.audioMixer);
+                        break;
+                    }
 
                 GameObject networkManagerPrefab = PrefabHelper.CreateNetworkPrefab("LethalLevelLoaderNetworkManagerTest");
                 networkManagerPrefab.AddComponent<LethalLevelLoaderNetworkManager>();
@@ -146,8 +149,8 @@ if (AssetBundleLoader.noBundlesFound == true)
 
                 LethalLevelLoaderNetworkManager.RegisterNetworkPrefab(networkBundleManagerPrefab);
 
-                AssetBundleLoader.NetworkRegisterCustomContent(__instance.GetComponent<NetworkManager>());
-                LethalLevelLoaderNetworkManager.RegisterPrefabs(__instance.GetComponent<NetworkManager>());
+                AssetBundleLoader.NetworkRegisterCustomContent(networkManager);
+                LethalLevelLoaderNetworkManager.RegisterPrefabs(networkManager);
             }
         }
 
@@ -166,9 +169,9 @@ if (AssetBundleLoader.noBundlesFound == true)
             Plugin.OnBeforeSetupInvoke();
             //Reference Setup
             StartOfRound = __instance;
-            RoundManager = UnityEngine.Object.FindFirstObjectByType<RoundManager>(FindObjectsInactive.Exclude);
-            Terminal = UnityEngine.Object.FindFirstObjectByType<Terminal>(FindObjectsInactive.Exclude);
-            TimeOfDay = UnityEngine.Object.FindFirstObjectByType<TimeOfDay>(FindObjectsInactive.Exclude);
+            RoundManager = UnityEngine.Object.FindAnyObjectByType<RoundManager>(FindObjectsInactive.Exclude);
+            Terminal = UnityEngine.Object.FindAnyObjectByType<Terminal>(FindObjectsInactive.Exclude);
+            TimeOfDay = UnityEngine.Object.FindAnyObjectByType<TimeOfDay>(FindObjectsInactive.Exclude);
 
             currentClientId = NetworkManager.Singleton.LocalClientId;
 
@@ -261,14 +264,16 @@ if (AssetBundleLoader.noBundlesFound == true)
                 }
                 DebugHelper.Log(debugString, DebugType.User);
 
-                DebugStopwatch.StartStopWatch("Restore Content");
                 //Restore Custom Content References To Vanilla Content
+                DebugStopwatch.StartStopWatch("Restore Level Content");
                 foreach (ExtendedLevel customLevel in PatchedContent.CustomExtendedLevels)
                     ContentRestorer.RestoreVanillaLevelAssetReferences(customLevel);
 
+                DebugStopwatch.StartStopWatch("Restore Dungeon Content");
                 foreach (ExtendedDungeonFlow customDungeonFlow in PatchedContent.CustomExtendedDungeonFlows)
                     ContentRestorer.RestoreVanillaDungeonAssetReferences(customDungeonFlow);
 
+                DebugStopwatch.StartStopWatch("Restore Additional Content");
                 ContentRestorer.RestoreVanillaItemAssetReferences(); // LungProp, HauntedMaskItem
                 // ContentRestorer.RestoreVanillaEnemyAssetReferences(); // ButlerEnemyAI, CadaverGrowthAI, GiantKiwiAI
 
@@ -430,11 +435,11 @@ if (AssetBundleLoader.noBundlesFound == true)
                 LethalLevelLoaderNetworkManager.Instance.GetUpdatedLevelCurrentWeatherServerRpc();
         }
 
-        public static bool hasInitiallyChangedLevel;
-        [HarmonyPatch(typeof(StartOfRound), "ChangeLevel"), HarmonyPrefix, HarmonyPriority(priority)]
-        public static bool StartOfRoundChangeLevel_Prefix(ref int levelID)
+        private static bool hasInitiallyChangedLevel;
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ChangeLevel)), HarmonyPrefix, HarmonyPriority(priority)]
+        public static void StartOfRoundChangeLevel_Prefix(ref int levelID)
         {
-            if (LethalLevelLoaderNetworkManager.networkManager.IsServer == false) return (true);
+            if (IsServer == false) return;
 
             //Because Level ID's can change between modpack adjustments and such, we save the name of the level instead and find and load that up instead of the saved ID the base game uses.
             if (hasInitiallyChangedLevel == false && !string.IsNullOrEmpty(SaveManager.currentSaveFile.CurrentLevelName))
@@ -444,16 +449,14 @@ if (AssetBundleLoader.noBundlesFound == true)
                         DebugHelper.Log("Loading Previously Saved SelectableLevel: " + extendedLevel.SelectableLevel.PlanetName, DebugType.User);
                         levelID = Array.FindIndex(StartOfRound.levels, level => extendedLevel.SelectableLevel);
                         hasInitiallyChangedLevel = true;
-                        return (true);
+                        return;
                     }
-
 
             //If we can't find the previous current level, that probably means the game is going to try and use an ID bigger than the current array, or reference the wrong level, so we reset it back to experimentation here.
             if (hasInitiallyChangedLevel == false && !string.IsNullOrEmpty(SaveManager.currentSaveFile.CurrentLevelName) && !SaveManager.currentSaveFile.CurrentLevelName.Contains("Experimentation") && (levelID >= StartOfRound.levels.Length || levelID > OriginalContent.SelectableLevels.Count))
                 levelID = 0;
 
             hasInitiallyChangedLevel = true;
-            return (true);
         }
 
 

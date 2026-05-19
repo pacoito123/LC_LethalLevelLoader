@@ -133,7 +133,7 @@ namespace LethalLevelLoader
         public static bool ContainsSanitized(this string input, string comparison, bool bothWays = false)
         {
             (string, string) sanitized = (input.Sanitized(), comparison.Sanitized());
-            return sanitized.Item1.Contains(sanitized.Item2) || (bothWays && sanitized.Item2.Contains(sanitized.Item1));
+            return sanitized.Item1.Contains(sanitized.Item2, StringComparison.Ordinal) || (bothWays && sanitized.Item2.Contains(sanitized.Item1, StringComparison.Ordinal));
         }
 
         public static string Sanitized(this string input, bool toLower = true)

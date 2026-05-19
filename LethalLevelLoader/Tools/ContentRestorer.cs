@@ -252,27 +252,9 @@ namespace LethalLevelLoader.Tools
             if (audioSource.outputAudioMixerGroup == null) return;
 
             AudioMixerGroup targetMixerGroup = audioSource.outputAudioMixerGroup;
-            AudioMixer targetMixer = audioSource.outputAudioMixerGroup.audioMixer;
-
-            AudioMixerGroup restoredMixerGroup = null;
-            AudioMixer restoredMixer = null;
-
-            foreach (AudioMixer vanillaMixer in OriginalContent.AudioMixers)
-                if (targetMixer.name == vanillaMixer.name)
-                    restoredMixer = RestoreAsset(targetMixer, vanillaMixer, destroyOnReplace: false);
-
-            foreach (AudioMixerGroup vanillaMixerGroup in OriginalContent.AudioMixerGroups)
-                if (targetMixerGroup.name == vanillaMixerGroup.name)
-                    restoredMixerGroup = RestoreAsset(targetMixerGroup, vanillaMixerGroup, destroyOnReplace: false);
-
-            if (restoredMixerGroup != null && restoredMixer != null)
-            {
-                //if (audioSource.clip != null)
-                //DebugHelper.Log("Restoring Audio Assets On AudioSource: " + audioSource.gameObject.name + ", AudioSource contained AudioClip: " + audioSource.clip.name);
-                //else
-                //DebugHelper.Log("Restoring Audio Assets On AudioSource: " + audioSource.gameObject.name);
+            AudioMixerGroup restoredMixerGroup = OriginalContent.AudioMixerGroups.Find(vanillaMixerGroup => string.Equals(vanillaMixerGroup.name, targetMixerGroup.name, StringComparison.Ordinal));
+            if (restoredMixerGroup != null)
                 audioSource.outputAudioMixerGroup = restoredMixerGroup;
-            }
         }
 
         internal static void TryRestoreShader(Material customMaterial, Shader vanillaShader, LocalKeyword[] enabledKeywords = null)
@@ -352,7 +334,7 @@ namespace LethalLevelLoader.Tools
 
                 IndoorMapHazardType vanillaHazardType = OriginalContent.IndoorMapHazards.Find(hazardType => hazardType != null && hazardType.prefabToSpawn != null && hazardType.prefabToSpawn.name == spawnablePrefab.name);
                 if (vanillaHazardType != null)
-                    randomMapObject.spawnablePrefabs[i] = RestoreAsset(spawnablePrefab, vanillaHazardType.prefabToSpawn, destroyOnReplace: false);
+                    randomMapObject.spawnablePrefabs[i] = RestoreAsset(spawnablePrefab, vanillaHazardType.prefabToSpawn);
             }
         }
 

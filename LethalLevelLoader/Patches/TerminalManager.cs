@@ -16,7 +16,7 @@ namespace LethalLevelLoader
             get
             {
                 if (_terminal == null)
-                    _terminal = UnityEngine.Object.FindFirstObjectByType<Terminal>(FindObjectsInactive.Exclude);
+                    _terminal = UnityEngine.Object.FindAnyObjectByType<Terminal>(FindObjectsInactive.Exclude);
 
                 return _terminal;
             }

@@ -265,13 +265,6 @@ namespace LethalLevelLoader
         }
 
 
-        public static List<AudioMixer> AudioMixers { get; internal set; } = new List<AudioMixer>();
-
-        public static List<AudioMixerGroup> AudioMixerGroups { get; internal set; } = new List<AudioMixerGroup>();
-
-        public static List<AudioMixerSnapshot> AudioMixerSnapshots { get; internal set; } = new List<AudioMixerSnapshot>();
-
-
         //Items
 
         public static List<Item> Items { get; internal set; } = new List<Item>();

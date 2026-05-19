@@ -502,6 +502,7 @@ namespace LethalLevelLoader
                 foreach (ExtendedBuyableVehicle extendedBuyableVehicle in extendedMod.ExtendedBuyableVehicles)
                 {
                     extendedBuyableVehicle.ContentType = ContentType.Custom;
+                    extendedBuyableVehicle.Initialize();
                     PatchedContent.ExtendedBuyableVehicles.Add(extendedBuyableVehicle);
                 }
                 foreach (ExtendedUnlockableItem extendedUnlockableItem in extendedMod.ExtendedUnlockableItems)

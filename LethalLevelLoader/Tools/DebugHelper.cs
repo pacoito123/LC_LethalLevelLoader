@@ -606,19 +606,6 @@ namespace LethalLevelLoader
 
             foreach (AudioMixerSnapshot audioMixerSnapshot in OriginalContent.AudioMixerSnapshots)
                 DebugHelper.Log("Vanilla AudioMixerSnapshot: " + audioMixerSnapshot.name + " | " + audioMixerSnapshot.audioMixer.name, DebugType.Developer);
-
-
-            DebugHelper.Log("Debugging Custom Audio Assets", DebugType.Developer);
-
-            foreach (AudioMixer audioMixer in PatchedContent.AudioMixers)
-                DebugHelper.Log("Custom AudioMixer: " + audioMixer.name, DebugType.Developer);
-
-            foreach (AudioMixerGroup audioMixerGroup in PatchedContent.AudioMixerGroups)
-                DebugHelper.Log("Custom AudioMixerGroup: " + audioMixerGroup.name + " | " + audioMixerGroup.audioMixer.name, DebugType.Developer);
-
-            foreach (AudioMixerSnapshot audioMixerSnapshot in PatchedContent.AudioMixerSnapshots)
-                DebugHelper.Log("Custom AudioMixerSnapshot: " + audioMixerSnapshot.name + " | " + audioMixerSnapshot.audioMixer.name, DebugType.Developer);
-
         }
 
         public static void DebugSpawnScrap(ExtendedLevel extendedLevel)

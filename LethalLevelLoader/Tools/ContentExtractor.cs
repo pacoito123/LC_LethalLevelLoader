@@ -1,11 +1,7 @@
-﻿using DunGen;
-using DunGen.Graph;
+﻿using DunGen.Graph;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.SceneManagement;
 
 namespace LethalLevelLoader
 {
@@ -13,32 +9,21 @@ namespace LethalLevelLoader
     {
         internal static void TryScrapeVanillaItems(StartOfRound startOfRound)
         {
-            //This is a little obtuse but had some weird issues with this, will rework later.
-            List<ItemGroup> extractedItemGroups = new List<ItemGroup>(Resources.FindObjectsOfTypeAll<ItemGroup>());
+            HashSet<ItemGroup> foundItemGroups = [];
             foreach (Item item in startOfRound.allItemsList.itemsList)
             {
                 if (item.spawnPrefab != null)
                 {
                     TryAddReference(OriginalContent.Items, item);
-                    foreach (ItemGroup itemGroup in item.spawnPositionTypes)
-                    {
-                        if (extractedItemGroups.Contains(itemGroup))
-                        {
-                            OriginalContent.ItemGroups.Add(itemGroup);
-                            extractedItemGroups.Remove(itemGroup);
-                        }
-                    }
+                    foundItemGroups.UnionWith(item.spawnPositionTypes);
                 }
             }
-            OriginalContent.ItemGroups = OriginalContent.ItemGroups.Distinct().ToList();
-
+            OriginalContent.ItemGroups = [.. foundItemGroups];
         }
 
         internal static void TryScrapeVanillaUnlockableItems(StartOfRound startOfRound)
         {
-            foreach (UnlockableItem item in startOfRound.unlockablesList.unlockables)
-                if (!OriginalContent.UnlockableItems.Contains(item))
-                    OriginalContent.UnlockableItems.Add(item);
+            OriginalContent.UnlockableItems = [.. startOfRound.unlockablesList.unlockables];
         }
 
         internal static void TryScrapeVanillaFootstepSurfaces(StartOfRound startOfRound)
@@ -59,8 +44,8 @@ namespace LethalLevelLoader
                     foreach (SelectableLevel selectableLevel in startOfRound.levels)
                         ExtractSelectableLevelReferences(selectableLevel);
 
-                    foreach (IndoorMapType indoorFlowType in roundManager.dungeonFlowTypes)
-                        ExtractDungeonFlowReferences(indoorFlowType.dungeonFlow);
+                    /* foreach (IndoorMapType indoorFlowType in roundManager.dungeonFlowTypes)
+                        ExtractDungeonFlowReferences(indoorFlowType.dungeonFlow); */
                 }
                 if (TerminalManager.Terminal.currentNode != null)
                     TryAddReference(OriginalContent.TerminalNodes, TerminalManager.Terminal.currentNode);
@@ -99,14 +84,10 @@ namespace LethalLevelLoader
                                 TryAddReference(OriginalContent.TerminalNodes, compatibleNoun.result);
 
                 ExtractMemoryLoadedAudioMixerGroups();
+                ExtractMemoryLoadedReverbPresets();
 
-                //BAD BAD BAD
-                foreach (ReverbPreset reverbPreset in Resources.FindObjectsOfTypeAll<ReverbPreset>())
-                    TryAddReference(OriginalContent.ReverbPresets, reverbPreset);
-                OriginalContent.ReverbPresets.Reverse(); // Vanilla reverb presets are at the end of the list, due to interiors loading theirs first.
-
-                OriginalContent.SelectableLevels = new List<SelectableLevel>(startOfRound.levels.ToList());
-                OriginalContent.MoonsCatalogue = new List<SelectableLevel>(TerminalManager.Terminal.moonsCatalogueList.ToList());
+                OriginalContent.SelectableLevels = [.. startOfRound.levels];
+                OriginalContent.MoonsCatalogue = [.. TerminalManager.Terminal.moonsCatalogueList];
 
             }
             //DebugHelper.DebugScrapedVanillaContent();
@@ -159,27 +140,42 @@ namespace LethalLevelLoader
 
         internal static void ExtractMemoryLoadedAudioMixerGroups()
         {
-            foreach (AudioMixer audioMixer in Resources.FindObjectsOfTypeAll(typeof(AudioMixer)))
-            {
-                if (!OriginalContent.AudioMixers.Contains(audioMixer))
-                    TryAddReference(PatchedContent.AudioMixers, audioMixer);
-            }
+            AudioMixerGroup[] allMixerGroups = Resources.FindObjectsOfTypeAll<AudioMixerGroup>();
+            AudioMixerSnapshot[] allMixerSnapshots = Resources.FindObjectsOfTypeAll<AudioMixerSnapshot>();
 
-            foreach (AudioMixerGroup audioMixerGroup in Resources.FindObjectsOfTypeAll(typeof(AudioMixerGroup)))
-            {
-                if (OriginalContent.AudioMixers.Contains(audioMixerGroup.audioMixer))
-                    TryAddReference(OriginalContent.AudioMixerGroups, audioMixerGroup);
-                else
-                    TryAddReference(PatchedContent.AudioMixerGroups, audioMixerGroup);
-            }
+            Dictionary<string, AudioMixerGroup> extractedMixerGroups = new Dictionary<string, AudioMixerGroup>(allMixerGroups.Length);
+            Dictionary<string, AudioMixerSnapshot> extractedMixerSnapshots = new Dictionary<string, AudioMixerSnapshot>(allMixerSnapshots.Length);
 
-            foreach (AudioMixerSnapshot audioMixerSnapshot in Resources.FindObjectsOfTypeAll(typeof(AudioMixerSnapshot)))
+            for (int i = 0; i < allMixerGroups.Length; i++)
             {
-                if (OriginalContent.AudioMixers.Contains(audioMixerSnapshot.audioMixer))
-                    TryAddReference(OriginalContent.AudioMixerSnapshots, audioMixerSnapshot);
-                else
-                    TryAddReference(PatchedContent.AudioMixerSnapshots, audioMixerSnapshot);
+                AudioMixerGroup mixerGroup = allMixerGroups[i];
+                if (mixerGroup != null && !string.IsNullOrEmpty(mixerGroup.name))
+                    extractedMixerGroups.TryAdd(mixerGroup.name, mixerGroup);
             }
+            OriginalContent.AudioMixerGroups = [.. extractedMixerGroups.Values];
+
+            for (int i = 0; i < allMixerSnapshots.Length; i++)
+            {
+                AudioMixerSnapshot mixerSnapshot = allMixerSnapshots[i];
+                if (mixerSnapshot != null && !string.IsNullOrEmpty(mixerSnapshot.name))
+                    extractedMixerSnapshots.TryAdd(mixerSnapshot.name, mixerSnapshot);
+            }
+            OriginalContent.AudioMixerSnapshots = [.. extractedMixerSnapshots.Values];
+        }
+
+        internal static void ExtractMemoryLoadedReverbPresets()
+        {
+            // A little bit less bad...
+            ReverbPreset[] allReverbPresets = Resources.FindObjectsOfTypeAll<ReverbPreset>();
+            Dictionary<string, ReverbPreset> extractedPresets = new Dictionary<string, ReverbPreset>(allReverbPresets.Length);
+
+            for (int i = allReverbPresets.Length - 1; i >= 0; i--) // Vanilla reverb presets are at the end of the list, due to interiors loading theirs first.
+            {
+                ReverbPreset reverbPreset = allReverbPresets[i];
+                if (reverbPreset != null && reverbPreset.name != null)
+                    extractedPresets.TryAdd(reverbPreset.name, reverbPreset);
+            }
+            OriginalContent.ReverbPresets = [.. extractedPresets.Values];
         }
 
         internal static void ExtractSelectableLevelReferences(SelectableLevel selectableLevel)

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace LethalLevelLoader.AssetBundles
 {
@@ -18,7 +17,7 @@ namespace LethalLevelLoader.AssetBundles
             get
             {
                 if (instance == null)
-                    instance = Object.FindFirstObjectByType<AssetBundleLoader>();
+                    instance = FindAnyObjectByType<AssetBundleLoader>(FindObjectsInactive.Exclude);
                 return (instance);
             }
         }
