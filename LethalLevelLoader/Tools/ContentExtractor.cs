@@ -105,37 +105,59 @@ namespace LethalLevelLoader
                     PatchedContent.Items.Add(item);*/
         }
 
-        internal static void ObtainSpecialItemReferences()
+        internal static void ObtainSpecialContentReferences()
         {
-            foreach (GrabbableObject sceneGrabbableObject in Patches.StartOfRound.shipAnimator.gameObject.GetComponentsInChildren<GrabbableObject>())
-                if (sceneGrabbableObject.itemProperties != null && !OriginalContent.Items.Contains(sceneGrabbableObject.itemProperties))
-                    if (sceneGrabbableObject.itemProperties.spawnPrefab != null)
+            foreach (GrabbableObject sceneGrabbableObject in Patches.StartOfRound.shipAnimator.GetComponentsInChildren<GrabbableObject>(includeInactive: false))
+                if (sceneGrabbableObject.itemProperties != null && sceneGrabbableObject.itemProperties.spawnPrefab != null)
+                    if (!OriginalContent.Items.Contains(sceneGrabbableObject.itemProperties))
                         OriginalContent.Items.Add(sceneGrabbableObject.itemProperties);
 
-            foreach (EnemyType enemyType in OriginalContent.Enemies)
+            for (int i = 0; i < OriginalContent.Enemies.Count; i++)
             {
-                if (enemyType.name == "Nutcracker_0")
+                EnemyType enemyType = OriginalContent.Enemies[i];
+                if (enemyType == null || enemyType.enemyPrefab == null) continue;
+                if (enemyType.enemyPrefab.TryGetComponent(out NutcrackerEnemyAI nutcracker))
                 {
-                    NutcrackerEnemyAI nutcrackerEnemy = enemyType.enemyPrefab.GetComponent<NutcrackerEnemyAI>();
-                    if (nutcrackerEnemy != null)
-                    {
-                        OriginalContent.Items.Add(nutcrackerEnemy.gunPrefab.GetComponent<GrabbableObject>().itemProperties);
-                        OriginalContent.Items.Add(nutcrackerEnemy.shotgunShellPrefab.GetComponent<GrabbableObject>().itemProperties);
-                    }
+                    if (nutcracker.gunPrefab != null && nutcracker.gunPrefab.TryGetComponent(out GrabbableObject shotgun) && shotgun.itemProperties != null)
+                        if (!OriginalContent.Items.Contains(shotgun.itemProperties))
+                            OriginalContent.Items.Add(shotgun.itemProperties);
+                    if (nutcracker.shotgunShellPrefab != null && nutcracker.shotgunShellPrefab.TryGetComponent(out GrabbableObject shell) && shell.itemProperties != null)
+                        if (!OriginalContent.Items.Contains(shell.itemProperties))
+                            OriginalContent.Items.Add(shell.itemProperties);
                 }
-                else if (enemyType.name == "Butler_0")
+                else if (enemyType.enemyPrefab.TryGetComponent(out ButlerEnemyAI butler))
                 {
-                    ButlerEnemyAI butlerEnemy = enemyType.enemyPrefab.GetComponent<ButlerEnemyAI>();
-                    if (butlerEnemy != null)
-                        OriginalContent.Items.Add(butlerEnemy.knifePrefab.GetComponent<GrabbableObject>().itemProperties);
+                    if (butler.knifePrefab != null && butler.knifePrefab.TryGetComponent(out GrabbableObject knife) && knife.itemProperties != null)
+                        if (!OriginalContent.Items.Contains(knife.itemProperties))
+                            OriginalContent.Items.Add(knife.itemProperties);
+                    if (butler.butlerBeesEnemyType != null && butler.butlerBeesEnemyType.enemyPrefab != null)
+                        if (!OriginalContent.Enemies.Contains(butler.butlerBeesEnemyType))
+                            OriginalContent.Enemies.Add(butler.butlerBeesEnemyType);
                 }
-                else if (enemyType.name == "RedLocustBees")
+                else if (enemyType.enemyPrefab.TryGetComponent(out RedLocustBees bees))
                 {
-                    RedLocustBees beesEnemy = enemyType.enemyPrefab.GetComponent<RedLocustBees>();
-                    if (beesEnemy != null)
-                        OriginalContent.Items.Add(beesEnemy.hivePrefab.GetComponent<GrabbableObject>().itemProperties);
+                    if (bees.hivePrefab != null && bees.hivePrefab.TryGetComponent(out GrabbableObject hive) && hive.itemProperties != null)
+                        if (!OriginalContent.Items.Contains(hive.itemProperties))
+                            OriginalContent.Items.Add(hive.itemProperties);
+                }
+                else if (enemyType.enemyPrefab.TryGetComponent(out GiantKiwiAI sapsucker))
+                {
+                    if (sapsucker.eggPrefab != null && sapsucker.eggPrefab.TryGetComponent(out GrabbableObject egg) && egg.itemProperties != null)
+                        if (!OriginalContent.Items.Contains(egg.itemProperties))
+                            OriginalContent.Items.Add(egg.itemProperties);
+                }
+                else if (enemyType.enemyPrefab.TryGetComponent(out CadaverGrowthAI cadaverGrowth))
+                {
+                    if (cadaverGrowth.bloomEnemyType != null && cadaverGrowth.bloomEnemyType.enemyPrefab != null)
+                        if (!OriginalContent.Enemies.Contains(cadaverGrowth.bloomEnemyType))
+                            OriginalContent.Enemies.Add(cadaverGrowth.bloomEnemyType);
                 }
             }
+
+            foreach (SpawnableEnemyWithRarity enemyWithRarity in Patches.RoundManager.WeedEnemies)
+                if (enemyWithRarity != null && enemyWithRarity.enemyType != null && enemyWithRarity.enemyType.enemyPrefab != null)
+                    if (!OriginalContent.Enemies.Contains(enemyWithRarity.enemyType))
+                        OriginalContent.Enemies.Add(enemyWithRarity.enemyType);
         }
 
         internal static void ExtractMemoryLoadedAudioMixerGroups()
@@ -180,6 +202,8 @@ namespace LethalLevelLoader
 
         internal static void ExtractSelectableLevelReferences(SelectableLevel selectableLevel)
         {
+            if (selectableLevel == null) return;
+
             foreach (SpawnableEnemyWithRarity enemyWithRarity in selectableLevel.Enemies)
                 TryAddReference(OriginalContent.Enemies, enemyWithRarity.enemyType);
 
@@ -188,6 +212,9 @@ namespace LethalLevelLoader
 
             foreach (SpawnableEnemyWithRarity enemyWithRarity in selectableLevel.DaytimeEnemies)
                 TryAddReference(OriginalContent.Enemies, enemyWithRarity.enemyType);
+
+            if (selectableLevel.specialEnemyRarity != null && selectableLevel.specialEnemyRarity.overrideEnemy != null)
+                TryAddReference(OriginalContent.Enemies, selectableLevel.specialEnemyRarity.overrideEnemy);
 
             foreach (IndoorMapHazard indoorMapHazard in selectableLevel.indoorMapHazards)
                 TryAddReference(OriginalContent.IndoorMapHazards, indoorMapHazard.hazardType);

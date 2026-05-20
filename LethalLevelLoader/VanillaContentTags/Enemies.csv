@@ -1,28 +1,35 @@
 ,Is Automatically Applied:,No,No,No,No,No,No,No,No,No,No
-Item Name,Total Tags,19,14,3,6,15,14,5,5,17,3
+Item Name,Total Tags,26,19,4,9,18,15,8,8,21,3
 ,,Organic,Killable,Passive,Neutral,Hostile,Biped,Quadruped,Small,Medium,Large
 Baboon Hawk,5,Organic,Killable,,Neutral,,Biped,,,Medium,
-Bunker Spider,5,Organic,Killable,,Neutral,,,Quadruped,,Medium,
-Flowerman,5,Organic,Killable,,,Hostile,Biped,,,Medium,
-Spring Man,3,,,,,Hostile,Biped,,,Medium,
-Earth Leviathan,3,Organic,,,,Hostile,,,,,Large
-Mouth Dog,5,Organic,Killable,,,Hostile,,Quadruped,,Medium,
-Forest Giant,5,Organic,Killable,,,Hostile,Biped,,,,Large
-Dress Girl,3,,,,,Hostile,Biped,,Small,,
-Hoarding Bug,5,Organic,Killable,,Neutral,,Biped,,,Medium,
 Blob,3,Organic,,,Neutral,,,,Small,,
+Bunker Spider,5,Organic,Killable,,Neutral,,,Quadruped,,Medium,
+Bush Wolf,5,Organic,Killable,,,Hostile,,Quadruped,,Medium,
+Butler,5,Organic,Killable,,,Hostile,Biped,,,Medium,
+Butler Bees,3,Organic,,,,Hostile,,,,Medium,
+Cadaver Bloom,5,Organic,Killable,,,Hostile,,Quadruped,,Medium,
+Cadaver Growths,3,Organic,,,Neutral,,,,Small,,
+Centipede,4,Organic,Killable,,,Hostile,,,Small,,
+Clay Surgeon,3,,,,,Hostile,Biped,,,Medium,
+Crawler,5,Organic,Killable,,,Hostile,,Quadruped,,Medium,
+Docile Locust Bees,3,Organic,,Passive,,,,,,Medium,
+Dress Girl,3,,,,,Hostile,Biped,,Small,,
+Earth Leviathan,3,Organic,,,,Hostile,,,,,Large
+Feiopar,5,Organic,Killable,,,Hostile,,Quadruped,,Medium,
+Flowerman,5,Organic,Killable,,,Hostile,Biped,,,Medium,
+Forest Giant,5,Organic,Killable,,,Hostile,Biped,,,,Large
+GiantKiwi,5,Organic,Killable,,Neutral,,Biped,,,Medium,
+Hoarding Bug,5,Organic,Killable,,Neutral,,Biped,,,Medium,
 Jester,3,,,,,Hostile,Biped,,,Medium,
 Lasso Man,2,,,,,,Biped,,,Medium,
-Red Locust Bees,3,Organic,,,Neutral,,,,,Medium,
-Docile Locust Bees,3,Organic,,Passive,,,,,,Medium,
+Maneater,5,Organic,Killable,,Neutral,,,Quadruped,Small,,
 Manticoil,5,Organic,Killable,Passive,,,Biped,,Small,,
 Masked,4,Organic,,,,Hostile,Biped,,,Medium,
+Mouth Dog,5,Organic,Killable,,,Hostile,,Quadruped,,Medium,
 Nutcracker,5,Organic,Killable,,,Hostile,Biped,,,Medium,
-Centipede,4,Organic,Killable,,,Hostile,,,Small,,
 Puffer,4,Organic,,,Neutral,,,Quadruped,,Medium,
-Crawler,5,Organic,Killable,,,Hostile,,Quadruped,,Medium,
-Butler,5,Organic,Killable,,,Hostile,Biped,,,Medium,
 Rad Mech,4,,Killable,,,Hostile,Biped,,,,Large
+Red Locust Bees,3,Organic,,,Neutral,,,,,Medium,
+Spring Man,3,,,,,Hostile,Biped,,,Medium,
+Stingray,4,Organic,Killable,Passive,,,,,Small,,
 Tulip Snake,4,Organic,Killable,Passive,,,,,Small,,
-Bush Wolf,5,Organic,Killable,,,Hostile,,Quadruped,,Medium,
-Clay Surgeon,3,,,,,Hostile,Biped,,,Medium,

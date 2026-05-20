@@ -96,18 +96,18 @@ namespace LethalLevelLoader
                 if (extendedEnemyType.EnemyID > highestVanillaEnemyScanNodeCreatureID)
                     highestVanillaEnemyScanNodeCreatureID = extendedEnemyType.EnemyID;
 
-            int counter = 1; //we want this to be 1
+            int counter = 0;
             foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.CustomExtendedEnemyTypes)
             {
-                ScanNodeProperties enemyScanNode = extendedEnemyType.EnemyType.enemyPrefab.GetComponentInChildren<ScanNodeProperties>();
-                if (enemyScanNode != null)
+                extendedEnemyType.EnemyID = ++counter + highestVanillaEnemyScanNodeCreatureID;
+                ScanNodeProperties[] allEnemyScanNodes = extendedEnemyType.EnemyType.enemyPrefab.GetComponentsInChildren<ScanNodeProperties>(includeInactive: true);
+                for (int i = 0; i < allEnemyScanNodes.Length; i++)
                 {
-                    extendedEnemyType.ScanNodeProperties = enemyScanNode;
-                    extendedEnemyType.ScanNodeProperties.creatureScanID = (highestVanillaEnemyScanNodeCreatureID + counter);
-                    extendedEnemyType.EnemyID = (highestVanillaEnemyScanNodeCreatureID + counter);
-                    DebugHelper.Log("Setting Custom EnemyType: " + extendedEnemyType.EnemyType.enemyName + " ID To: " + (highestVanillaEnemyScanNodeCreatureID + counter), DebugType.Developer);
+                    if (!string.IsNullOrEmpty(allEnemyScanNodes[i].headerText) && allEnemyScanNodes[i].headerText.ContainsSanitized(extendedEnemyType.EnemyDisplayName, bothWays: true))
+                        extendedEnemyType.ScanNodeProperties = allEnemyScanNodes[i];
+                    allEnemyScanNodes[i].creatureScanID = extendedEnemyType.EnemyID;
                 }
-                counter++;
+                DebugHelper.Log($"Set Enemy ID '{extendedEnemyType.EnemyID}' For Custom EnemyType: {extendedEnemyType.EnemyType.enemyName}", DebugType.Developer);
             }
         }
 

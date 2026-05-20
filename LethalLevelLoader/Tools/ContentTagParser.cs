@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using System.Reflection;
-using UnityEngine.Windows;
-using System.Linq;
+using System.Text;
 
 namespace LethalLevelLoader
 {
     internal static class ContentTagParser
     {
-        internal static Dictionary<string, List<string>> importedItemContentTagDictionary = new Dictionary<string, List<string>>();
-        internal static Dictionary<string, List<string>> importedLevelContentTagDictionary = new Dictionary<string, List<string>>();
-        internal static Dictionary<string, List<string>> importedEnemyContentTagDictionary = new Dictionary<string, List<string>>();
+        private static readonly Dictionary<string, string[]> importedItemContentTagDictionary = [];
+        private static readonly Dictionary<string, string[]> importedLevelContentTagDictionary = [];
+        private static readonly Dictionary<string, string[]> importedEnemyContentTagDictionary = [];
 
         internal static void ApplyVanillaContentTags()
         {
@@ -23,175 +21,115 @@ namespace LethalLevelLoader
 
         internal static void ImportVanillaContentTags()
         {
-            ParseContentFile("Items", importedItemContentTagDictionary, 5);
-            ParseContentFile("SelectableLevels", importedLevelContentTagDictionary, 3);
-            ParseContentFile("Enemies", importedEnemyContentTagDictionary, 3);
+            ParseContentFile("Items", importedItemContentTagDictionary, 4);
+            ParseContentFile("SelectableLevels", importedLevelContentTagDictionary, 4);
+            ParseContentFile("Enemies", importedEnemyContentTagDictionary, 4);
         }
 
-        internal static void ParseContentFile(string fileName, Dictionary<string, List<string>> importedContentTagDict, int startingLine)
+        internal static void ParseContentFile(string fileName, Dictionary<string, string[]> importedContentTagDict, int startingLine)
         {
             DebugHelper.Log("Parsing Contents Of Content CSV Located At: " + fileName, DebugType.Developer);
+            using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("LethalLevelLoader.VanillaContentTags." + fileName + ".csv");
+            using StreamReader reader = new(stream, Encoding.UTF8);
             int lineCount = 0;
             string line;
             try
             {
-                StreamReader sr = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("LethalLevelLoader.VanillaContentTags." + fileName + ".csv"));
-                line = sr.ReadLine();
-                lineCount++;
-                while (line != null)
+                while ((line = reader.ReadLine()) != null)
                 {
-                    //write the line to console window
-                    if (lineCount > startingLine)
+                    if (++lineCount < startingLine) continue;
+                    if (TryParseLine(line, out string contentName, out string[] contentTags))
                     {
-                        (string, List<string>) parsedContent = ParseLine(line);
-                        importedContentTagDict.Add(parsedContent.Item1, parsedContent.Item2);
-                        DebugParsedLine(parsedContent);
+                        importedContentTagDict[contentName] = contentTags;
+                        DebugParsedLine(contentName, contentTags);
                     }
-                    //Read the next line
-                    line = sr.ReadLine();
-                    lineCount++;
-                }
-                //close the file
-                sr.Close();
-                if (lineCount > startingLine)
-                {
-                    (string, List<string>) parsedContent = ParseLine(line);
-                    importedContentTagDict.Add(parsedContent.Item1, parsedContent.Item2);
-                    DebugParsedLine(parsedContent);
                 }
             }
-            catch
+            catch (Exception e)
             {
-
+                DebugHelper.LogError($"Could Not Parse File '{fileName}', CSV Tags Will Not Be Applied: {e}", DebugType.User);
             }
         }
 
         internal static void ApplyImportedItemContentTags()
         {
             int counter = 0;
-            List<int> appliedIndexes = new List<int>();
-            foreach (KeyValuePair<string, List<string>> importedItemData in importedItemContentTagDictionary)
+            List<ExtendedItem> allVanillaItems = [.. PatchedContent.VanillaMod.ExtendedItems];
+            foreach (KeyValuePair<string, string[]> importedItemData in importedItemContentTagDictionary)
             {
-                foreach (ExtendedItem extendedItem in PatchedContent.VanillaMod.ExtendedItems)
+                int foundIndex = allVanillaItems.FindIndex(extendedItem => importedItemData.Key.ContainsSanitized([extendedItem.Item.name, extendedItem.Item.itemName], bothWays: true));
+                if (foundIndex >= 0)
                 {
-                    if (extendedItem.Item.name.ContainsSanitized(importedItemData.Key, bothWays: true))
-                    {
-                        DebugHelper.Log("Applying CSV Tags For Imported Item #" + (counter + 1) + " / " + (importedItemContentTagDictionary.Count - 1) + ": " + importedItemData.Key + " To ExtendedItem: " + extendedItem.Item.itemName + "(" + extendedItem.Item.name + ")", DebugType.Developer);
-                        extendedItem.ContentTags = ContentTagManager.CreateNewContentTags(importedItemData.Value.Concat(new List<string>() { "Vanilla" }).ToList());
-                        appliedIndexes.Add(counter);
-                        break;
-                    }
+                    ExtendedItem extendedItem = allVanillaItems[foundIndex];
+                    DebugHelper.Log($"Applying CSV Tags For Imported Item #{++counter} / {importedItemContentTagDictionary.Count}: {importedItemData.Key} To ExtendedItem: {extendedItem.Item.itemName}({extendedItem.Item.name})", DebugType.Developer);
+                    extendedItem.ContentTags = ContentTagManager.CreateNewContentTags(["Vanilla", .. importedItemData.Value]);
+                    allVanillaItems.RemoveAt(foundIndex);
                 }
-                counter++;
-            }
-
-            for (int i = 0; i < importedItemContentTagDictionary.Count; i++)
-            {
-                if (!appliedIndexes.Contains(i) && importedItemContentTagDictionary.Keys.ToList()[i] != string.Empty)
-                    DebugHelper.LogWarning("Could Not Apply CSV Tags For Imported Item: " + importedItemContentTagDictionary.Keys.ToList()[i], DebugType.Developer);
+                else
+                    DebugHelper.LogWarning($"Could Not Apply CSV Tags For Imported Item #{++counter} / {importedItemContentTagDictionary.Count}: {importedItemData.Key}", DebugType.Developer);
             }
         }
 
         internal static void ApplyImportedSelectableLevelContentTags()
         {
             int counter = 0;
-            List<int> appliedIndexes = new List<int>();
-            foreach (KeyValuePair<string, List<string>> importedItemData in importedLevelContentTagDictionary)
+            List<ExtendedLevel> allVanillaLevels = [.. PatchedContent.VanillaMod.ExtendedLevels];
+            foreach (KeyValuePair<string, string[]> importedLevelData in importedLevelContentTagDictionary)
             {
-                foreach (ExtendedLevel extendedLevel in PatchedContent.VanillaMod.ExtendedLevels)
+                int foundIndex = allVanillaLevels.FindIndex(extendedLevel => importedLevelData.Key.ContainsSanitized([extendedLevel.SelectableLevel.name, extendedLevel.SelectableLevel.PlanetName], bothWays: true));
+                if (foundIndex >= 0)
                 {
-                    if (extendedLevel.SelectableLevel.name.ContainsSanitized(importedItemData.Key, bothWays: true))
-                    {
-                        DebugHelper.Log("Applying CSV Tags For Imported Level #" + (counter + 1) + " / " + (importedLevelContentTagDictionary.Count - 1) + ": " + importedItemData.Key + " To SelectableLevel: " + extendedLevel.SelectableLevel.PlanetName + "(" + extendedLevel.SelectableLevel.name + ")", DebugType.Developer);
-                        extendedLevel.ContentTags = ContentTagManager.CreateNewContentTags(importedItemData.Value.Concat(new List<string>() { "Vanilla" }).ToList());
-                        appliedIndexes.Add(counter);
-                        break;
-                    }
+                    ExtendedLevel extendedLevel = allVanillaLevels[foundIndex];
+                    DebugHelper.Log($"Applying CSV Tags For Imported Level #{++counter} / {importedLevelContentTagDictionary.Count}: {importedLevelData.Key} To ExtendedLevel: {extendedLevel.SelectableLevel.PlanetName}({extendedLevel.SelectableLevel.name})", DebugType.Developer);
+                    extendedLevel.ContentTags = ContentTagManager.CreateNewContentTags(["Vanilla", .. importedLevelData.Value]);
+                    allVanillaLevels.RemoveAt(foundIndex);
                 }
-                counter++;
-            }
-
-            for (int i = 0; i < importedLevelContentTagDictionary.Count; i++)
-            {
-                if (!appliedIndexes.Contains(i) && importedLevelContentTagDictionary.Keys.ToList()[i] != string.Empty)
-                    DebugHelper.LogWarning("Could Not Apply CSV Tags For Imported SelectableLevel: " + importedLevelContentTagDictionary.Keys.ToList()[i], DebugType.Developer);
+                else
+                    DebugHelper.LogWarning($"Could Not Apply CSV Tags For Imported Level #{++counter} / {importedLevelContentTagDictionary.Count}: {importedLevelData.Key}", DebugType.Developer);
             }
         }
 
         internal static void ApplyImportedEnemyTypeContentTags()
         {
             int counter = 0;
-            List<int> appliedIndexes = new List<int>();
-            foreach (KeyValuePair<string, List<string>> importedItemData in importedEnemyContentTagDictionary)
+            List<ExtendedEnemyType> allVanillaEnemies = [.. PatchedContent.VanillaMod.ExtendedEnemyTypes];
+            foreach (KeyValuePair<string, string[]> importedEnemyData in importedEnemyContentTagDictionary)
             {
-                foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.VanillaMod.ExtendedEnemyTypes)
+                int foundIndex = allVanillaEnemies.FindIndex(extendedEnemy => importedEnemyData.Key.ContainsSanitized([extendedEnemy.EnemyType.name, extendedEnemy.EnemyType.enemyName], bothWays: true));
+                if (foundIndex >= 0)
                 {
-                    if (extendedEnemyType.EnemyType.name.ContainsSanitized(importedItemData.Key, bothWays: true))
-                    {
-                        DebugHelper.Log("Applying CSV Tags For Imported Enemy #" + (counter + 1) + " / " + (importedEnemyContentTagDictionary.Count - 1) + ": " + importedItemData.Key + " To EnemyType: " + extendedEnemyType.EnemyType.enemyName + "(" + extendedEnemyType.EnemyType.name + ")", DebugType.Developer);
-                        extendedEnemyType.ContentTags = ContentTagManager.CreateNewContentTags(importedItemData.Value.Concat(new List<string>() { "Vanilla" }).ToList());
-                        appliedIndexes.Add(counter);
-                        break;
-                    }
+                    ExtendedEnemyType extendedEnemy = allVanillaEnemies[foundIndex];
+                    DebugHelper.Log($"Applying CSV Tags For Imported Enemy #{++counter} / {importedEnemyContentTagDictionary.Count}: {importedEnemyData.Key} To ExtendedEnemyType: {extendedEnemy.EnemyType.enemyName}({extendedEnemy.EnemyType.name})", DebugType.Developer);
+                    extendedEnemy.ContentTags = ContentTagManager.CreateNewContentTags(["Vanilla", .. importedEnemyData.Value]);
+                    allVanillaEnemies.RemoveAt(foundIndex);
                 }
-                counter++;
-            }
-
-            /*for (int i = 0; i < importedEnemyContentTagDictionary.Count; i++)
-            {
-                if (!appliedIndexes.Contains(i) && importedEnemyContentTagDictionary.Keys.ToList()[i] != string.Empty)
-                    DebugHelper.LogWarning("Could Not Apply CSV Tags For Imported EnemyType: " + importedEnemyContentTagDictionary.Keys.ToList()[i]);
-            }*/
-        }
-
-        internal static (string, List<string>) ParseLine(string line)
-        {
-            string parsedLine = string.Empty;
-            string contentName = string.Empty;
-            List<string> contentTags = new List<string>();
-            if (!string.IsNullOrEmpty(line))
-                if (line.Contains(","))
-                {
-                    contentName = line.Replace(line.Substring(line.IndexOf(",")), string.Empty);
-                    parsedLine = line.Substring(line.IndexOf(",") + 1);
-                    parsedLine = parsedLine.SkipToLetters();
-                    string newContentTag = string.Empty;
-                    while (parsedLine.Contains(","))
-                    {
-                        newContentTag = parsedLine.Replace(parsedLine.Substring(parsedLine.IndexOf(",")), string.Empty).SkipToLetters();
-                        contentTags.Add(newContentTag);
-                        if (parsedLine.Length > 1)
-                            parsedLine = parsedLine.Substring(parsedLine.IndexOf(",") + 1);
-                        else
-                            parsedLine = string.Empty;
-                    }
-                }
-            for (int i = 0; i < contentTags.Count; i++)
-                contentTags[i] = new string(contentTags[i].ToCharArray().Where(c => Char.IsLetter(c)).ToArray());
-            List<string> parsedContentTags = new List<string>();
-            for (int i = 0; i < contentTags.Count; i++)
-                if (!string.IsNullOrEmpty(contentTags[i]))
-                    parsedContentTags.Add(contentTags[i]);
-
-            return ((contentName, parsedContentTags));
-        }
-
-        internal static void DebugParsedLine((string, List<string>) parsedLine)
-        {
-            DebugParsedLine(parsedLine.Item1, parsedLine.Item2);
-        }
-
-        internal static void DebugParsedLine(string contentName, List<string> contentTags)
-        {
-            if (!string.IsNullOrEmpty(contentName) && contentTags.Count > 0)
-            {
-                string debugString = "ContentName: " + contentName + " | Content Tags: ";
-                string otherDebugString = string.Empty;
-                foreach (string tag in contentTags)
-                    otherDebugString += ", " + tag;
-                DebugHelper.Log(debugString + otherDebugString.SkipToLetters(), DebugType.Developer);
+                else
+                    DebugHelper.LogWarning($"Could Not Apply CSV Tags For Imported Enemy #{++counter} / {importedEnemyContentTagDictionary.Count}: {importedEnemyData.Key}", DebugType.Developer);
             }
         }
 
+        internal static bool TryParseLine(string line, out string contentName, out string[] contentTags)
+        {
+            contentName = null;
+            contentTags = null;
+
+            if (string.IsNullOrEmpty(line)) return (false);
+            string[] cells = line.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            if (cells.Length < 2) return (false);
+
+            contentName = cells[0];
+            contentTags = new string[cells.Length - 2];
+
+            for (int i = 0; i < contentTags.Length; i++)
+                contentTags[i] = cells[i + 2];
+
+            return (true);
+        }
+
+        internal static void DebugParsedLine(string contentName, string[] contentTags)
+        {
+            if (!string.IsNullOrEmpty(contentName) && contentTags?.Length > 0)
+                DebugHelper.Log($"ContentName: {contentName} | ContentTags: {string.Join(", ", contentTags)}", DebugType.Developer);
+        }
     }
 }

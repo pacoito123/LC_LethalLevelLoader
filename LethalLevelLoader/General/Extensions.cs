@@ -130,6 +130,14 @@ namespace LethalLevelLoader
             intWithRarity.rarity = rarity;
         }
 
+        public static bool ContainsSanitized(this string input, string[] comparisons, bool bothWays = false)
+        {
+            foreach (string comparison in comparisons)
+                if (!string.IsNullOrEmpty(comparison) && input.ContainsSanitized(comparison, bothWays))
+                    return true;
+            return false;
+        }
+
         public static bool ContainsSanitized(this string input, string comparison, bool bothWays = false)
         {
             (string, string) sanitized = (input.Sanitized(), comparison.Sanitized());

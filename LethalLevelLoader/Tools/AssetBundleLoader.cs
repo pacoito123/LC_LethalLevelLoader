@@ -610,17 +610,19 @@ namespace LethalLevelLoader
             {
                 ExtendedEnemyType newExtendedEnemyType = ExtendedEnemyType.Create(enemyType, PatchedContent.VanillaMod, ContentType.Vanilla);
                 PatchedContent.ExtendedEnemyTypes.Add(newExtendedEnemyType);
-                ScanNodeProperties enemyScanNode = newExtendedEnemyType.EnemyType.enemyPrefab.GetComponentInChildren<ScanNodeProperties>();
+
+                ScanNodeProperties[] allEnemyScanNodes = newExtendedEnemyType.EnemyType.enemyPrefab.GetComponentsInChildren<ScanNodeProperties>(includeInactive: true);
+                ScanNodeProperties enemyScanNode = Array.Find(allEnemyScanNodes, scanNode => (scanNode.creatureScanID >= 0) && (scanNode.creatureScanID < Patches.Terminal.enemyFiles.Count));
                 if (enemyScanNode != null)
                 {
                     newExtendedEnemyType.ScanNodeProperties = enemyScanNode;
                     newExtendedEnemyType.EnemyID = enemyScanNode.creatureScanID;
-                    newExtendedEnemyType.EnemyInfoNode = Patches.Terminal.enemyFiles[newExtendedEnemyType.EnemyID];
+                    newExtendedEnemyType.EnemyInfoNode = Patches.Terminal.enemyFiles[enemyScanNode.creatureScanID];
                     if (newExtendedEnemyType.EnemyInfoNode != null)
                         newExtendedEnemyType.InfoNodeVideoClip = newExtendedEnemyType.EnemyInfoNode.displayVideo;
                     newExtendedEnemyType.EnemyDisplayName = enemyScanNode.headerText;
                 }
-                else
+                if (string.IsNullOrEmpty(newExtendedEnemyType.EnemyDisplayName))
                     newExtendedEnemyType.EnemyDisplayName = enemyType.enemyName;
             }
         }

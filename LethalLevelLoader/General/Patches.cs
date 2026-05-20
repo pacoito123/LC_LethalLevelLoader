@@ -41,42 +41,20 @@ namespace LethalLevelLoader
         public static ExtendedEvent OnAfterCustomContentRestored = new ExtendedEvent();
 
         [HarmonyPriority(priority)]
-        [HarmonyPatch(typeof(PreInitSceneScript), "Awake")]
+        [HarmonyPatch(typeof(PreInitSceneScript), nameof(PreInitSceneScript.Awake))]
         [HarmonyPrefix]
         internal static void PreInitSceneScriptAwake_Prefix(PreInitSceneScript __instance)
         {
             if (Plugin.IsSetupComplete == false)
             {
-                //AssetBundleLoader.CreateLoadingBundlesHeaderText(__instance);
                 if (__instance.TryGetComponent(out AudioSource audioSource))
                     OriginalContent.AudioMixers.Add(audioSource.outputAudioMixerGroup.audioMixer);
-
-                //AssetBundleLoader.LoadBundles(__instance);
-                //AssetBundleLoader.onBundlesFinishedLoading += AssetBundleLoader.LoadContentInBundles;
-
-                /*if (LethalBundleManager.CurrentStatus == LethalBundleManager.ModProcessingStatus.Complete)
-if (AssetBundleLoader.noBundlesFound == true)
-{
-    CurrentLoadingStatus = LoadingStatus.Complete;
-    AssetBundleLoader.OnBundlesFinishedLoadingInvoke();
-}*/
-
-
                 ContentTagParser.ImportVanillaContentTags();
             }
         }
 
         [HarmonyPriority(priority)]
-        [HarmonyPatch(typeof(PreInitSceneScript), "ChooseLaunchOption")]
-        [HarmonyPrefix]
-        internal static bool PreInitSceneScriptChooseLaunchOption_Prefix()
-        {
-            //return ((AssetBundleLoader.loadedFilesTotal - AssetBundleLoader.loadingAssetBundles.Count) == AssetBundleLoader.loadedFilesTotal);
-            return true;
-        }
-
-        [HarmonyPriority(priority)]
-        [HarmonyPatch(typeof(SceneManager), "LoadScene", new Type[] { typeof(string) })]
+        [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.LoadScene), [typeof(string)])]
         [HarmonyPrefix]
         internal static bool SceneManagerLoadScene(string sceneName)
         {
@@ -188,7 +166,7 @@ if (AssetBundleLoader.noBundlesFound == true)
                 ContentExtractor.TryScrapeVanillaUnlockableItems(StartOfRound);
                 ContentExtractor.TryScrapeVanillaFootstepSurfaces(StartOfRound);
                 ContentExtractor.TryScrapeVanillaContent(StartOfRound, RoundManager);
-                ContentExtractor.ObtainSpecialItemReferences();
+                ContentExtractor.ObtainSpecialContentReferences();
 
                 OnAfterVanillaContentCollected.Invoke();
             }
