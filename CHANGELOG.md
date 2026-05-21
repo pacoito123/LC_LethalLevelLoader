@@ -1,6 +1,60 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.0</summary>**
+
+**<details><summary>Features</summary>**
+
+* Completely overhauled ExtendedFootstepSurface to use Terrain layers instead (similar to Vow, March, and Adamance):
+  * ExtendedFootstepSurface type is now properly registered and integrated into the game
+  * Footsteps for a specific **Terrain** can be modified by adding a FootstepSurfaceHelper component to it
+    * FootstepSurfaceHelper holds information about which FootstepSurface should be used when walking over each specific Terrain layer
+    * Field `UseVanillaTag` can be used to use an existing vanilla FootstepSurface, or be left at `None` to use an ExtendedFootstepSurface surface tag instead
+  * Added `AllowSinking` field, which determines if the player should be able to sink in quicksand while on the ExtendedFootstepSurface
+  * Added `AllowEarthLeviathanEmerge` field, which determines if Earth Leviathans should be able to attack players standing on the ExtendedFootstepSurface
+    * Also fixed Earth Leviathans only being able to emerge from a single specific Terrain in the scene
+  * Added `AllowMaskedFootsteps` field, which determines if Masked enemies should play Terrain-based footsteps when walking over the ExtendedFootstepSurface
+    * Also fixed Masked ignoring Terrain footsteps altogether and only playing regular footsteps
+  * Added `UseTerrainFootsteps` field to ExtendedLevel (disabled by default so older moons can have their intended footsteps)
+    * **NOTE:** Should be enabled if intending to use Terrain-based footsteps!
+* Did various improvements to vanilla asset restoration:
+  * References in SpawnSyncedObject, RandomScrapSpawn, RandomMapObject, and BridgeTrigger components present in a scene are now restored at the start of the round
+  * Field `specialEnemyRarity` in SelectableLevel is now restored, if intending to use it
+  * Field `radMechEnemyType` in LungProp is now restored, and should be left blank
+  * Field `mimicEnemy` in HauntedMaskItem is now restored, and should be left blank
+  * ItemGroups in the `spawnPositionTypes` field in ExtendedItem are now restored
+  * AudioMixerGroups in AudioSources within content types registered by LLL are now restored, to fix some AudioMixer quirks
+  * Added content restoration support for the WavingGrass shader
+* Added ContentTags to several vanilla items and enemies that were missing them
+* Added and improved validation for a few things:
+  * ExtendedContent now removes any null or empty tags present in the ContentTags list
+  * ExtendedLevel now checks for empty or missing fields in all its lists and removes them at the start, to prevent ship not being able to land due to missing references
+  * ExtendedDungeonFlow now checks for a couple null or empty fields
+* Added RestrictBounds and CullingTileDepth fields to ExtendedDungeonFlow
+* Added OverrideCreakOpenDoorSFX and OverrideCreakShutDoorSFX fields to both ExtendedLevel and ExtendedDungeonFlow
+* Added weighted selection for ship animation overrides in ExtendedLevel
+
+</details>
+
+**<details><summary>Fixes</summary>**
+
+* Fixed overrides for ship animations, weather effects, and TimeOfDay music not being applied at the start of the round
+* Fixed RuntimeDungeon restoration for older moons not working properly in a few cases
+* Fixed ExtendedItem and ExtendedEnemyType objects not being created for a few specific vanilla items and enemies
+* Fixed ExtendedEnemyType Terminal entries being created more than once (upon reloading lobby)
+* Fixed ExtendedBuyableVehicle Terminal nodes being created more than once (upon reloading lobby)
+* Fixed `onLevelLoaded` ExtendedEvent being called more than once (upon reloading lobby)
+* Fixed `onDaytimeEnemySpawn` and `onNighttimeEnemySpawn` ExtendedEvents not actually working
+* Fixed footsteps erroring out when walking over a separate Terrain than the active one (for moons with more than one Terrain)
+* Fixed moons Terminal page scrolling potentially skipping over moons in a few cases (due to spaces added between moons)
+* Fixed LLL moon bundles not unloading when routing to a moon registered with [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib)
+* Fixed `DaySpeedMultiplier` values above or below 1 influencing the total number of days left in the quota
+  * Credit to [WhiteSpike](https://thunderstore.io/c/lethal-company/p/WhiteSpike) for the [original fix](https://thunderstore.io/c/lethal-company/p/WhiteSpike/Moon_Day_Speed_Multiplier_Patcher)!
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.6.9</summary>**
 
 **<details><summary>General</summary>**

@@ -10,7 +10,7 @@
 **Description**
 --
 
-### **1.6.9 for Lethal Company v80 Has Released!**
+### **1.7.0 for Lethal Company v81 Has Released!**
 
 **LethalLevelLoader** is a custom API to support the manual and dynamic integration of custom levels and dungeons in Lethal Company.  
 Mod Developers can provide LethalLevelLoader with their custom content via code or via automatic AssetBundle detection, and from there LethalLevelLoader will seamlessly load the content into the game.
@@ -40,7 +40,7 @@ Mod Developers can provide LethalLevelLoader with their custom content via code 
 * Custom Enemies (Enemies)
 * Custom StoryLog's
 * Custom Weather Effects (WIP)
-* Custom Footstep Surfaces (WIP)
+* Custom Footstep Surfaces (Terrain only)
 
 **Contributing To LethalLevelLoader**
 --
