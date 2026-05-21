@@ -83,6 +83,11 @@ namespace LethalLevelLoader
         [field: SerializeField] public AudioClip OverrideNightMusic { get; set; }
 
         [field: Space(5)]
+        [field: Header("Entrance Teleport SFX Override Settings")]
+        [field: SerializeField] public AudioClip[] OverrideCreakOpenDoorSFX { get; set; }
+        [field: SerializeField] public AudioClip[] OverrideCreakShutDoorSFX { get; set; }
+
+        [field: Space(5)]
         [field: Header("Terminal Route Override Settings")]
 
         [field: SerializeField] public string OverrideRouteNoun { get; set; } = string.Empty;

@@ -30,7 +30,6 @@ namespace LethalLevelLoader
         [field: SerializeField] public List<GlobalPropCountOverride> GlobalPropCountOverridesList { get; set; } = new List<GlobalPropCountOverride>();
 
         [field: Space(5)]
-
         [field: SerializeField] public bool IsDynamicDungeonSizeRestrictionEnabled { get; set; }
         [field: SerializeField] public Vector2 DynamicDungeonSizeMinMax { get; set; } = new Vector2(1, 1);
         [field: SerializeField][field: Range(0, 1)] public float DynamicDungeonSizeLerpRate { get; set; } = 1f;
@@ -39,6 +38,10 @@ namespace LethalLevelLoader
 
         [field: Tooltip("Lower the kill floor of any Level this Dungeon generates on down to the lowest point of the generation.")]
         [field: SerializeField] public bool IsDynamicOutOfBoundsTriggerEnabled { get; set; }
+
+        [field: Space(5)]
+        [field: SerializeField] public AudioClip[] OverrideCreakOpenDoorSFX { get; set; }
+        [field: SerializeField] public AudioClip[] OverrideCreakShutDoorSFX { get; set; }
 
         [field: Space(5)]
         [field: Tooltip("Overrides vanilla camera Far Plane Clip Distance, The highest value between current Level and Interior will be used.")]

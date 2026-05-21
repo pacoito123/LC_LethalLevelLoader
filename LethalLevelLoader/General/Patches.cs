@@ -1009,6 +1009,106 @@ namespace LethalLevelLoader
             .InstructionEnumeration();
         }
 
+        [HarmonyPatch(typeof(EntranceTeleport), nameof(EntranceTeleport.PlayCreakSFX)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> EntranceTeleportPlayCreakSFX_Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo startOfRoundGetter = typeof(StartOfRound).GetProperty(nameof(StartOfRound.Instance), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
+            FieldInfo creakOpenDoorMetalInfo = typeof(StartOfRound).GetField(nameof(StartOfRound.creakOpenDoorMetal), BindingFlags.Instance | BindingFlags.Public);
+            CodeMatch[] matches = [new(OpCodes.Call, startOfRoundGetter),
+                new(OpCodes.Ldfld, creakOpenDoorMetalInfo), // Match metal open array local variable assignment.
+                new(OpCodes.Stloc_0)];
+            CodeMatcher codeMatcher = new CodeMatcher(instructions).MatchForward(useEnd: true, matches);
+
+            if (codeMatcher.Advance(1).IsInvalid)
+            {
+                DebugHelper.LogError("Could not match first creakOpenDoorMetal local variable assignment.", DebugType.User);
+                return instructions;
+            }
+
+            CodeInstruction nextInstruction = codeMatcher.Instruction; // Save instruction immediately after match.
+            MethodInfo swapOpenDoorSFXInfo = typeof(Patches).GetMethod(nameof(SwapOpenDoorSFX), BindingFlags.Static | BindingFlags.NonPublic);
+            FieldInfo isEntranceToBuildingInfo = typeof(EntranceTeleport).GetField(nameof(EntranceTeleport.isEntranceToBuilding), BindingFlags.Instance | BindingFlags.Public);
+            _ = codeMatcher.SetInstructionAndAdvance(new(OpCodes.Ldloca_S, (sbyte)0)) // Replace instruction to preserve label(s).
+            .InsertAndAdvance(
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, isEntranceToBuildingInfo),
+                new(OpCodes.Call, swapOpenDoorSFXInfo), // Insert call to 'SwapOpenDoorSFX()'.
+                nextInstruction) // Insert previously saved instruction.
+            .MatchForward(useEnd: true, matches);
+
+            if (codeMatcher.Advance(1).IsInvalid)
+            {
+                DebugHelper.LogError("Could not match second creakOpenDoorMetal local variable assignment.", DebugType.User);
+                return instructions;
+            }
+
+            nextInstruction = codeMatcher.Instruction; // Save instruction immediately after match.
+            FieldInfo exitScriptInfo = typeof(EntranceTeleport).GetField(nameof(EntranceTeleport.exitScript), BindingFlags.Instance | BindingFlags.Public);
+            return codeMatcher.SetInstructionAndAdvance(new(OpCodes.Ldloca_S, (sbyte)0)) // Replace instruction to preserve label(s).
+            .Insert(
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldfld, exitScriptInfo),
+                new(OpCodes.Ldfld, isEntranceToBuildingInfo),
+                new(OpCodes.Call, swapOpenDoorSFXInfo), // Insert call to 'SwapOpenDoorSFX()'.
+                nextInstruction) // Insert previously saved instruction.
+            .InstructionEnumeration();
+        }
+
+        private static void SwapOpenDoorSFX(ref AudioClip[] openDoorClips, bool isEntranceToBuilding)
+        {
+            if (isEntranceToBuilding)
+            {
+                ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
+                if (currentLevel == null || currentLevel.ContentType is ContentType.External) return;
+                if (currentLevel.OverrideCreakOpenDoorSFX?.Length > 0)
+                    openDoorClips = currentLevel.OverrideCreakOpenDoorSFX;
+            }
+            else
+            {
+                ExtendedDungeonFlow currentDungeonFlow = DungeonManager.CurrentExtendedDungeonFlow;
+                if (currentDungeonFlow == null || currentDungeonFlow.ContentType is ContentType.External) return;
+                if (currentDungeonFlow.OverrideCreakOpenDoorSFX?.Length > 0)
+                    openDoorClips = currentDungeonFlow.OverrideCreakOpenDoorSFX;
+            }
+        }
+
+        [HarmonyPatch(typeof(EntranceTeleport), nameof(EntranceTeleport.PlayAudioAtTeleportPositions)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> EntranceTeleportPlayAudioAtTeleportPositions_Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo startOfRoundGetter = typeof(StartOfRound).GetProperty(nameof(StartOfRound.Instance), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
+            FieldInfo shutDoorMetalInfo = typeof(StartOfRound).GetField(nameof(StartOfRound.shutDoorMetal), BindingFlags.Instance | BindingFlags.Public);
+            CodeMatcher codeMatcher = new CodeMatcher(instructions).MatchForward(useEnd: true,
+                new(OpCodes.Call, startOfRoundGetter),
+                new(OpCodes.Ldfld, shutDoorMetalInfo), // Match metal shut array local variable assignment.
+                new(OpCodes.Stloc_0));
+
+            if (codeMatcher.Advance(1).IsInvalid)
+            {
+                DebugHelper.LogError("Could not match shutDoorMetal local variable assignment.", DebugType.User);
+                return instructions;
+            }
+
+            CodeInstruction nextInstruction = codeMatcher.Instruction; // Save instruction immediately after match.
+            MethodInfo swapShutDoorSFXInfo = typeof(Patches).GetMethod(nameof(SwapShutDoorSFX), BindingFlags.Static | BindingFlags.NonPublic);
+            return codeMatcher.SetInstructionAndAdvance(new(OpCodes.Ldloca_S, (sbyte)0)) // Replace instruction to preserve label(s).
+            .Insert(
+                new(OpCodes.Ldloca_S, (sbyte)1),
+                new(OpCodes.Call, swapShutDoorSFXInfo), // Insert call to 'SwapShutDoorSFX()'.
+                nextInstruction) // Insert previously saved instruction.
+            .InstructionEnumeration();
+        }
+
+        private static void SwapShutDoorSFX(ref AudioClip[] shutDoorClipsInside, ref AudioClip[] shutDoorClipsOutside)
+        {
+            ExtendedDungeonFlow currentDungeonFlow = DungeonManager.CurrentExtendedDungeonFlow;
+            if (currentDungeonFlow != null && currentDungeonFlow.ContentType is not ContentType.External && currentDungeonFlow.OverrideCreakShutDoorSFX?.Length > 0)
+                shutDoorClipsInside = currentDungeonFlow.OverrideCreakShutDoorSFX;
+
+            ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
+            if (currentLevel != null && currentLevel.ContentType is not ContentType.External && currentLevel.OverrideCreakShutDoorSFX?.Length > 0)
+                shutDoorClipsOutside = currentLevel.OverrideCreakShutDoorSFX;
+        }
+
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnClientConnect)), HarmonyPostfix, HarmonyPriority(priority)]
         internal static void StartOfRoundOnClientConnect_Postfix()
         {
@@ -1028,7 +1128,6 @@ namespace LethalLevelLoader
             if (clientId != currentClientId)
                 NetworkBundleManager.Instance.OnClientsChangedRefresh();
         }
-
 
         internal const string disabledText = "[ At least one player is loading custom moon! ]";
         internal const string routingText = "Routing...";
