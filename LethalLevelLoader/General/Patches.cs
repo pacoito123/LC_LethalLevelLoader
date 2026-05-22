@@ -425,7 +425,7 @@ namespace LethalLevelLoader
                     if (extendedLevel.SelectableLevel.name == SaveManager.currentSaveFile.CurrentLevelName)
                     {
                         DebugHelper.Log("Loading Previously Saved SelectableLevel: " + extendedLevel.SelectableLevel.PlanetName, DebugType.User);
-                        levelID = Array.FindIndex(StartOfRound.levels, level => extendedLevel.SelectableLevel);
+                        levelID = Array.FindIndex(StartOfRound.levels, level => level == extendedLevel.SelectableLevel);
                         hasInitiallyChangedLevel = true;
                         return;
                     }

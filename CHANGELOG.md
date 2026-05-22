@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.1</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed route always being set back to Experimentation when loading a save
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.0</summary>**
 
 **<details><summary>Features</summary>**
