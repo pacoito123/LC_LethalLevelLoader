@@ -146,12 +146,15 @@ namespace LethalLevelLoader
             if (removedMapHazards > 0)
                 DebugHelper.LogWarning($"Removed '{removedMapHazards}' missing or empty IndoorMapHazard spawns in ExtendedDungeonFlow: {name}", DebugType.User);
 
-            if (DungeonFlow == null)
-                return ((false, "DungeonFlow Was Null"));
-            if (DungeonFlow.Nodes == null || DungeonFlow.Nodes.Count == 0)
-                return ((false, "DungeonFlow Nodes List Was Null Or Empty"));
-            if (DungeonFlow.Lines == null || DungeonFlow.Lines.Count == 0)
-                return ((false, "DungeonFlow Lines List Was Null Or Empty"));
+            if (ContentType is ContentType.Custom)
+            {
+                if (DungeonFlow == null)
+                    return ((false, "DungeonFlow Was Null"));
+                if (DungeonFlow.Nodes == null || DungeonFlow.Nodes.Count == 0)
+                    return ((false, "DungeonFlow Nodes List Was Null Or Empty"));
+                if (DungeonFlow.Lines == null || DungeonFlow.Lines.Count == 0)
+                    return ((false, "DungeonFlow Lines List Was Null Or Empty"));
+            }
 
             for (int i = 0; i < AllTiles.Length; i++) // TODO: More thorough/comprehensive Tile and DungeonFlow validation.
             {

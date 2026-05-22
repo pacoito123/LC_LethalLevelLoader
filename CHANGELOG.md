@@ -5,6 +5,7 @@
 
 **<details><summary>Fixes</summary>**
 
+* Fixed non-LLL interiors being checked for validation and potentially failing it in some cases
 * Fixed route always being set back to Experimentation when loading a save
 
 </details>
