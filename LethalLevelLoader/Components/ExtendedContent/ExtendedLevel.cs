@@ -210,6 +210,9 @@ namespace LethalLevelLoader
                 }
             }
 
+            SelectableLevel.spawnableMapObjects ??= [];
+            SelectableLevel.indoorMapHazards ??= [];
+
             if (ContentType == ContentType.Vanilla)
                 GetVanillaInfoNode();
             SetExtendedDungeonFlowMatches();

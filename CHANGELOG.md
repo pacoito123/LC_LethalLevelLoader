@@ -5,6 +5,7 @@
 
 **<details><summary>Fixes</summary>**
 
+* Fixed some older moons causing hazards registered by LethalLib to error out when being added to it
 * Fixed non-LLL interiors being checked for validation and potentially failing it in some cases
 * Fixed route always being set back to Experimentation when loading a save
 
