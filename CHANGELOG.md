@@ -3,6 +3,12 @@
 
 **<details><summary>Version 1.7.2</summary>**
 
+**<details><summary>Features</summary>**
+
+* Made `UseTerrainFootsteps` enable itself automatically for the current level, if a FootstepSurfaceHelper component is present
+
+</details>
+
 **<details><summary>Fixes</summary>**
 
 * Fixed weights for vanilla interiors not being properly set to their intended rarity

@@ -10,7 +10,7 @@ namespace LethalLevelLoader
         public TerrainData AssignedTerrainData { get; private set; }
 
         [field: Header("ExtendedFootstepSurface Helper")]
-        [field: Tooltip("List of Terrain layers and their assigned footstep surface. NOTE: Make sure to toggle 'UseTerrainFootsteps' in ExtendedLevel for these to have any effect!")]
+        [field: Tooltip("List of Terrain layers and their assigned footstep surface.")]
         [field: SerializeField] public List<TerrainLayerWithSurface> AssignedLayerSurfaces { get; private set; } = new List<TerrainLayerWithSurface>(8);
 
         public void Reset()
@@ -52,6 +52,12 @@ namespace LethalLevelLoader
 
             ExtendedLevel extendedLevel = LevelManager.CurrentExtendedLevel;
             if (extendedLevel == null || extendedLevel.ContentType is ContentType.External) return;
+
+            if (!extendedLevel.UseTerrainFootsteps) // Forcibly enable 'ExtendedLevel.UseTerrainFootsteps', if this component exists.
+            {
+                extendedLevel.UseTerrainFootsteps = true;
+                DebugHelper.LogWarning($"Enabled 'UseTerrainFootsteps' for ExtendedLevel {extendedLevel.name} due to the presence of a FootstepSurfaceHelper!", DebugType.Developer);
+            }
 
             ExtendedFootstepSurface[] footstepSurfaces = new ExtendedFootstepSurface[8];
             for (int i = 0; i < AssignedTerrainData.terrainLayers?.Length; i++)
