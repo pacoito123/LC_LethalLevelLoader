@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.2</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed weights for vanilla interiors not being properly set to their intended rarity
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.1</summary>**
 
 **<details><summary>Fixes</summary>**

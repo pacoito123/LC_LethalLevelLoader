@@ -311,7 +311,7 @@ namespace LethalLevelLoader
                     ExtendedDungeonFlow extendedDungeonFlow = PatchedContent.ExtendedDungeonFlows.Find(extendedDungeonFlow => extendedDungeonFlow.DungeonID == dungeonWithRarity.id);
                     if (extendedDungeonFlow != null)
                     {
-                        extendedDungeonFlow.LevelMatchingProperties.planetNames.Add(new(NumberlessPlanetName, dungeonWithRarity.id));
+                        extendedDungeonFlow.LevelMatchingProperties.planetNames.Add(new(NumberlessPlanetName, dungeonWithRarity.rarity));
                         continue;
                     }
                 }
