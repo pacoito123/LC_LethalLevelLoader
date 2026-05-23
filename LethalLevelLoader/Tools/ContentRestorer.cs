@@ -48,6 +48,7 @@ namespace LethalLevelLoader.Tools
                 DebugHelper.LogError("Tried To Restore Vanilla Assets For Null ExtendedLevel! Returning!", DebugType.User);
                 return;
             }
+            if (extendedLevel.ContentType is ContentType.External) return; // Skip any externally-registered moons.
             if (extendedLevel.SelectableLevel == null)
             {
                 DebugHelper.LogError("Tried To Restore Vanilla Assets For ExtendedLevel " + extendedLevel.NumberlessPlanetName + " But SelectableLevel Was Null! Returning!", DebugType.User);

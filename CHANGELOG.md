@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.3</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed LLL unintentionally restoring vanilla references for non-LLL moons, causing them to be destroyed
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.2</summary>**
 
 **<details><summary>Features</summary>**
