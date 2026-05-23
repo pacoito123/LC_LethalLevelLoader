@@ -6,6 +6,7 @@
 **<details><summary>Fixes</summary>**
 
 * Fixed weights for vanilla interiors not being properly set to their intended rarity
+* Fixed IndoorMapHazardTypes with empty objects causing them to not be properly restored (fields were assumed to be left blank)
 
 </details>
 

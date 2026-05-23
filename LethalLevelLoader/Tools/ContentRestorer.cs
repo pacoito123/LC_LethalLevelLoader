@@ -124,12 +124,12 @@ namespace LethalLevelLoader.Tools
                 List<IndoorMapHazard> indoorMapHazards = [.. extendedLevel.SelectableLevel.indoorMapHazards];
                 foreach (IndoorMapHazard indoorMapHazard in indoorMapHazards)
                 {
-                    if (indoorMapHazard == null || indoorMapHazard.hazardType == null || indoorMapHazard.hazardType.prefabToSpawn != null) continue;
+                    if (indoorMapHazard == null || indoorMapHazard.hazardType == null || (indoorMapHazard.hazardType.prefabToSpawn != null && indoorMapHazard.hazardType.prefabToSpawn.TryGetComponent(out NetworkObject _))) continue;
                     IndoorMapHazardType vanillaHazard = OriginalContent.IndoorMapHazards.Find(mapHazard => string.Equals(mapHazard.name, indoorMapHazard.hazardType.name, StringComparison.Ordinal));
                     if (vanillaHazard != null)
                         indoorMapHazard.hazardType = RestoreAsset(indoorMapHazard.hazardType, vanillaHazard);
                 }
-                int removedMapHazards = indoorMapHazards.RemoveAll(mapHazard => mapHazard == null || mapHazard.hazardType == null || mapHazard.hazardType.prefabToSpawn == null);
+                int removedMapHazards = indoorMapHazards.RemoveAll(mapHazard => mapHazard == null || mapHazard.hazardType == null || mapHazard.hazardType.prefabToSpawn == null || !mapHazard.hazardType.prefabToSpawn.TryGetComponent(out NetworkObject _));
                 if (removedMapHazards > 0)
                 {
                     extendedLevel.SelectableLevel.indoorMapHazards = [.. indoorMapHazards];
