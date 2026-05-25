@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -15,7 +13,7 @@ namespace LethalLevelLoader
 
         public static new LevelMatchingProperties Create(ExtendedContent extendedContent)
         {
-            LevelMatchingProperties levelMatchingProperties = ScriptableObject.CreateInstance<LevelMatchingProperties>();
+            LevelMatchingProperties levelMatchingProperties = CreateInstance<LevelMatchingProperties>();
             levelMatchingProperties.name = extendedContent.name + "LevelMatchingProperties";
             return (levelMatchingProperties);
         }

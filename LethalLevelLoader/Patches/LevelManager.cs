@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace LethalLevelLoader
 {
-    public class LevelManager
+    public static class LevelManager
     {
         public static ExtendedLevel CurrentExtendedLevel
         {
@@ -27,32 +26,36 @@ namespace LethalLevelLoader
 
         public static int invalidSaveLevelID = -1;
 
-        public static Dictionary<string, int> dynamicRiskLevelDictionary = new Dictionary<string, int>()
+        public static readonly Dictionary<string, int> dynamicRiskLevelDictionary = new Dictionary<string, int>()
         {
-            {"D-", 0},
-            {"D", 0},
-            {"D+", 0},
-            {"C-", 0},
-            {"C", 0},
-            {"C+", 0},
-            {"B-", 0},
-            {"B", 0},
-            {"B+", 0},
-            {"A-", 0},
-            {"A", 0},
-            {"A+", 0},
-            {"S-", 0},
-            {"S", 0},
-            {"S+", 0},
-            {"S++", 0 },
-            {"S+++", 0}
+            {"D-",  0},
+            {"D",   0},
+            {"D+",  0},
+            {"C-",  0},
+            {"C",   0},
+            {"C+",  0},
+            {"B-",  0},
+            {"B",   0},
+            {"B+",  0},
+            {"A-",  0},
+            {"A",   0},
+            {"A+",  0},
+            {"S-",  0},
+            {"S",   0},
+            {"S+",  0},
+            {"S++", 0},
+            {"S+++",0}
         };
 
         internal static void PatchVanillaLevelLists()
         {
             // Filter 'External' moons from vanilla lists to avoid duplicate entries (assumes they are being added in some other way).
-            Patches.StartOfRound.levels = PatchedContent.ExtendedLevels.Where(level => level.ContentType != ContentType.External).Select(level => level.SelectableLevel).ToArray();
-            TerminalManager.Terminal.moonsCatalogueList = [.. Patches.StartOfRound.levels];
+            List<SelectableLevel> selectableLevels = new(PatchedContent.ExtendedLevels.Count);
+            foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
+                if (extendedLevel.ContentType is not ContentType.External)
+                    selectableLevels.Add(extendedLevel.SelectableLevel);
+            Patches.StartOfRound.levels = [.. selectableLevels];
+            TerminalManager.Terminal.moonsCatalogueList = [.. selectableLevels];
         }
 
         internal static void ObtainShipAnimatorClips(StartOfRound startOfRound)
@@ -67,9 +70,9 @@ namespace LethalLevelLoader
 
             for (int i = 0; i < animatorController.animationClips.Length; i++)
             {
-                if (animatorController.animationClips[i].name == "HangarShipLandB")
+                if (string.Equals(animatorController.animationClips[i].name, "HangarShipLandB", StringComparison.Ordinal))
                     LevelLoader.defaultShipFlyToMoonClip = animatorController.animationClips[i];
-                else if (animatorController.animationClips[i].name == "ShipLeave")
+                if (string.Equals(animatorController.animationClips[i].name, "ShipLeave", StringComparison.Ordinal))
                     LevelLoader.defaultShipFlyFromMoonClip = animatorController.animationClips[i];
             }
         }
@@ -101,21 +104,10 @@ namespace LethalLevelLoader
             }
         }
 
-        public static bool TryGetExtendedLevel(SelectableLevel selectableLevel, out ExtendedLevel returnExtendedLevel, ContentType levelType = ContentType.Any)
-        {
-            return (PatchedContent.TryGetExtendedContent(selectableLevel, out returnExtendedLevel));
-        }
+        public static bool TryGetExtendedLevel(SelectableLevel selectableLevel, out ExtendedLevel returnExtendedLevel, ContentType levelType = ContentType.Any) =>
+            PatchedContent.TryGetExtendedContent(selectableLevel, out returnExtendedLevel) && (levelType is ContentType.Any || levelType == returnExtendedLevel.ContentType);
 
-        public static ExtendedLevel GetExtendedLevel(SelectableLevel selectableLevel)
-        {
-            ExtendedLevel returnExtendedLevel = null;
-
-            foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
-                if (extendedLevel.SelectableLevel == selectableLevel)
-                    returnExtendedLevel = extendedLevel;
-
-            return (returnExtendedLevel);
-        }
+        public static ExtendedLevel GetExtendedLevel(SelectableLevel selectableLevel) => PatchedContent.ExtendedLevels.Find(level => level.SelectableLevel == selectableLevel);
 
         public static void PopulateDynamicRiskLevelDictionary()
         {
@@ -123,83 +115,86 @@ namespace LethalLevelLoader
 
             foreach (ExtendedLevel vanillaLevel in PatchedContent.VanillaExtendedLevels)
             {
-                DebugHelper.Log("Risk Level Of " + vanillaLevel.NumberlessPlanetName + " Is: " + vanillaLevel.SelectableLevel.riskLevel, DebugType.Developer);
-                if (!vanillaLevel.SelectableLevel.riskLevel.Contains("Safe") && !string.IsNullOrEmpty(vanillaLevel.SelectableLevel.riskLevel))
+                DebugHelper.Log($"Risk Level Of {vanillaLevel.NumberlessPlanetName} Is: {vanillaLevel.SelectableLevel.riskLevel}", DebugType.Developer);
+                if (!string.IsNullOrEmpty(vanillaLevel.SelectableLevel.riskLevel) && !vanillaLevel.SelectableLevel.riskLevel.Contains("Safe", StringComparison.Ordinal))
                 {
                     if (vanillaRiskLevelDictionary.TryGetValue(vanillaLevel.SelectableLevel.riskLevel, out List<int> dynamicDifficultyRatingList))
                         dynamicDifficultyRatingList.Add(vanillaLevel.CalculatedDifficultyRating);
                     else
-                        vanillaRiskLevelDictionary.Add(vanillaLevel.SelectableLevel.riskLevel, new List<int>() { vanillaLevel.CalculatedDifficultyRating });
+                        vanillaRiskLevelDictionary.Add(vanillaLevel.SelectableLevel.riskLevel, [vanillaLevel.CalculatedDifficultyRating]);
                 }
             }
 
             foreach (KeyValuePair<string, List<int>> vanillaRiskLevel in vanillaRiskLevelDictionary)
             {
-                string debugString = "Vanilla Risk Level Group (" + vanillaRiskLevel.Key + "): ";
+                string debugString = $"Vanilla Risk Level Group ({vanillaRiskLevel.Key}): ";
                 if (vanillaRiskLevel.Value != null)
                 {
-                    debugString += " Average - " + vanillaRiskLevel.Value.Average() + ", Values - ";
+                    int riskLevelSum = 0;
+                    foreach (int riskLevel in vanillaRiskLevel.Value)
+                        riskLevelSum += riskLevel;
+
+                    debugString += $" Average - {riskLevelSum / (float)vanillaRiskLevel.Value.Count}, Values - ";
                     foreach (int calculatedDifficulty in vanillaRiskLevel.Value)
-                        debugString += calculatedDifficulty.ToString() + ", ";
+                        debugString += $"{calculatedDifficulty}, ";
                 }
                 DebugHelper.Log(debugString, DebugType.Developer);
             }
 
             foreach (KeyValuePair<string, int> dynamicRiskLevelPair in new Dictionary<string, int>(dynamicRiskLevelDictionary))
                 foreach (KeyValuePair<string, List<int>> vanillaRiskLevel in vanillaRiskLevelDictionary)
-                    if (dynamicRiskLevelPair.Key.Equals(vanillaRiskLevel.Key))
+                    if (dynamicRiskLevelPair.Key.Equals(vanillaRiskLevel.Key, StringComparison.Ordinal))
                     {
-                        DebugHelper.Log("Setting RiskLevel " + vanillaRiskLevel.Key + " To " + (int)vanillaRiskLevel.Value.Average(), DebugType.Developer);
-                        dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key] = Mathf.RoundToInt((float)vanillaRiskLevel.Value.Average());
+                        int riskLevelSum = 0;
+                        foreach (int riskLevel in vanillaRiskLevel.Value)
+                            riskLevelSum += riskLevel;
+                        int average = Mathf.RoundToInt((float)riskLevelSum / vanillaRiskLevel.Value.Count);
+
+                        DebugHelper.Log($"Setting RiskLevel {vanillaRiskLevel.Key} To {average}", DebugType.Developer);
+                        dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key] = average;
                     }
 
             DebugHelper.Log("Starting To Assign - and + Risk Levels", DebugType.Developer);
-            int counter = 0;
-            foreach (KeyValuePair<string, int> dynamicRiskLevelPair in new Dictionary<string, int>(dynamicRiskLevelDictionary))
+            string[] keys = [.. dynamicRiskLevelDictionary.Keys];
+            for (int i = 0; i < keys.Length; i++)
             {
                 string previousFullRiskLevel = string.Empty;
-                string currentFullRiskLevel = string.Empty;
                 string nextFullRiskLevel = string.Empty;
-                DebugHelper.Log("Trying To Assign Value To Risk Level: " + dynamicRiskLevelPair.Key, DebugType.Developer);
+                string currentFullRiskLevel;
 
-                if (dynamicRiskLevelPair.Key.Contains("-"))
+                string key = keys[i];
+                if (string.IsNullOrEmpty(key)) continue;
+                DebugHelper.Log($"Trying To Assign Value To Risk Level: {key}", DebugType.Developer);
+
+                if (key.Contains('-', StringComparison.Ordinal))
                 {
-                    if (counter != 0)
-                        previousFullRiskLevel = dynamicRiskLevelDictionary.Keys.ToList()[counter - 2];
-                    currentFullRiskLevel = dynamicRiskLevelDictionary.Keys.ToList()[counter + 1];
+                    if (i > 0)
+                        previousFullRiskLevel = keys[i - 1];
+                    currentFullRiskLevel = keys[i];
 
-                    if (counter == 0)
-                        dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key] = (dynamicRiskLevelDictionary[currentFullRiskLevel] / 2);
-                    else
-                        dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key] = Mathf.RoundToInt(Mathf.Lerp(dynamicRiskLevelDictionary[previousFullRiskLevel], dynamicRiskLevelDictionary[currentFullRiskLevel], 0.66f));
+                    dynamicRiskLevelDictionary[key] = Mathf.RoundToInt((i == 0) ? (dynamicRiskLevelDictionary[currentFullRiskLevel] / 2f)
+                        : (Mathf.Lerp(dynamicRiskLevelDictionary[previousFullRiskLevel], dynamicRiskLevelDictionary[currentFullRiskLevel], 0.66f)));
 
                 }
-                else if (dynamicRiskLevelPair.Key.Contains("+") && !dynamicRiskLevelPair.Key.Equals("S+"))
+                else if (key.Contains('+', StringComparison.Ordinal) && !key.Equals("S+", StringComparison.Ordinal))
                 {
-                    currentFullRiskLevel = dynamicRiskLevelDictionary.Keys.ToList()[counter - 1];
-                    if (!dynamicRiskLevelPair.Key.Contains("S"))
-                        nextFullRiskLevel = dynamicRiskLevelDictionary.Keys.ToList()[counter + 2];
+                    currentFullRiskLevel = keys[i - 1];
+                    if (!key.Contains('S', StringComparison.Ordinal))
+                        nextFullRiskLevel = keys[i + 1];
 
-                    if (dynamicRiskLevelPair.Key.Equals("S++"))
-                        dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key] = (dynamicRiskLevelDictionary[currentFullRiskLevel] * 2);
-                    else if (dynamicRiskLevelPair.Key.Equals("S+++"))
-                        dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key] = (dynamicRiskLevelDictionary[currentFullRiskLevel] * 3);
-                    else
-                        dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key] = Mathf.RoundToInt(Mathf.Lerp(dynamicRiskLevelDictionary[currentFullRiskLevel], dynamicRiskLevelDictionary[nextFullRiskLevel], 0.33f));
+                    int pluses = key.Split('+', StringSplitOptions.None).Length - 1;
+                    dynamicRiskLevelDictionary[key] = (pluses > 1) ? (dynamicRiskLevelDictionary[currentFullRiskLevel] * pluses)
+                        : (Mathf.RoundToInt(Mathf.Lerp(dynamicRiskLevelDictionary[currentFullRiskLevel], dynamicRiskLevelDictionary[nextFullRiskLevel], 0.33f)));
                 }
 
-                DebugHelper.Log("Risk Level: " + dynamicRiskLevelPair.Key + " Was Assigned Calculated Difficulty Of: " + dynamicRiskLevelDictionary[dynamicRiskLevelPair.Key].ToString(), DebugType.Developer);
-                counter++;
+                DebugHelper.Log($"Risk Level: {key} Was Assigned Calculated Difficulty Of: {dynamicRiskLevelDictionary[key]}", DebugType.Developer);
             }
-
-            foreach (KeyValuePair<string, int> dynamicRiskLevelPair in new Dictionary<string, int>(dynamicRiskLevelDictionary))
-                DebugHelper.Log("Dynamic Risk Level Pair: " + dynamicRiskLevelPair.Key + " (" + dynamicRiskLevelPair.Value + ")", DebugType.Developer);
         }
 
         public static void AssignCalculatedRiskLevels()
         {
             Dictionary<int, string> assignmentRiskLevelDictionary = new Dictionary<int, string>();
-            List<int> orderedCalculatedDifficultyList = new List<int>(dynamicRiskLevelDictionary.Values);
+            List<int> orderedCalculatedDifficultyList = [.. dynamicRiskLevelDictionary.Values];
             orderedCalculatedDifficultyList.Sort();
 
             foreach (int calculatedDifficultyValue in orderedCalculatedDifficultyList)
@@ -208,23 +203,24 @@ namespace LethalLevelLoader
                         assignmentRiskLevelDictionary.Add(calculatedDifficultyValue, calculatedRiskLevel.Key);
 
             foreach (KeyValuePair<int, string> calculatedRiskLevel in assignmentRiskLevelDictionary)
-                DebugHelper.Log("Ordered Calculated Risk Level: (" + calculatedRiskLevel.Value + ") - " + calculatedRiskLevel.Key, DebugType.Developer);
+                DebugHelper.Log($"Ordered Calculated Risk Level: ({calculatedRiskLevel.Value}) - {calculatedRiskLevel.Key}", DebugType.Developer);
 
             foreach (ExtendedLevel customLevel in PatchedContent.CustomExtendedLevels)
             {
                 if (customLevel.OverrideDynamicRiskLevelAssignment == false)
                 {
                     int customLevelCalculatedDifficultyRating = customLevel.CalculatedDifficultyRating;
-                    int closestCalculatedRiskLevelRating = orderedCalculatedDifficultyList[0];
-
-                    closestCalculatedRiskLevelRating = orderedCalculatedDifficultyList.OrderBy(item => Math.Abs(customLevelCalculatedDifficultyRating - item)).First();
-
-                    if (closestCalculatedRiskLevelRating != 0)
+                    int closestCalculatedRiskLevelRating = customLevelCalculatedDifficultyRating;
+                    foreach (int rating in orderedCalculatedDifficultyList)
+                        if (Math.Abs(customLevelCalculatedDifficultyRating - rating) < closestCalculatedRiskLevelRating)
+                            closestCalculatedRiskLevelRating = rating;
+                    if (closestCalculatedRiskLevelRating > 0)
                         customLevel.SelectableLevel.riskLevel = assignmentRiskLevelDictionary[closestCalculatedRiskLevelRating];
                 }
             }
 
-            List<ExtendedLevel> extendedLevelsOrdered = new List<ExtendedLevel>(PatchedContent.ExtendedLevels).OrderBy(o => o.CalculatedDifficultyRating).ToList();
+            List<ExtendedLevel> extendedLevelsOrdered = [.. PatchedContent.ExtendedLevels];
+            extendedLevelsOrdered.Sort(new ExtendedLevel.ExtendedLevelDifficultyComparer());
 
             foreach (ExtendedLevel extendedLevel in extendedLevelsOrdered)
                 DebugHelper.Log(extendedLevel.NumberlessPlanetName + " (" + extendedLevel.SelectableLevel.riskLevel + ") " + " (" + extendedLevel.CalculatedDifficultyRating + ")", DebugType.Developer);
@@ -242,8 +238,8 @@ namespace LethalLevelLoader
             DayHistory newDayHistory = new DayHistory();
             daysTotal++;
 
-            newDayHistory.allViableOptions = DungeonManager.GetValidExtendedDungeonFlows(CurrentExtendedLevel, false).Select(e => e.extendedDungeonFlow).ToList();
-            newDayHistory.extendedLevel = LevelManager.CurrentExtendedLevel;
+            newDayHistory.allViableOptions = DungeonManager.GetValidExtendedDungeonFlows(CurrentExtendedLevel, false).ConvertAll(i => i.extendedDungeonFlow);
+            newDayHistory.extendedLevel = CurrentExtendedLevel;
             newDayHistory.extendedDungeonFlow = DungeonManager.CurrentExtendedDungeonFlow;
             newDayHistory.day = daysTotal;
             newDayHistory.quota = TimeOfDay.Instance.timesFulfilledQuota;
@@ -261,10 +257,6 @@ namespace LethalLevelLoader
             debugString += "Quota: " + newDayHistory.quota + " , Day: " + newDayHistory.day + " , Weather: " + newDayHistory.weatherEffect.ToString();
 
             DebugHelper.Log(debugString, DebugType.User);
-
-            if (dayHistoryList == null)
-                dayHistoryList = new List<DayHistory>();
-
             dayHistoryList.Add(newDayHistory);
         }
 
@@ -294,17 +286,23 @@ namespace LethalLevelLoader
             debugString += "Scrap Value: " + scrapValue + ", ";
 
             int enemySpawnValue = (extendedLevel.SelectableLevel.maxEnemyPowerCount + extendedLevel.SelectableLevel.maxOutsideEnemyPowerCount + extendedLevel.SelectableLevel.maxDaytimeEnemyPowerCount) * 15;
-            enemySpawnValue = enemySpawnValue * 2;
+            enemySpawnValue *= 2;
             returnRating += enemySpawnValue;
             debugString += "Enemy Spawn Value: " + enemySpawnValue + ", ";
 
-            float enemyValue = 0;
-            foreach (SpawnableEnemyWithRarity spawnableEnemy in extendedLevel.SelectableLevel.Enemies.Concat(extendedLevel.SelectableLevel.OutsideEnemies).Concat(extendedLevel.SelectableLevel.DaytimeEnemies))
+            static float sumEnemyValues(List<SpawnableEnemyWithRarity> enemyList)
             {
-                if (spawnableEnemy.rarity != 0 && spawnableEnemy.enemyType != null)
-                    if ((spawnableEnemy.rarity / 10) != 0)
-                        enemyValue += (spawnableEnemy.enemyType.PowerLevel * 100) / (spawnableEnemy.rarity / 10);
+                float enemyValue = 0;
+                foreach (SpawnableEnemyWithRarity enemyWithRarity in enemyList)
+                    if (enemyWithRarity.rarity > 0 && enemyWithRarity.enemyType != null)
+                        if (enemyWithRarity.rarity / 10 != 0)
+                            enemyValue += (enemyWithRarity.enemyType.PowerLevel * 100) / (enemyWithRarity.rarity / 10);
+                return enemyValue;
             }
+            float enemyValue = sumEnemyValues(extendedLevel.SelectableLevel.Enemies);
+            enemyValue += sumEnemyValues(extendedLevel.SelectableLevel.OutsideEnemies);
+            enemyValue += sumEnemyValues(extendedLevel.SelectableLevel.DaytimeEnemies);
+
             returnRating += Mathf.RoundToInt(enemyValue);
             debugString += "Enemy Value: " + enemyValue + ", ";
 

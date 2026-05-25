@@ -102,7 +102,7 @@ namespace LethalLevelLoader.Compatibility
         {
             string LLLFormatString = string.Empty;
 
-            foreach (string word in dawnFormatString.Split('_', System.StringSplitOptions.RemoveEmptyEntries))
+            foreach (string word in dawnFormatString.Split('_', StringSplitOptions.RemoveEmptyEntries))
             {
                 LLLFormatString += char.ToUpperInvariant(word[0]) + word.Substring(1);
             }

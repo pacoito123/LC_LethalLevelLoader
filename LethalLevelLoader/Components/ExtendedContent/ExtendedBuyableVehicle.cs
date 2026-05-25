@@ -18,7 +18,7 @@ namespace LethalLevelLoader
 
         internal static ExtendedBuyableVehicle Create(BuyableVehicle newBuyableVehicle)
         {
-            ExtendedBuyableVehicle newExtendedBuyableVehicle = ScriptableObject.CreateInstance<ExtendedBuyableVehicle>();
+            ExtendedBuyableVehicle newExtendedBuyableVehicle = CreateInstance<ExtendedBuyableVehicle>();
             newExtendedBuyableVehicle.name = newBuyableVehicle.vehiclePrefab.name;
             newExtendedBuyableVehicle.BuyableVehicle = newBuyableVehicle;
 

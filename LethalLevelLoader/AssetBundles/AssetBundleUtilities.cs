@@ -23,7 +23,7 @@ namespace LethalLevelLoader.AssetBundles
 
         public static string GetStopWatchTime(Stopwatch watch)
         {
-            return (watch.Elapsed.TotalSeconds.ToString("F2") + "s");
+            return ($"{watch.Elapsed.TotalSeconds:0.##}s");
         }
 
         //This is seperated all the way out here because the only LC specific part about the core of this system
@@ -92,7 +92,7 @@ namespace LethalLevelLoader.AssetBundles
             return (new string(chars));
         }
 
-        //Awful fix later
+        /* //Awful fix later
         internal static string GetLoadingPercentage(AssetBundleGroup group) => GetLoadingPercentage(group.ActiveProgress);
         internal static string GetLoadingPercentage(AssetBundleInfo info) => GetLoadingPercentage(info.ActiveProgress);
         internal static string GetLoadingPercentage(float progress)
@@ -105,6 +105,6 @@ namespace LethalLevelLoader.AssetBundles
             if (loadingProgressText == "00")
                 loadingProgressText = "000";
             return (loadingProgressText + "%");
-        }
+        } */
     }
 }

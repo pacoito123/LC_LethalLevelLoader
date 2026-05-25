@@ -8,17 +8,15 @@ using UnityEngine;
 
 namespace LethalLevelLoader
 {
-    public class TerminalManager
+    public static class TerminalManager
     {
-        private static Terminal _terminal;
         internal static Terminal Terminal
         {
             get
             {
-                if (_terminal == null)
-                    _terminal = UnityEngine.Object.FindAnyObjectByType<Terminal>(FindObjectsInactive.Exclude);
-
-                return _terminal;
+                if (field == null)
+                    field = UnityEngine.Object.FindAnyObjectByType<Terminal>(FindObjectsInactive.Exclude);
+                return field;
             }
         }
 

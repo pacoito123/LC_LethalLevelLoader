@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace LethalLevelLoader
 {
-    internal class NetworkBundleManager : NetworkBehaviour
+    internal sealed class NetworkBundleManager : NetworkBehaviour
     {
         public static GameObject networkingManagerPrefab;
         private static NetworkBundleManager _instance;
@@ -20,7 +20,7 @@ namespace LethalLevelLoader
                     DebugHelper.LogError("NetworkBundleManager Could Not Be Found! Returning Null!", DebugType.User);
                 return _instance;
             }
-            set { _instance = value; }
+            set => _instance = value;
         }
         public static NetworkManager networkManager;
 

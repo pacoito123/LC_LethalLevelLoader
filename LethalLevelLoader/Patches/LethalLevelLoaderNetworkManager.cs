@@ -10,7 +10,7 @@ using LethalLevelLoader.Tools;
 
 namespace LethalLevelLoader
 {
-    public class LethalLevelLoaderNetworkManager : NetworkBehaviour
+    public sealed class LethalLevelLoaderNetworkManager : NetworkBehaviour
     {
         public static GameObject networkingManagerPrefab;
         private static LethalLevelLoaderNetworkManager _instance;
@@ -24,11 +24,11 @@ namespace LethalLevelLoader
                     DebugHelper.LogError("LethalLevelLoaderNetworkManager Could Not Be Found! Returning Null!", DebugType.User);
                 return _instance;
             }
-            set { _instance = value; }
+            set => _instance = value;
         }
         public static NetworkManager networkManager;
 
-        private static List<GameObject> queuedNetworkPrefabs = new List<GameObject>();
+        private static readonly List<GameObject> queuedNetworkPrefabs = new List<GameObject>();
         public static bool networkHasStarted;
 
         public override void OnNetworkSpawn()
@@ -194,7 +194,7 @@ namespace LethalLevelLoader
             networkObject.DontDestroyWithOwner = true;
             networkObject.SceneMigrationSynchronization = true;
             networkObject.DestroyWithScene = true;
-            GameObject.DontDestroyOnLoad(newPrefab);
+            DontDestroyOnLoad(newPrefab);
 
             NetworkManager.Singleton.AddNetworkPrefab(newPrefab);
 

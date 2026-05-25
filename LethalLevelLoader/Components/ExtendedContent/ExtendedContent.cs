@@ -64,21 +64,25 @@ namespace LethalLevelLoader
             }
             return (false);
         }
+
+        internal sealed class ExtendedContentComparer : IComparer<ExtendedContent>
+        {
+            public int Compare(ExtendedContent a, ExtendedContent b) => a.name.CompareTo(b.name, StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     [Serializable]
-    public class StringWithRarity
+    public class StringWithRarity(string newName, int newRarity)
     {
         [SerializeField]
-        private string _name;
+        private string _name = newName;
 
         [SerializeField]
         [Range(0, 300)]
-        private int _rarity;
+        private int _rarity = newRarity;
 
-        [HideInInspector] public string Name { get { return (_name); } set { _name = value; } }
-        [HideInInspector] public int Rarity { get { return (_rarity); } set { _rarity = value; } }
-        [HideInInspector] public StringWithRarity(string newName, int newRarity) { _name = newName; _rarity = newRarity; }
+        [HideInInspector] public string Name { get => (_name); set => _name = value; }
+        [HideInInspector] public int Rarity { get => (_rarity); set => _rarity = value; }
     }
 
     [Serializable]
@@ -87,9 +91,9 @@ namespace LethalLevelLoader
         [SerializeField] private Vector2 _minMax;
         [SerializeField] private int _rarity;
 
-        [HideInInspector] public float Min { get { return (_minMax.x); } set { _minMax.x = value; } }
-        [HideInInspector] public float Max { get { return (_minMax.y); } set { _minMax.y = value; } }
-        [HideInInspector] public int Rarity { get { return (_rarity); } set { _rarity = value; } }
+        [HideInInspector] public float Min { get => (_minMax.x); set => _minMax.x = value; }
+        [HideInInspector] public float Max { get => (_minMax.y); set => _minMax.y = value; }
+        [HideInInspector] public int Rarity { get => (_rarity); set => _rarity = value; }
 
         public Vector2WithRarity(Vector2 vector2, int newRarity)
         {

@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Unity.Netcode;
 
 namespace LethalLevelLoader
 {
     public struct NetworkExtendedLevelReference : INetworkSerializable
     {
-        private List<ExtendedLevel> m_Levels => PatchedContent.ExtendedLevels;
+        private static List<ExtendedLevel> Levels => PatchedContent.ExtendedLevels;
 
         private uint m_ExtendedLevelId;
-        private static uint s_NullId = uint.MaxValue;
+        private const uint s_NullId = uint.MaxValue;
 
         public uint ExtendedLevelId
         {
-            get => m_ExtendedLevelId;
+            readonly get => m_ExtendedLevelId;
             internal set => m_ExtendedLevelId = value;
         }
 
@@ -35,7 +34,7 @@ namespace LethalLevelLoader
             m_ExtendedLevelId = GetIndexIDFromExtendedLevel(level);
         }
 
-        public bool TryGet(out ExtendedLevel level, NetworkManager networkManager = null)
+        public readonly bool TryGet(out ExtendedLevel level, NetworkManager _ = null)
         {
             level = Resolve(this);
             return (level != null);
@@ -46,26 +45,29 @@ namespace LethalLevelLoader
         {
             if (level.m_ExtendedLevelId == s_NullId)
                 return null;
-            return (level.GetExtendedLevelFromIndexID(level.ExtendedLevelId));
+            return (GetExtendedLevelFromIndexID(level.ExtendedLevelId));
         }
 
-        public static implicit operator ExtendedLevel(NetworkExtendedLevelReference levelRef) => Resolve(levelRef);
-
-        public static implicit operator NetworkExtendedLevelReference(ExtendedLevel level) => new NetworkExtendedLevelReference(level);
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        public static implicit operator ExtendedLevel(NetworkExtendedLevelReference levelRef)
         {
-            serializer.SerializeValue(ref m_ExtendedLevelId);
+            return Resolve(levelRef);
         }
 
-        private ExtendedLevel GetExtendedLevelFromIndexID(uint indexID)
+        public static implicit operator NetworkExtendedLevelReference(ExtendedLevel level)
         {
-            for (int i = 0; i < m_Levels.Count; i++)
-                if (m_Levels[i].SelectableLevel.levelID == indexID)
-                        return (m_Levels[i]);
+            return new NetworkExtendedLevelReference(level);
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter => serializer.SerializeValue(ref m_ExtendedLevelId);
+
+        private static ExtendedLevel GetExtendedLevelFromIndexID(uint indexID)
+        {
+            for (int i = 0; i < Levels.Count; i++)
+                if (Levels[i].SelectableLevel.levelID == indexID)
+                    return (Levels[i]);
             return (null);
         }
 
-        private uint GetIndexIDFromExtendedLevel(ExtendedLevel level) => (uint)level.SelectableLevel.levelID;
+        private static uint GetIndexIDFromExtendedLevel(ExtendedLevel level) => (uint)level.SelectableLevel.levelID;
     }
 }

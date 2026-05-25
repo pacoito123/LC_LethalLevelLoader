@@ -97,7 +97,7 @@ namespace LethalLevelLoader
                 {
                     ModMergeSetting.MatchingAuthorName => extendedLevel.ExtendedMod.AuthorName,
                     ModMergeSetting.MatchingModName => extendedLevel.ExtendedMod.ModName,
-                    _ => extendedLevel.UniqueIdentificationName
+                    ModMergeSetting.Disabled or _ => extendedLevel.UniqueIdentificationName
                 };
                 string fullSurfaceTag = identifier + '/' + layerWithSurface.surfaceTag;
 

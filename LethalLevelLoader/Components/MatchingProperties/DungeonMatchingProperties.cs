@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -13,7 +11,7 @@ namespace LethalLevelLoader
 
         public static new DungeonMatchingProperties Create(ExtendedContent extendedContent)
         {
-            DungeonMatchingProperties dungeonMatchingProperties = ScriptableObject.CreateInstance<DungeonMatchingProperties>();
+            DungeonMatchingProperties dungeonMatchingProperties = CreateInstance<DungeonMatchingProperties>();
             dungeonMatchingProperties.name = extendedContent.name + "DungeonMatchingProperties";
             return (dungeonMatchingProperties);
         }

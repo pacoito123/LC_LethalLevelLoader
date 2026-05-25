@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Unity.Netcode;
 
 namespace LethalLevelLoader.NetworkStructs
 {
     public struct NetworkItemReference : INetworkSerializable
     {
+        private static List<NetworkPrefab> Prefabs => LethalLevelLoaderNetworkManager.networkManager.NetworkConfig.Prefabs.m_Prefabs;
+
         private uint m_NetworkItemObjectId;
-        private static uint s_NullId = uint.MaxValue;
+        private const uint s_NullId = uint.MaxValue;
 
         public uint NetworkItemObjectId
         {
-            get => m_NetworkItemObjectId;
+            readonly get => m_NetworkItemObjectId;
             internal set => m_NetworkItemObjectId = value;
         }
 
@@ -33,7 +34,7 @@ namespace LethalLevelLoader.NetworkStructs
             m_NetworkItemObjectId = GetIdHashFromItem(item);
         }
 
-        public bool TryGet(out Item item, NetworkManager networkManager = null)
+        public readonly bool TryGet(out Item item, NetworkManager _ = null)
         {
             item = Resolve(this);
             return (item != null);
@@ -44,34 +45,34 @@ namespace LethalLevelLoader.NetworkStructs
         {
             if (networkItemRef.m_NetworkItemObjectId == s_NullId)
                 return null;
-            return (networkItemRef.GetItemFromNetworkPrefabIdHash(networkItemRef.m_NetworkItemObjectId));
+            return (GetItemFromNetworkPrefabIdHash(networkItemRef.m_NetworkItemObjectId));
         }
 
-        public static implicit operator Item(NetworkItemReference networkItemRef) => Resolve(networkItemRef);
-
-        public static implicit operator NetworkItemReference(Item item) => new NetworkItemReference(item);
-
-        private List<NetworkPrefab> m_Prefabs => LethalLevelLoaderNetworkManager.networkManager.NetworkConfig.Prefabs.m_Prefabs;
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        public static implicit operator Item(NetworkItemReference networkItemRef)
         {
-            serializer.SerializeValue(ref m_NetworkItemObjectId);
+            return Resolve(networkItemRef);
         }
 
-        private Item GetItemFromNetworkPrefabIdHash(uint idHash)
+        public static implicit operator NetworkItemReference(Item item)
         {
-            for (int i = 0; i < m_Prefabs.Count; i++)
-                if (m_Prefabs[i].SourcePrefabGlobalObjectIdHash == idHash)
-                    if (m_Prefabs[i].Prefab.TryGetComponent(out GrabbableObject grabbableObject))
+            return new NetworkItemReference(item);
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter => serializer.SerializeValue(ref m_NetworkItemObjectId);
+        private static Item GetItemFromNetworkPrefabIdHash(uint idHash)
+        {
+            for (int i = 0; i < Prefabs.Count; i++)
+                if (Prefabs[i].SourcePrefabGlobalObjectIdHash == idHash)
+                    if (Prefabs[i].Prefab.TryGetComponent(out GrabbableObject grabbableObject))
                         return (grabbableObject.itemProperties);
             return (null);
         }
 
-        private uint GetIdHashFromItem(Item item)
+        private static uint GetIdHashFromItem(Item item)
         {
-            for (int i = 0; i < m_Prefabs.Count; i++)
-                if (m_Prefabs[i].Prefab == item.spawnPrefab)
-                    return (m_Prefabs[i].SourcePrefabGlobalObjectIdHash);
+            for (int i = 0; i < Prefabs.Count; i++)
+                if (Prefabs[i].Prefab == item.spawnPrefab)
+                    return (Prefabs[i].SourcePrefabGlobalObjectIdHash);
             return (0);
         }
     }

@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
-using Random = System.Random;
 
 namespace LethalLevelLoader
 {
-    internal class WeatherManager
+    internal static class WeatherManager
     {
         public static ExtendedWeatherEffect CurrentExtendedWeatherEffect;
 
@@ -76,6 +75,9 @@ namespace LethalLevelLoader
                     if (LevelLoader.defaultEclipsedMusic == null && LevelLoader.eclipsedMusicSource != null)
                         LevelLoader.defaultEclipsedMusic = LevelLoader.eclipsedMusicSource.clip;
                     break;
+                case LevelWeatherType.None:
+                case LevelWeatherType.Foggy:
+                case LevelWeatherType.Flooded:
                 default:
                     break;
             }
@@ -143,6 +145,10 @@ namespace LethalLevelLoader
                         }
                     }
                     break;
+                case LevelWeatherType.None:
+                case LevelWeatherType.DustClouds:
+                case LevelWeatherType.Rainy:
+                case LevelWeatherType.Eclipsed:
                 default:
                     break;
             }
@@ -232,7 +238,7 @@ namespace LethalLevelLoader
         public static void SetExtendedLevelsWeather(int connectedPlayersOnServer)
         {
             StartOfRound startOfRound = Patches.StartOfRound;
-            List<ExtendedLevel> extendedLevels = new List<ExtendedLevel>(PatchedContent.ExtendedLevels);
+            List<ExtendedLevel> extendedLevels = [.. PatchedContent.ExtendedLevels];
 
             foreach (ExtendedLevel extendedLevel in extendedLevels)
             {
@@ -247,12 +253,12 @@ namespace LethalLevelLoader
                 }
             }
 
-            Random random = new Random(startOfRound.randomMapSeed + 31);
+            System.Random random = new(startOfRound.randomMapSeed + 31);
             float daySurvivalStreakMultiplier = 1f;
             if (connectedPlayersOnServer + 1 > 1 && startOfRound.daysPlayersSurvivedInARow > 2 && startOfRound.daysPlayersSurvivedInARow % 3 == 0)
-                daySurvivalStreakMultiplier = (float)random.Next(15, 25) / 10f;
+                daySurvivalStreakMultiplier = random.Next(15, 25) / 10f;
 
-            int randomWeatherEffectToggleAttempts = Mathf.Clamp((int)(Mathf.Clamp(startOfRound.planetsWeatherRandomCurve.Evaluate((float)random.NextDouble()) * daySurvivalStreakMultiplier, 0f, 1f) * (float)PatchedContent.ExtendedLevels.Count), 0, PatchedContent.ExtendedLevels.Count);
+            int randomWeatherEffectToggleAttempts = Mathf.Clamp((int)(Mathf.Clamp(startOfRound.planetsWeatherRandomCurve.Evaluate((float)random.NextDouble()) * daySurvivalStreakMultiplier, 0f, 1f) * PatchedContent.ExtendedLevels.Count), 0, PatchedContent.ExtendedLevels.Count);
 
             for (int j = 0; j < randomWeatherEffectToggleAttempts; j++)
             {
@@ -267,7 +273,7 @@ namespace LethalLevelLoader
         public static void SetExtendedLevelsExtendedWeatherEffect(int connectedPlayersOnServer)
         {
             StartOfRound startOfRound = Patches.StartOfRound;
-            List<ExtendedLevel> extendedLevels = new List<ExtendedLevel>(PatchedContent.ExtendedLevels);
+            List<ExtendedLevel> extendedLevels = [.. PatchedContent.ExtendedLevels];
 
             foreach (ExtendedLevel extendedLevel in extendedLevels)
             {
@@ -277,12 +283,12 @@ namespace LethalLevelLoader
                         extendedLevel.CurrentExtendedWeatherEffect = extendedWeatherEffect;
             }
 
-            Random random = new Random(startOfRound.randomMapSeed + 31);
+            System.Random random = new(startOfRound.randomMapSeed + 31);
             float daySurvivalStreakMultiplier = 1f;
             if (connectedPlayersOnServer + 1 > 1 && startOfRound.daysPlayersSurvivedInARow > 2 && startOfRound.daysPlayersSurvivedInARow % 3 == 0)
-                daySurvivalStreakMultiplier = (float)random.Next(15, 25) / 10f;
+                daySurvivalStreakMultiplier = random.Next(15, 25) / 10f;
 
-            int randomWeatherEffectToggleAttempts = Mathf.Clamp((int)(Mathf.Clamp(startOfRound.planetsWeatherRandomCurve.Evaluate((float)random.NextDouble()) * daySurvivalStreakMultiplier, 0f, 1f) * (float)PatchedContent.ExtendedLevels.Count), 0, PatchedContent.ExtendedLevels.Count);
+            int randomWeatherEffectToggleAttempts = Mathf.Clamp((int)(Mathf.Clamp(startOfRound.planetsWeatherRandomCurve.Evaluate((float)random.NextDouble()) * daySurvivalStreakMultiplier, 0f, 1f) * PatchedContent.ExtendedLevels.Count), 0, PatchedContent.ExtendedLevels.Count);
 
             for (int j = 0; j < randomWeatherEffectToggleAttempts; j++)
             {

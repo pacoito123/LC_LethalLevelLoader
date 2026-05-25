@@ -41,7 +41,7 @@ namespace LethalLevelLoader
 
         internal static ExtendedUnlockableItem Create(UnlockableItem newUnlockableItem, ExtendedMod extendedMod, ContentType contentType)
         {
-            ExtendedUnlockableItem extendedUnlockableItem = ScriptableObject.CreateInstance<ExtendedUnlockableItem>();
+            ExtendedUnlockableItem extendedUnlockableItem = CreateInstance<ExtendedUnlockableItem>();
             extendedUnlockableItem.UnlockableItem = newUnlockableItem;
             extendedUnlockableItem.name = newUnlockableItem.unlockableName.Sanitized(toLower: false) + "ExtendedUnlockableItem";
             extendedUnlockableItem.ContentType = contentType;

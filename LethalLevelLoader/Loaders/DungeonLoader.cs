@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static DunGen.Graph.DungeonFlow;
-using Random = System.Random;
 
 namespace LethalLevelLoader
 {
@@ -22,7 +21,7 @@ namespace LethalLevelLoader
     public static class DungeonLoader
     {
         internal static GameObject defaultKeyPrefab;
-        
+
         internal static void SelectDungeon()
         {
             Patches.RoundManager.dungeonGenerator.Generator.DungeonFlow = null;
@@ -74,18 +73,6 @@ namespace LethalLevelLoader
             return 1f;
         }
 
-        internal static void PatchDungeonSize(DungeonGenerator dungeonGenerator, ExtendedLevel extendedLevel, ExtendedDungeonFlow extendedDungeonFlow)
-        {
-            /* if (extendedDungeonFlow.IsDynamicDungeonSizeRestrictionEnabled == true)
-            {
-                if (extendedLevel.SelectableLevel.factorySizeMultiplier > extendedDungeonFlow.DynamicDungeonSizeMax)
-                    dungeonGenerator.LengthMultiplier = Mathf.Lerp(extendedLevel.SelectableLevel.factorySizeMultiplier, extendedDungeonFlow.DynamicDungeonSizeMax, extendedDungeonFlow.DynamicDungeonSizeLerpRate) * Patches.RoundManager.mapSizeMultiplier; //This is how vanilla does it.
-                else if (extendedLevel.SelectableLevel.factorySizeMultiplier < extendedDungeonFlow.DynamicDungeonSizeMin)
-                    dungeonGenerator.LengthMultiplier = Mathf.Lerp(extendedLevel.SelectableLevel.factorySizeMultiplier, extendedDungeonFlow.DynamicDungeonSizeMin, extendedDungeonFlow.DynamicDungeonSizeLerpRate) * Patches.RoundManager.mapSizeMultiplier; //This is how vanilla does it.
-                DebugHelper.Log("Setting DungeonSize To: " + extendedLevel.SelectableLevel.factorySizeMultiplier / Patches.RoundManager.mapSizeMultiplier, DebugType.User);
-            } */
-        }
-
         internal static List<EntranceTeleport> GetEntranceTeleports(Scene scene)
         {
             List<EntranceTeleport> entranceTeleports = new List<EntranceTeleport>();
@@ -133,8 +120,8 @@ namespace LethalLevelLoader
                 foreach (GlobalPropSettings globalProp in dungeonGenerator.DungeonFlow.GlobalProps)
                     if (globalPropOverride.globalPropID == globalProp.ID)
                     {
-                        globalProp.Count.Min = globalProp.Count.Min * Mathf.RoundToInt(Mathf.Lerp(1, (dungeonGenerator.LengthMultiplier / Patches.RoundManager.mapSizeMultiplier), globalPropOverride.globalPropCountScaleRate));
-                        globalProp.Count.Max = globalProp.Count.Max * Mathf.RoundToInt(Mathf.Lerp(1, (dungeonGenerator.LengthMultiplier / Patches.RoundManager.mapSizeMultiplier), globalPropOverride.globalPropCountScaleRate));
+                        globalProp.Count.Min *= Mathf.RoundToInt(Mathf.Lerp(1, (dungeonGenerator.LengthMultiplier / Patches.RoundManager.mapSizeMultiplier), globalPropOverride.globalPropCountScaleRate));
+                        globalProp.Count.Max *= globalProp.Count.Max * Mathf.RoundToInt(Mathf.Lerp(1, (dungeonGenerator.LengthMultiplier / Patches.RoundManager.mapSizeMultiplier), globalPropOverride.globalPropCountScaleRate));
                     }
         }
 

@@ -55,7 +55,7 @@ namespace LethalLevelLoader
                 return instructions;
             }
 
-            _ = codeMatcher.Start().MatchForward(useEnd: true,
+            codeMatcher.Start().MatchForward(useEnd: true,
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldfld, globalTimeSpeedMultiplierInfo), // Match 'globalTimeSpeedMultiplier' field, right after multiplying.
                 new(OpCodes.Mul),
@@ -91,7 +91,7 @@ namespace LethalLevelLoader
             }
 
             int endPos = codeMatcher.Pos; // Keep index of the last instruction to be removed.
-            _ = codeMatcher.SearchBack(ins => ins.opcode == OpCodes.Add || ins.opcode == OpCodes.Sub); // Match prior addition or subtraction operation.
+            codeMatcher.SearchBack(ins => ins.opcode == OpCodes.Add || ins.opcode == OpCodes.Sub); // Match prior addition or subtraction operation.
 
             if (codeMatcher.IsInvalid)
             {

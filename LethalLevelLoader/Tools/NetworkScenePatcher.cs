@@ -13,7 +13,7 @@ public static class NetworkScenePatcher
 {
     // start of script
     static List<string> scenePaths = new();
-    
+
     internal static Dictionary<string, int> scenePathToBuildIndex = new();
     internal static Dictionary<int, string> buildIndexToScenePath = new();
     static Dictionary<uint, string> sceneHashToScenePath = new();
@@ -62,7 +62,7 @@ public static class NetworkScenePatcher
 
     // where the patching starts >:3c
     static DisposableHookCollection hooks = new();
-    
+
     internal static bool patched { get; private set; }
     internal static void Patch()
     {
@@ -70,7 +70,7 @@ public static class NetworkScenePatcher
 
         hooks.Hook<NetworkSceneManager>("GenerateScenesInBuild", GenerateScenesInBuild_Hook);
         hooks.Hook<NetworkSceneManager>("SceneNameFromHash", SceneNameFromHash_Hook);
-        hooks.Hook<NetworkSceneManager>("ValidateSceneBeforeLoading", ValidateSceneBeforeLoading_Hook, new[] {typeof(int), typeof(string), typeof(LoadSceneMode)});
+        hooks.Hook<NetworkSceneManager>("ValidateSceneBeforeLoading", ValidateSceneBeforeLoading_Hook, new[] { typeof(int), typeof(string), typeof(LoadSceneMode) });
 
         hooks.ILHook<NetworkSceneManager>("SceneHashFromNameOrPath", ReplaceBuildIndexByScenePath);
         hooks.ILHook<NetworkSceneManager>("ValidateSceneEvent", ReplaceBuildIndexByScenePath);
@@ -85,7 +85,7 @@ public static class NetworkScenePatcher
     static void ReplaceScenePathByBuildIndex(ILContext il)
     {
         ILCursor script = new(il);
-        MethodInfo replacement = methodof(GetScenePathByBuildIndex);
+        MethodInfo replacement = MethodOf(GetScenePathByBuildIndex);
 
         while (script.TryGotoNext(instr => instr.MatchCall(typeof(SceneUtility), "GetScenePathByBuildIndex")))
         {
@@ -96,7 +96,7 @@ public static class NetworkScenePatcher
     static void ReplaceBuildIndexByScenePath(ILContext il)
     {
         ILCursor script = new(il);
-        MethodInfo replacement = methodof(GetBuildIndexByScenePath);
+        MethodInfo replacement = MethodOf(GetBuildIndexByScenePath);
 
         while (script.TryGotoNext(instr => instr.MatchCall(typeof(SceneUtility), "GetBuildIndexByScenePath")))
         {

@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace LethalLevelLoader
@@ -14,10 +12,8 @@ namespace LethalLevelLoader
         public enum ModProcessingStatus { Inactive, Loading, Complete };
         public static ModProcessingStatus CurrentStatus { get; internal set; } = ModProcessingStatus.Inactive;
 
-        private static List<AssetBundleGroup> assetBundleGroups = new List<AssetBundleGroup>();
-
-        private static Dictionary<AssetBundleGroup, List<ExtendedMod>> obtainedExtendedModsDict = new Dictionary<AssetBundleGroup, List<ExtendedMod>>();
-        private static List<ExtendedMod> obtainedExtendedModsList = new List<ExtendedMod>();
+        private static readonly Dictionary<AssetBundleGroup, List<ExtendedMod>> obtainedExtendedModsDict = new Dictionary<AssetBundleGroup, List<ExtendedMod>>();
+        private static readonly List<ExtendedMod> obtainedExtendedModsList = new List<ExtendedMod>();
 
         public static ExtendedEvent OnFinishedProcessing { get; private set; } = new ExtendedEvent();
 
@@ -61,8 +57,9 @@ namespace LethalLevelLoader
 
         private static void WriteKnownSceneBundles()
         {
-            List<string> knownEntries = new List<string>() { LethalBundleManifest.ManifestVersion.ToString() };
-            knownEntries.AddRange(AssetBundles.AssetBundleLoader.knownSceneBundles.Values.Select(manifest => manifest.ToString()));
+            List<string> knownEntries = [$"{LethalBundleManifest.ManifestVersion}"];
+            foreach (LethalBundleManifest manifest in AssetBundles.AssetBundleLoader.knownSceneBundles.Values)
+                knownEntries.Add($"{manifest}");
 
             File.WriteAllLines(AssetBundles.AssetBundleLoader.KnownSceneBundlesPath, knownEntries, Encoding.UTF8);
             AssetBundles.AssetBundleLoader.knownSceneBundles = null; // Don't need dictionary after scene bundles have been written to file.
@@ -169,8 +166,7 @@ namespace LethalLevelLoader
                         obtainedExtendedModsDict.Add(source, new List<ExtendedMod> { extendedMod });
                 }
 
-
-                List<ExtendedContent> serializedExtendedContents = new List<ExtendedContent>(extendedMod.ExtendedContents);
+                List<ExtendedContent> serializedExtendedContents = extendedMod.ExtendedContents;
                 extendedMod.UnregisterAllExtendedContent();
                 foreach (ExtendedContent extendedContent in serializedExtendedContents)
                 {
@@ -218,12 +214,12 @@ namespace LethalLevelLoader
             {
                 extendedMod = GetOrCreateExtendedMod(source, extendedEnemyType.EnemyType.enemyName.RemoveWhitespace());
             }
-            else if (extendedContent is ExtendedWeatherEffect extendedWeatherEffect)
+            /* else if (extendedContent is ExtendedWeatherEffect extendedWeatherEffect)
             {
-                //if (extendedWeatherEffect.contentSourceName == string.Empty)
-                //extendedWeatherEffect.contentSourceName = fallbackName;
-                //extendedMod = GetOrCreateExtendedMod(extendedWeatherEffect.contentSourceName);
-            }
+                if (extendedWeatherEffect.contentSourceName == string.Empty)
+                extendedWeatherEffect.contentSourceName = fallbackName;
+                extendedMod = GetOrCreateExtendedMod(extendedWeatherEffect.contentSourceName);
+            } */
             else if (extendedContent is ExtendedBuyableVehicle extendedBuyableVehicle)
             {
                 extendedMod = GetOrCreateExtendedMod(source, extendedBuyableVehicle.name.RemoveWhitespace());
@@ -261,7 +257,7 @@ namespace LethalLevelLoader
             }
 
             if (obtainedExtendedModsDict.TryGetValue(source, out List<ExtendedMod> extendedModList))
-                return (extendedModList.First());
+                return (extendedModList[0]);
             else
             {
                 DebugHelper.Log("Creating New ExtendedMod: " + contentSourceName, DebugType.Developer);
@@ -286,8 +282,7 @@ namespace LethalLevelLoader
                 DebugHelper.DebugExtendedMod(obtainedExtendedMod);
             }
 
-            PatchedContent.ExtendedMods = new List<ExtendedMod>(PatchedContent.ExtendedMods.OrderBy(o => o.ModName).ToList());
-
+            PatchedContent.ExtendedMods.Sort(new ExtendedMod.ExtendedModComparer());
             foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods)
                 extendedMod.SortRegisteredContent();
 
@@ -299,7 +294,7 @@ namespace LethalLevelLoader
                 foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods)
                     if (extendedMod.ModNameAliases.Contains(extendedModRequest.Key) || extendedMod.AuthorName == extendedModRequest.Key)
                         foreach (Action<ExtendedMod> extendedModEvent in extendedModRequest.Value)
-                            extendedModEvent.Invoke(extendedMod); 
+                            extendedModEvent.Invoke(extendedMod);
 
 
             WriteKnownSceneBundles();

@@ -5,15 +5,13 @@ namespace LethalLevelLoader
 {
     public class MoonsCataloguePage
     {
-        private List<ExtendedLevelGroup> extendedLevelGroups;
-        public List<ExtendedLevelGroup> ExtendedLevelGroups => extendedLevelGroups;
-
+        public List<ExtendedLevelGroup> ExtendedLevelGroups { get; private set; }
         public List<ExtendedLevel> ExtendedLevels
         {
             get
             {
                 List<ExtendedLevel> returnList = new List<ExtendedLevel>();
-                foreach (ExtendedLevelGroup group in extendedLevelGroups)
+                foreach (ExtendedLevelGroup group in ExtendedLevelGroups)
                     foreach (ExtendedLevel level in group.extendedLevelsList)
                         returnList.Add(level);
 
@@ -23,17 +21,17 @@ namespace LethalLevelLoader
 
         public MoonsCataloguePage(List<ExtendedLevelGroup> newExtendedLevelGroupList)
         {
-            extendedLevelGroups = new List<ExtendedLevelGroup>();
-            extendedLevelGroups.Clear();
+            ExtendedLevelGroups = new List<ExtendedLevelGroup>();
+            ExtendedLevelGroups.Clear();
 
             foreach (ExtendedLevelGroup newExtendedLevelGroup in newExtendedLevelGroupList)
-                extendedLevelGroups.Add(new ExtendedLevelGroup(newExtendedLevelGroup.extendedLevelsList));
+                ExtendedLevelGroups.Add(new ExtendedLevelGroup(newExtendedLevelGroup.extendedLevelsList));
         }
 
         public void RebuildLevelGroups(List<ExtendedLevelGroup> newExtendedLevelGroups, int splitCount)
         {
             List<ExtendedLevel> converteredList = new List<ExtendedLevel>();
-            foreach (ExtendedLevelGroup extendedLevelGroup in extendedLevelGroups)
+            foreach (ExtendedLevelGroup extendedLevelGroup in ExtendedLevelGroups)
                 foreach (ExtendedLevel level in extendedLevelGroup.extendedLevelsList)
                     converteredList.Add(level);
             RebuildLevelGroups(converteredList.ToArray(), splitCount);
@@ -51,15 +49,15 @@ namespace LethalLevelLoader
 
         public void RebuildLevelGroups(ExtendedLevel[] newExtendedLevels, int splitCount)
         {
-            extendedLevelGroups = TerminalManager.GetExtendedLevelGroups(newExtendedLevels, splitCount);
+            ExtendedLevelGroups = TerminalManager.GetExtendedLevelGroups(newExtendedLevels, splitCount);
         }
 
         public void RefreshLevelGroups(List<ExtendedLevelGroup> newLevelGroups)
         {
-            extendedLevelGroups.Clear();
+            ExtendedLevelGroups.Clear();
             foreach (ExtendedLevelGroup group in newLevelGroups)
                 if (group.extendedLevelsList.Count != 0)
-                    extendedLevelGroups.Add(new ExtendedLevelGroup(group.extendedLevelsList));
+                    ExtendedLevelGroups.Add(new ExtendedLevelGroup(group.extendedLevelsList));
         }
     }
 
@@ -72,7 +70,7 @@ namespace LethalLevelLoader
 
         public ExtendedLevelGroup(List<ExtendedLevel> newExtendedLevelsList)
         {
-            extendedLevelsList = new List<ExtendedLevel>(newExtendedLevelsList);
+            extendedLevelsList = [.. newExtendedLevelsList];
         }
 
         public ExtendedLevelGroup(List<SelectableLevel> newSelectableLevelsList)

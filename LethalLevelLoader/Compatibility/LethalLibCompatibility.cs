@@ -7,7 +7,7 @@ using LethalLib.Modules;
 namespace LethalLevelLoader.Compatibility
 {
     [HarmonyPatch]
-    internal class LethalLibCompatibility
+    internal static class LethalLibCompatibility
     {
         /// <summary>
         ///     Whether <c>LethalLib</c> is present in the BepInEx Chainloader or not.

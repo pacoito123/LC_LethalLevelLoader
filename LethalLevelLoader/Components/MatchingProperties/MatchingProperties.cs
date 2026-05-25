@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -13,7 +11,7 @@ namespace LethalLevelLoader
 
         public static MatchingProperties Create(ExtendedContent extendedContent)
         {
-            MatchingProperties matchingProperties = ScriptableObject.CreateInstance<MatchingProperties>();
+            MatchingProperties matchingProperties = CreateInstance<MatchingProperties>();
             matchingProperties.name = extendedContent.name + "MatchingProperties";
             return (matchingProperties);
         }

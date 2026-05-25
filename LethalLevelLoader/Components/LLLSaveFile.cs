@@ -26,39 +26,25 @@ namespace LethalLevelLoader
         }
     }
 
-    public struct AllItemsListItemData
+    public struct AllItemsListItemData(string newItemObjectName, string newItemName, string newModName, string newModAuthor, int newAllItemsListIndex, int newModItemsListIndex, int newItemNameDuplicateIndex, bool newIsScrap, bool newSaveItemVariable)
     {
-        public string itemObjectName;
-        public string itemName;
-        public string modName;
-        public string modAuthor;
-        public int allItemsListIndex;
-        public int modItemsListIndex;
-        public int itemNameDuplicateIndex;
-        public bool isScrap;
-        public bool saveItemVariable;
-
-        public AllItemsListItemData(string newItemObjectName, string newItemName, string newModName, string newModAuthor, int newAllItemsListIndex, int newModItemsListIndex, int newItemNameDuplicateIndex, bool newIsScrap, bool newSaveItemVariable)
-        {
-            itemObjectName = newItemObjectName;
-            itemName = newItemName;
-            modName = newModName;
-            modAuthor = newModAuthor;
-            allItemsListIndex = newAllItemsListIndex;
-            modItemsListIndex = newModItemsListIndex;
-            itemNameDuplicateIndex = newItemNameDuplicateIndex;
-            isScrap = newIsScrap;
-            saveItemVariable = newSaveItemVariable;
-        }
+        public string itemObjectName = newItemObjectName;
+        public string itemName = newItemName;
+        public string modName = newModName;
+        public string modAuthor = newModAuthor;
+        public int allItemsListIndex = newAllItemsListIndex;
+        public int modItemsListIndex = newModItemsListIndex;
+        public int itemNameDuplicateIndex = newItemNameDuplicateIndex;
+        public bool isScrap = newIsScrap;
+        public bool saveItemVariable = newSaveItemVariable;
     }
 
-    public struct ExtendedLevelData : INetworkSerializable
+    public struct ExtendedLevelData(ExtendedLevel extendedLevel) : INetworkSerializable
     {
-        public string UniqueIdentifier => uniqueIdentifier;
-        public string uniqueIdentifier = string.Empty;
-        public bool isHidden;
-        public bool isLocked;
-
+        public readonly string UniqueIdentifier => uniqueIdentifier;
+        public string uniqueIdentifier = extendedLevel.UniqueIdentificationName;
+        public bool isHidden = extendedLevel.IsRouteHidden;
+        public bool isLocked = extendedLevel.IsRouteLocked;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -67,14 +53,7 @@ namespace LethalLevelLoader
             serializer.SerializeValue(ref isLocked);
         }
 
-        public ExtendedLevelData(ExtendedLevel extendedLevel)
-        {
-            uniqueIdentifier = extendedLevel.UniqueIdentificationName;
-            isHidden = extendedLevel.IsRouteHidden;
-            isLocked = extendedLevel.IsRouteLocked;
-        }
-
-        public void ApplySavedValues(ExtendedLevel extendedLevel)
+        public readonly void ApplySavedValues(ExtendedLevel extendedLevel)
         {
             extendedLevel.IsRouteHidden = isHidden;
             extendedLevel.IsRouteLocked = isLocked;

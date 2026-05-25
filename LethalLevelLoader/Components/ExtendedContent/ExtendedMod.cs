@@ -67,33 +67,26 @@ namespace LethalLevelLoader
         {
             get
             {
-                List<ExtendedContent> returnList = new List<ExtendedContent>();
-                foreach (ExtendedLevel level in ExtendedLevels)
-                    returnList.Add(level);
-                foreach (ExtendedDungeonFlow flow in ExtendedDungeonFlows)
-                    returnList.Add(flow);
-                foreach (ExtendedItem item in ExtendedItems)
-                    returnList.Add(item);
-                foreach (ExtendedEnemyType type in ExtendedEnemyTypes)
-                    returnList.Add(type);
-                foreach (ExtendedWeatherEffect weatherEffect in ExtendedWeatherEffects)
-                    returnList.Add(weatherEffect);
-                foreach (ExtendedFootstepSurface surface in ExtendedFootstepSurfaces)
-                    returnList.Add(surface);
-                foreach (ExtendedStoryLog storyLog in ExtendedStoryLogs)
-                    returnList.Add(storyLog);
-                foreach (ExtendedBuyableVehicle vehicle in ExtendedBuyableVehicles)
-                    returnList.Add(vehicle);
-                foreach (ExtendedUnlockableItem unlockableItem in ExtendedUnlockableItems)
-                    returnList.Add(unlockableItem);
-
+                List<ExtendedContent> returnList =
+                [
+                    .. ExtendedLevels,
+                    .. ExtendedDungeonFlows,
+                    .. ExtendedItems,
+                    .. ExtendedEnemyTypes,
+                    .. ExtendedWeatherEffects,
+                    .. ExtendedFootstepSurfaces,
+                    .. ExtendedStoryLogs,
+                    .. ExtendedBuyableVehicles,
+                    .. ExtendedUnlockableItems,
+                ];
+                returnList.Sort(new ExtendedContent.ExtendedContentComparer());
                 return (returnList);
             }
         }
 
         internal static ExtendedMod Create(string modName)
         {
-            ExtendedMod newExtendedMod = ScriptableObject.CreateInstance<ExtendedMod>();
+            ExtendedMod newExtendedMod = CreateInstance<ExtendedMod>();
             newExtendedMod.ModName = modName;
             newExtendedMod.name = modName.Sanitized(toLower: false) + "Mod";
             DebugHelper.Log("Created New ExtendedMod: " + newExtendedMod.ModName, DebugType.Developer);
@@ -102,7 +95,7 @@ namespace LethalLevelLoader
 
         public static ExtendedMod Create(string modName, string authorName)
         {
-            ExtendedMod newExtendedMod = ScriptableObject.CreateInstance<ExtendedMod>();
+            ExtendedMod newExtendedMod = CreateInstance<ExtendedMod>();
             newExtendedMod.ModName = modName;
             newExtendedMod.name = modName.Sanitized(toLower: false) + "Mod";
             newExtendedMod.AuthorName = authorName;
@@ -113,7 +106,7 @@ namespace LethalLevelLoader
 
         public static ExtendedMod Create(string modName, string authorName, ExtendedContent[] extendedContents)
         {
-            ExtendedMod newExtendedMod = ScriptableObject.CreateInstance<ExtendedMod>();
+            ExtendedMod newExtendedMod = CreateInstance<ExtendedMod>();
             newExtendedMod.ModName = modName;
             newExtendedMod.name = modName.Sanitized(toLower: false) + "Mod";
             newExtendedMod.AuthorName = authorName;
@@ -152,10 +145,10 @@ namespace LethalLevelLoader
                     else if (newExtendedContent is ExtendedUnlockableItem extendedUnlockableItem)
                         RegisterExtendedContent(extendedUnlockableItem);
                     else
-                        throw new ArgumentException(nameof(newExtendedContent), newExtendedContent.name + " (" + newExtendedContent.GetType().Name + ") " + " Could Not Be Registered To ExtendedMod: " + ModName + " Due To Unimplemented Registration Check!");
+                        throw new ArgumentException(newExtendedContent.name + " (" + newExtendedContent.GetType().Name + ") " + " Could Not Be Registered To ExtendedMod: " + ModName + " Due To Unimplemented Registration Check!", nameof(newExtendedContent));
                 }
                 else
-                    throw new ArgumentException(nameof(newExtendedContent), newExtendedContent.name + " (" + newExtendedContent.GetType().Name + ") " + " Could Not Be Registered To ExtendedMod: " + ModName + " Due To Already Being Registered To This Mod!");
+                    throw new ArgumentException(newExtendedContent.name + " (" + newExtendedContent.GetType().Name + ") " + " Could Not Be Registered To ExtendedMod: " + ModName + " Due To Already Being Registered To This Mod!", nameof(newExtendedContent));
             }
             else
                 throw new ArgumentNullException(nameof(newExtendedContent), "Null ExtendedContent Could Not Be Registered To ExtendedMod: " + ModName + " Due To Failed Validation Check!");
@@ -198,7 +191,7 @@ namespace LethalLevelLoader
                 if (extendedContent == null)
                     throw new ArgumentNullException(nameof(extendedContent), "Null ExtendedContent Could Not Be Registered To ExtendedMod: " + ModName + " Due To Failed Validation Check! " + result.Item2);
 
-                throw new ArgumentException(nameof(extendedContent), extendedContent.name + " (" + extendedContent.GetType().Name + ") " + " Could Not Be Registered To ExtendedMod: " + ModName + " Due To Failed Validation Check! " + result.Item2);
+                throw new ArgumentException(extendedContent.name + " (" + extendedContent.GetType().Name + ") " + " Could Not Be Registered To ExtendedMod: " + ModName + " Due To Failed Validation Check! " + result.Item2, nameof(extendedContent));
             }
         }
 
@@ -232,15 +225,21 @@ namespace LethalLevelLoader
 
         internal void SortRegisteredContent()
         {
-            ExtendedLevels.Sort((s1, s2) => s1.name.CompareTo(s2.name));
-            ExtendedDungeonFlows.Sort((s1, s2) => s1.name.CompareTo(s2.name));
-            ExtendedItems.Sort((s1, s2) => s1.name.CompareTo(s2.name));
-            ExtendedEnemyTypes.Sort((s1, s2) => s1.name.CompareTo(s2.name));
-            ExtendedWeatherEffects.Sort((s1, s2) => s1.name.CompareTo(s2.name));
-            ExtendedFootstepSurfaces.Sort((s1, s2) => s1.name.CompareTo(s2.name));
-            ExtendedStoryLogs.Sort((s1, s2) => s1.name.CompareTo(s2.name));
-            ExtendedBuyableVehicles.Sort((s1, s2) => s1.name.CompareTo(s2.name));
-            ExtendedUnlockableItems.Sort((s1, s2) => s1.name.CompareTo(s2.name));
+            ExtendedContent.ExtendedContentComparer extendedComparer = new ExtendedContent.ExtendedContentComparer();
+            ExtendedLevels.Sort(extendedComparer);
+            ExtendedDungeonFlows.Sort(extendedComparer);
+            ExtendedItems.Sort(extendedComparer);
+            ExtendedEnemyTypes.Sort(extendedComparer);
+            ExtendedWeatherEffects.Sort(extendedComparer);
+            ExtendedFootstepSurfaces.Sort(extendedComparer);
+            ExtendedStoryLogs.Sort(extendedComparer);
+            ExtendedBuyableVehicles.Sort(extendedComparer);
+            ExtendedUnlockableItems.Sort(extendedComparer);
+        }
+
+        internal sealed class ExtendedModComparer : IComparer<ExtendedMod>
+        {
+            public int Compare(ExtendedMod a, ExtendedMod b) => a.ModName.CompareTo(b.ModName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

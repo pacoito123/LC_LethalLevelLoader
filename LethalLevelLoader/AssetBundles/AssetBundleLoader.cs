@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace LethalLevelLoader.AssetBundles
 {
-    internal class AssetBundleLoader : MonoBehaviour
+    internal sealed class AssetBundleLoader : MonoBehaviour
     {
         private static AssetBundleLoader instance;
         public static AssetBundleLoader Instance
@@ -90,7 +90,7 @@ namespace LethalLevelLoader.AssetBundles
             return (true);
         }
 
-        private IEnumerator ClearCacheRoutine()
+        private static IEnumerator ClearCacheRoutine()
         {
             AsyncOperation unloadUnused = Resources.UnloadUnusedAssets();
             yield return unloadUnused;
@@ -102,7 +102,7 @@ namespace LethalLevelLoader.AssetBundles
 
         internal static void ClearCache()
         {
-            Instance.StartCoroutine(Instance.ClearCacheRoutine());
+            Instance.StartCoroutine(ClearCacheRoutine());
         }
 
         private static void LoadAllBundles(DirectoryInfo directory = null, string specifiedFileName = null, string specifiedFileExtension = null, ParameterEvent<AssetBundleGroup> onProcessedCallback = null)
@@ -112,9 +112,9 @@ namespace LethalLevelLoader.AssetBundles
             processedBundleCount = 0;
             requestedBundleCount = 0;
 
-            if (directory == null) directory = pluginsFolder;
-            if (specifiedFileExtension == null) specifiedFileExtension = ".*";
-            if (specifiedFileName == null) specifiedFileName = "*";
+            directory ??= pluginsFolder;
+            specifiedFileExtension ??= ".*";
+            specifiedFileName ??= "*";
 
             string callbackName = specifiedFileName == "*" ? string.Empty : specifiedFileName;
             string callbackExtension = specifiedFileExtension == ".*" ? string.Empty : specifiedFileExtension;
@@ -325,10 +325,10 @@ namespace LethalLevelLoader.AssetBundles
         }
     }
 
-    internal class UniqueSceneGroup
+    internal sealed class UniqueSceneGroup
     {
-        private List<string> scenesInGroup = new List<string>();
-        internal List<AssetBundleInfo> AssetBundleInfosInGroup { get; private set; } = new List<AssetBundleInfo>();
+        private readonly List<string> scenesInGroup = new List<string>();
+        internal List<AssetBundleInfo> AssetBundleInfosInGroup { get; } = new List<AssetBundleInfo>();
         internal string UniqueSceneName { get; private set; } = string.Empty;
 
         internal UniqueSceneGroup(string newUniqueSceneName)

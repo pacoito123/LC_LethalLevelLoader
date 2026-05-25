@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace LethalLevelLoader.AssetBundles
 {
     public struct LethalBundleManifest
@@ -17,7 +19,7 @@ namespace LethalLevelLoader.AssetBundles
             {
                 fileName = bundleInfo[0];
                 bundleName = bundleInfo[1];
-                timestamp = long.Parse(bundleInfo[2]);
+                timestamp = long.Parse(bundleInfo[2], CultureInfo.InvariantCulture);
                 scenePaths = bundleInfo[3].Split(',');
             }
         }

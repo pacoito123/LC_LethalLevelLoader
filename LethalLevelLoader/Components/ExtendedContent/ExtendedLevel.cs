@@ -1,7 +1,6 @@
 ﻿using GameNetcodeStuff;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,16 +16,16 @@ namespace LethalLevelLoader
         [Space(5)][SerializeField][Min(0)] private int routePrice = 0;
 
         [field: Header("Extended Feature Settings")]
-        [field: SerializeField] public bool OverrideDynamicRiskLevelAssignment { get; set; } = false;
+        [field: SerializeField] public bool OverrideDynamicRiskLevelAssignment { get; set; }
         [field: Tooltip("Enable to use Terrain layers for Player footstep sound effects instead of GameObject tags, when applicable. "
             + "Disabled by default for older moons to keep their intended (original) footstep sounds.")]
         [field: SerializeField] public bool UseTerrainFootsteps { get; set; }
 
         [field: Space(5)]
 
-        [field: SerializeField] public bool IsRouteHidden { get; set; } = false;
-        [field: SerializeField] public bool IsRouteLocked { get; set; } = false;
-        public bool IsRouteRemoved { get; set; } = false;
+        [field: SerializeField] public bool IsRouteHidden { get; set; }
+        [field: SerializeField] public bool IsRouteLocked { get; set; }
+        public bool IsRouteRemoved { get; set; }
         [field: SerializeField] public string LockedRouteNodeText { get; set; } = string.Empty;
 
         [field: Space(5)]
@@ -140,10 +139,26 @@ namespace LethalLevelLoader
 
         public string TerminalNoun => string.IsNullOrEmpty(OverrideRouteNoun) ? NumberlessPlanetName.StripSpecialCharacters().RemoveWhitespace().ToLowerInvariant() : OverrideRouteNoun.StripSpecialCharacters().RemoveWhitespace().ToLowerInvariant();
 
-        public string NumberlessPlanetName => GetNumberlessPlanetName(SelectableLevel);
-        public int CalculatedDifficultyRating => LevelManager.CalculateExtendedLevelDifficultyRating(this);
+        public string NumberlessPlanetName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(field))
+                    field = GetNumberlessPlanetName(SelectableLevel);
+                return field;
+            }
+        }
+        public int CalculatedDifficultyRating
+        {
+            get
+            {
+                if (field == 0)
+                    field = LevelManager.CalculateExtendedLevelDifficultyRating(this);
+                return field;
+            }
+        }
         public bool IsCurrentLevel => LevelManager.CurrentExtendedLevel == this;
-        public bool IsLevelLoaded => SceneManager.GetSceneByName(SelectableLevel.sceneName).isLoaded;
+        public bool IsLevelLoaded => IsCurrentLevel && SceneManager.GetSceneByName(SelectableLevel.sceneName).isLoaded;
 
         [HideInInspector] public LevelEvents LevelEvents { get; internal set; } = new LevelEvents();
 
@@ -158,13 +173,13 @@ namespace LethalLevelLoader
 
         internal static ExtendedLevel Create(SelectableLevel newSelectableLevel)
         {
-            ExtendedLevel newExtendedLevel = ScriptableObject.CreateInstance<ExtendedLevel>();
+            ExtendedLevel newExtendedLevel = CreateInstance<ExtendedLevel>();
             newExtendedLevel.SelectableLevel = newSelectableLevel;
 
             return (newExtendedLevel);
         }
 
-        internal void Initialize(string newContentSourceName, bool generateTerminalAssets)
+        internal void Initialize(string _, bool generateTerminalAssets)
         {
             bool mainSceneRegistered = false;
 
@@ -280,13 +295,7 @@ namespace LethalLevelLoader
             }
         }
 
-        internal static string GetNumberlessPlanetName(SelectableLevel selectableLevel)
-        {
-            if (selectableLevel != null)
-                return new string(selectableLevel.PlanetName.SkipWhile(c => !char.IsLetter(c)).ToArray());
-            else
-                return string.Empty;
-        }
+        internal static string GetNumberlessPlanetName(SelectableLevel selectableLevel) => (selectableLevel != null && !string.IsNullOrEmpty(selectableLevel.PlanetName)) ? selectableLevel.PlanetName.SkipToLetters() : string.Empty;
 
         internal void SetLevelID(int levelId)
         {
@@ -303,9 +312,9 @@ namespace LethalLevelLoader
         internal void SetExtendedDungeonFlowMatches()
         {
             List<IntWithRarity> dungeonFlowTypes = [.. SelectableLevel.dungeonFlowTypes];
-            for (int i = 0; i < SelectableLevel.dungeonFlowTypes?.Length; i++)
+            for (int i = 0; i < dungeonFlowTypes.Count; i++)
             {
-                IntWithRarity dungeonWithRarity = SelectableLevel.dungeonFlowTypes[i];
+                IntWithRarity dungeonWithRarity = dungeonFlowTypes[i];
                 if (dungeonWithRarity != null)
                 {
                     ExtendedDungeonFlow extendedDungeonFlow = PatchedContent.ExtendedDungeonFlows.Find(extendedDungeonFlow => extendedDungeonFlow.DungeonID == dungeonWithRarity.id);
@@ -318,7 +327,6 @@ namespace LethalLevelLoader
                 Debug.LogWarning($"Invalid DungeonFlow entry at index '{i}' for SelectableLevel: {SelectableLevel.name}");
                 dungeonFlowTypes.RemoveAt(i--);
             }
-
             if (SelectableLevel.name.Equals("MarchLevel", StringComparison.Ordinal))
             {
                 ExtendedDungeonFlow marchDungeonFlow = PatchedContent.ExtendedDungeonFlows.Find(extendedDungeonFlow =>
@@ -326,12 +334,13 @@ namespace LethalLevelLoader
                 if (marchDungeonFlow != null)
                     marchDungeonFlow.LevelMatchingProperties.planetNames.Add(new(NumberlessPlanetName, 300));
             }
+            SelectableLevel.dungeonFlowTypes = [.. dungeonFlowTypes];
         }
 
         internal void GetVanillaInfoNode()
         {
             foreach (CompatibleNoun infoNoun in TerminalManager.routeInfoKeyword.compatibleNouns)
-                if (infoNoun.noun.word == NumberlessPlanetName.ToLower())
+                if (string.Equals(infoNoun.noun.word, NumberlessPlanetName, StringComparison.OrdinalIgnoreCase))
                 {
                     InfoNode = infoNoun.result;
                     break;
@@ -343,6 +352,11 @@ namespace LethalLevelLoader
             if (Plugin.Instance != null)
                 Debug.LogWarning("ForceSetRoutePrice Should Only Be Used In Editor! Consider Using RoutePrice Property To Sync TerminalNode's With New Value.");
             routePrice = newValue;
+        }
+
+        internal sealed class ExtendedLevelDifficultyComparer : IComparer<ExtendedLevel>
+        {
+            public int Compare(ExtendedLevel a, ExtendedLevel b) => a.CalculatedDifficultyRating - b.CalculatedDifficultyRating;
         }
     }
 

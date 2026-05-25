@@ -27,8 +27,8 @@ namespace LethalLevelLoader
         public static event Action onBeforeSetup;
         public static event Action onSetupComplete; //Happens on the first lobby in a session
         public static event Action onLobbyInitialized; //Happens per lobby in a session
-        public static bool IsSetupComplete { get; private set; } = false;
-        public static bool IsLobbyInitialized { get; internal set; } = false;
+        public static bool IsSetupComplete { get; private set; }
+        public static bool IsLobbyInitialized { get; internal set; }
 
         private void Awake()
         {

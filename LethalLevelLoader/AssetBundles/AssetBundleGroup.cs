@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace LethalLevelLoader.AssetBundles
@@ -11,7 +10,7 @@ namespace LethalLevelLoader.AssetBundles
     public class AssetBundleGroup
     {
         public string GroupName { get; private set; } = string.Empty;
-        private List<AssetBundleInfo> assetBundleInfos = new List<AssetBundleInfo>();
+        private readonly List<AssetBundleInfo> assetBundleInfos = new List<AssetBundleInfo>();
 
         public AssetBundleGroupLoadedStatus LoadedStatus
         {
@@ -27,7 +26,6 @@ namespace LethalLevelLoader.AssetBundles
                         if (loadedCount > 0)
                             return (AssetBundleGroupLoadedStatus.Partial);
                     }
-
                     else
                     {
                         loadedCount++;
@@ -153,7 +151,7 @@ namespace LethalLevelLoader.AssetBundles
         public bool ContainsAssetBundleFile(string fullFilePath)
         {
             for (int i = 0; i < assetBundleInfos.Count; i++)
-                if (assetBundleInfos[i].AssetBundleFilePath.Equals(fullFilePath))
+                if (assetBundleInfos[i].AssetBundleFilePath.Equals(fullFilePath, StringComparison.Ordinal))
                     return (true);
             return (false);
         }

@@ -20,14 +20,13 @@ namespace LethalLevelLoader
         //public bool transitioning;
         //public bool effectEnabled;
 
-        internal static ExtendedWeatherEffect Create(LevelWeatherType levelWeatherType, WeatherEffect weatherEffect, string weatherDisplayName, ContentType newContentType)
-        {
-            return (ExtendedWeatherEffect.Create(levelWeatherType, weatherEffect?.effectObject, weatherEffect?.effectPermanentObject, weatherDisplayName, newContentType));
-        }
+        internal static ExtendedWeatherEffect Create(LevelWeatherType levelWeatherType, WeatherEffect weatherEffect, string weatherDisplayName, ContentType newContentType) =>
+            Create(levelWeatherType, weatherEffect?.effectObject, weatherEffect?.effectPermanentObject, weatherDisplayName, newContentType);
 
         internal static ExtendedWeatherEffect Create(LevelWeatherType levelWeatherType, GameObject worldObject, GameObject globalObject, string newWeatherDisplayName, ContentType newContentType)
         {
-            ExtendedWeatherEffect newExtendedWeatherEffect = ScriptableObject.CreateInstance<ExtendedWeatherEffect>();
+            ExtendedWeatherEffect newExtendedWeatherEffect = CreateInstance<ExtendedWeatherEffect>();
+            newExtendedWeatherEffect.ContentType = newContentType;
 
             newExtendedWeatherEffect.WeatherDisplayName = newWeatherDisplayName;
 
@@ -40,10 +39,10 @@ namespace LethalLevelLoader
             return (newExtendedWeatherEffect);
         }
 
-        internal override (bool result, string log) TryValidateContent()
+        /* internal override (bool result, string log) TryValidateContent()
         {
             // TODO: Weather validation.
             return (base.TryValidateContent());
-        }
+        } */
     }
 }

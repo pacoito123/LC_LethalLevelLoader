@@ -50,7 +50,7 @@ namespace LethalLevelLoader
                 {
                     ModMergeSetting.MatchingAuthorName => ExtendedMod.AuthorName,
                     ModMergeSetting.MatchingModName => ExtendedMod.ModName,
-                    _ => UniqueIdentificationName
+                    ModMergeSetting.Disabled or _ => UniqueIdentificationName
                 };
 
                 FootstepSurface.surfaceTag = identifier + '/' + FootstepSurface.surfaceTag;
@@ -98,7 +98,7 @@ namespace LethalLevelLoader
         public readonly byte GetIndexMask()
         {
             HashSet<int> indices = [.. layerIndices];
-            int removedIndices = indices.RemoveWhere(index => index < 0 || index > 7);
+            int removedIndices = indices.RemoveWhere(index => index is < 0 or > 7);
             if (removedIndices > 0)
                 DebugHelper.LogWarning($"Removed {removedIndices} indices for Terrain: {terrainName}", DebugType.Developer);
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LethalLevelLoader
+﻿namespace LethalLevelLoader
 {
     public enum PreviewInfoType { Price, Difficulty, Weather, History, All, None, Vanilla, Override };
     public enum SortInfoType { Price, Difficulty, Tag, LastTraveled, None }

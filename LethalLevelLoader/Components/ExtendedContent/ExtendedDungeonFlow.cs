@@ -88,7 +88,7 @@ namespace LethalLevelLoader
 
         internal static ExtendedDungeonFlow Create(DungeonFlow newDungeonFlow, AudioClip newFirstTimeDungeonAudio, Vector3 newRestrictBounds, int newCullingTileDepth)
         {
-            ExtendedDungeonFlow newExtendedDungeonFlow = ScriptableObject.CreateInstance<ExtendedDungeonFlow>();
+            ExtendedDungeonFlow newExtendedDungeonFlow = CreateInstance<ExtendedDungeonFlow>();
             newExtendedDungeonFlow.DungeonFlow = newDungeonFlow;
             newExtendedDungeonFlow.FirstTimeDungeonAudio = newFirstTimeDungeonAudio;
             newExtendedDungeonFlow.RestrictBounds = newRestrictBounds;
@@ -97,11 +97,6 @@ namespace LethalLevelLoader
             newExtendedDungeonFlow.TryCreateMatchingProperties();
 
             return (newExtendedDungeonFlow);
-        }
-
-        internal void Reset()
-        {
-            ConvertObsoleteValues();
         }
 
         internal void Initialize()

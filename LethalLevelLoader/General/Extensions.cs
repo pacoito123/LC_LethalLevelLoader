@@ -3,7 +3,6 @@ using DunGen.Graph;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -110,18 +109,16 @@ namespace LethalLevelLoader
 
         public static void AddCompatibleNoun(this TerminalKeyword terminalKeyword, TerminalKeyword newNoun, TerminalNode newResult)
         {
-            if (terminalKeyword.compatibleNouns == null)
-                terminalKeyword.compatibleNouns = new CompatibleNoun[0];
+            terminalKeyword.compatibleNouns ??= [];
             CompatibleNoun newCompatibleNoun = new CompatibleNoun(newNoun, newResult);
-            terminalKeyword.compatibleNouns = terminalKeyword.compatibleNouns.AddItem(newCompatibleNoun).ToArray();
+            terminalKeyword.compatibleNouns = [.. terminalKeyword.compatibleNouns.AddItem(newCompatibleNoun)];
         }
 
         public static void AddCompatibleNoun(this TerminalNode terminalNode, TerminalKeyword newNoun, TerminalNode newResult)
         {
-            if (terminalNode.terminalOptions == null)
-                terminalNode.terminalOptions = new CompatibleNoun[0];
+            terminalNode.terminalOptions ??= [];
             CompatibleNoun newCompatibleNoun = new CompatibleNoun(newNoun, newResult);
-            terminalNode.terminalOptions = terminalNode.terminalOptions.AddItem(newCompatibleNoun).ToArray();
+            terminalNode.terminalOptions = [.. terminalNode.terminalOptions.AddItem(newCompatibleNoun)];
         }
 
         public static void Add(this IntWithRarity intWithRarity, int id, int rarity)
@@ -173,7 +170,11 @@ namespace LethalLevelLoader
 
         public static List<DungeonFlow> GetDungeonFlows(this RoundManager roundManager)
         {
-            return roundManager.dungeonFlowTypes.Select(i => i.dungeonFlow).ToList();
+            List<DungeonFlow> dungeonFlows = new List<DungeonFlow>(roundManager.dungeonFlowTypes.Length);
+            for (int i = 0; i < roundManager.dungeonFlowTypes.Length; i++)
+                if (roundManager.dungeonFlowTypes[i] != null && roundManager.dungeonFlowTypes[i].dungeonFlow != null)
+                    dungeonFlows.Add(roundManager.dungeonFlowTypes[i].dungeonFlow);
+            return (dungeonFlows);
         }
 
         public static T TryAddComponent<T>(this GameObject gameObject) where T : Component

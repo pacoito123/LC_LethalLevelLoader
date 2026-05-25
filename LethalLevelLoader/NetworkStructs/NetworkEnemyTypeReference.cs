@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Unity.Netcode;
 
 namespace LethalLevelLoader
 {
     public struct NetworkEnemyTypeReference : INetworkSerializable
     {
-        private List<NetworkPrefab> m_Prefabs => LethalLevelLoaderNetworkManager.networkManager.NetworkConfig.Prefabs.m_Prefabs;
+        private static List<NetworkPrefab> Prefabs => LethalLevelLoaderNetworkManager.networkManager.NetworkConfig.Prefabs.m_Prefabs;
 
         private uint m_NetworkEnemyTypeObjectId;
-        private static uint s_NullId = uint.MaxValue;
+        private const uint s_NullId = uint.MaxValue;
 
         public uint NetworkEnemyTypeObjectId
         {
-            get => m_NetworkEnemyTypeObjectId;
+            readonly get => m_NetworkEnemyTypeObjectId;
             internal set => m_NetworkEnemyTypeObjectId = value;
         }
 
@@ -35,7 +34,7 @@ namespace LethalLevelLoader
             m_NetworkEnemyTypeObjectId = GetIdHashFromEnemyType(enemy);
         }
 
-        public bool TryGet(out EnemyType enemy, NetworkManager networkManager = null)
+        public readonly bool TryGet(out EnemyType enemy, NetworkManager _ = null)
         {
             enemy = Resolve(this);
             return (enemy != null);
@@ -46,32 +45,35 @@ namespace LethalLevelLoader
         {
             if (networkEnemy.m_NetworkEnemyTypeObjectId == s_NullId)
                 return null;
-            return (networkEnemy.GetEnemyTypeFromNetworkPrefabIdHash(networkEnemy.m_NetworkEnemyTypeObjectId));
+            return (GetEnemyTypeFromNetworkPrefabIdHash(networkEnemy.m_NetworkEnemyTypeObjectId));
         }
 
-        public static implicit operator EnemyType(NetworkEnemyTypeReference networkEnemyRef) => Resolve(networkEnemyRef);
-
-        public static implicit operator NetworkEnemyTypeReference(EnemyType enemy) => new NetworkEnemyTypeReference(enemy);
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        public static implicit operator EnemyType(NetworkEnemyTypeReference networkEnemyRef)
         {
-            serializer.SerializeValue(ref m_NetworkEnemyTypeObjectId);
+            return Resolve(networkEnemyRef);
         }
 
-        private EnemyType GetEnemyTypeFromNetworkPrefabIdHash(uint idHash)
+        public static implicit operator NetworkEnemyTypeReference(EnemyType enemy)
         {
-            for (int i = 0; i < m_Prefabs.Count; i++)
-                if (m_Prefabs[i].SourcePrefabGlobalObjectIdHash == idHash)
-                    if (m_Prefabs[i].Prefab.TryGetComponent(out EnemyAI enemyAI))
+            return new NetworkEnemyTypeReference(enemy);
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter => serializer.SerializeValue(ref m_NetworkEnemyTypeObjectId);
+
+        private static EnemyType GetEnemyTypeFromNetworkPrefabIdHash(uint idHash)
+        {
+            for (int i = 0; i < Prefabs.Count; i++)
+                if (Prefabs[i].SourcePrefabGlobalObjectIdHash == idHash)
+                    if (Prefabs[i].Prefab.TryGetComponent(out EnemyAI enemyAI))
                         return (enemyAI.enemyType);
             return (null);
         }
 
-        private uint GetIdHashFromEnemyType(EnemyType enemy)
+        private static uint GetIdHashFromEnemyType(EnemyType enemy)
         {
-            for (int i = 0; i < m_Prefabs.Count; i++)
-                if (m_Prefabs[i].Prefab == enemy.enemyPrefab)
-                    return (m_Prefabs[i].SourcePrefabGlobalObjectIdHash);
+            for (int i = 0; i < Prefabs.Count; i++)
+                if (Prefabs[i].Prefab == enemy.enemyPrefab)
+                    return (Prefabs[i].SourcePrefabGlobalObjectIdHash);
             return (0);
         }
     }

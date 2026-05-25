@@ -3,7 +3,7 @@ using HarmonyLib;
 
 namespace LethalLevelLoader
 {
-    internal class SafetyPatches
+    internal static class SafetyPatches
     {
         /* [HarmonyPriority(harmonyPriority)]
         [HarmonyPatch(typeof(StartOfRound), "ChangeLevel")]

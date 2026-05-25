@@ -1,15 +1,12 @@
-﻿using DunGen;
-using DunGen.Graph;
-using HarmonyLib;
+﻿using DunGen.Graph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace LethalLevelLoader
 {
-    public class DungeonManager
+    public static class DungeonManager
     {
         public static ExtendedDungeonFlow CurrentExtendedDungeonFlow
         {
@@ -22,7 +19,7 @@ namespace LethalLevelLoader
                 return (field);
             }
         }
-        public static DungeonEvents GlobalDungeonEvents = new DungeonEvents();
+        public static readonly DungeonEvents GlobalDungeonEvents = new DungeonEvents();
 
         internal static void PatchVanillaDungeonLists()
         {
@@ -122,17 +119,12 @@ namespace LethalLevelLoader
                 IndoorMapType newIndoorMapType = new IndoorMapType(dungeonFlow, 1f, null);
                 indoorMapTypes.Add(newIndoorMapType);
             }
-            Patches.RoundManager.dungeonFlowTypes = indoorMapTypes.ToArray();
+            Patches.RoundManager.dungeonFlowTypes = [.. indoorMapTypes];
         }
 
-        internal static bool TryGetExtendedDungeonFlow(DungeonFlow dungeonFlow, out ExtendedDungeonFlow returnExtendedDungeonFlow, ContentType contentType = ContentType.Any)
-        {
-            return (PatchedContent.TryGetExtendedContent(dungeonFlow, out returnExtendedDungeonFlow));
-        }
+        internal static bool TryGetExtendedDungeonFlow(DungeonFlow dungeonFlow, out ExtendedDungeonFlow returnExtendedDungeonFlow, ContentType contentType = ContentType.Any) =>
+            PatchedContent.TryGetExtendedContent(dungeonFlow, out returnExtendedDungeonFlow) && (contentType is ContentType.Any || contentType == returnExtendedDungeonFlow.ContentType);
 
-        internal static bool TryGetExtendedDungeonFlow(IndoorMapType indoorMapType, out ExtendedDungeonFlow returnExtendedDungeonFlow, ContentType contentType = ContentType.Any)
-        {
-            return (TryGetExtendedDungeonFlow(indoorMapType.dungeonFlow, out returnExtendedDungeonFlow, contentType));
-        }
+        internal static bool TryGetExtendedDungeonFlow(IndoorMapType indoorMapType, out ExtendedDungeonFlow returnExtendedDungeonFlow, ContentType contentType = ContentType.Any) => (TryGetExtendedDungeonFlow(indoorMapType.dungeonFlow, out returnExtendedDungeonFlow, contentType));
     }
 }

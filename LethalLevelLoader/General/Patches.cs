@@ -534,7 +534,7 @@ namespace LethalLevelLoader
         }
 
         [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.Internal_SceneLoaded)), HarmonyPrefix, HarmonyPriority(priority)]
-        internal static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        internal static void OnSceneLoaded(ref Scene scene, LoadSceneMode mode)
         {
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel == null || currentLevel.IsLevelLoaded == false) return;
@@ -787,7 +787,7 @@ namespace LethalLevelLoader
             Type genericType = Type.MakeGenericMethodParameter(0).MakeByRefType();
             MethodInfo terrainTryGetComponentInfo = typeof(Component).GetMethod(nameof(Component.TryGetComponent), 1, [genericType]).MakeGenericMethod(typeof(Terrain));
             MethodInfo activeTerrainGetter = typeof(Terrain).GetProperty(nameof(Terrain.activeTerrain), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
-            _ = codeMatcher.RemoveInstructions(3) // Remove GetComponent<Terrain>() null comparison.
+            codeMatcher.RemoveInstructions(3) // Remove GetComponent<Terrain>() null comparison.
             .InsertAndAdvance(
                 new(OpCodes.Ldloca_S, (sbyte)0),
                 new(OpCodes.Callvirt, terrainTryGetComponentInfo)) // Insert call to TryGetComponent<Terrain>() and set local variable to obtained value.
@@ -802,7 +802,7 @@ namespace LethalLevelLoader
             }
 
             MethodInfo terrainDataGetter = typeof(Terrain).GetProperty(nameof(Terrain.terrainData), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
-            _ = codeMatcher.SetOpcodeAndAdvance(OpCodes.Pop) // Not removing Terrain.activeTerrain call before this in case any other Transpiler expects it to still be there.
+            codeMatcher.SetOpcodeAndAdvance(OpCodes.Pop) // Not removing Terrain.activeTerrain call before this in case any other Transpiler expects it to still be there.
             .MatchForward(useEnd: true,
                 new(OpCodes.Ldloc_0),
                 new(OpCodes.Callvirt, terrainDataGetter), // Match TerrainData local variable assignment.
@@ -841,7 +841,7 @@ namespace LethalLevelLoader
 
             FieldInfo currentFootstepSurfaceIndexInfo = typeof(PlayerControllerB).GetField(nameof(PlayerControllerB.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.Public);
             MethodInfo tryGetAndSetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetAndSetFootstepSurfaceIndex), [typeof(Terrain), typeof(int), typeof(PlayerControllerB)]);
-            _ = codeMatcher.CreateLabel(out Label vanillaFootstepsTarget)
+            codeMatcher.CreateLabel(out Label vanillaFootstepsTarget)
             .InsertAndAdvance(
                 new(OpCodes.Ldloc_0),
                 new(OpCodes.Ldloc_3),
@@ -885,7 +885,7 @@ namespace LethalLevelLoader
                 return instructions;
             }
 
-            _ = codeMatcher.CreateLabel(out Label terrainFootstepOverrideTarget)
+            codeMatcher.CreateLabel(out Label terrainFootstepOverrideTarget)
             .MatchBack(useEnd: true,
                 new(OpCodes.Ldarg_1), // Match immediately after 'checkStandingOnTerrain' check.
                 new(OpCodes.Brfalse),
@@ -933,7 +933,7 @@ namespace LethalLevelLoader
 
             Type genericType = Type.MakeGenericMethodParameter(0).MakeByRefType();
             MethodInfo terrainTryGetComponentInfo = typeof(Component).GetMethod(nameof(Component.TryGetComponent), 1, [genericType]).MakeGenericMethod(typeof(Terrain));
-            _ = codeMatcher.RemoveInstructions(4) // Remove Terrain.activeTerrain GameObject comparison instructions.
+            codeMatcher.RemoveInstructions(4) // Remove Terrain.activeTerrain GameObject comparison instructions.
             .InsertAndAdvance(
                 new(OpCodes.Ldloca_S, terrainLocal),
                 new(OpCodes.Callvirt, terrainTryGetComponentInfo)) // Insert call to TryGetComponent<Terrain>() and set local variable to obtained value.
@@ -1028,7 +1028,7 @@ namespace LethalLevelLoader
             CodeInstruction nextInstruction = codeMatcher.Instruction; // Save instruction immediately after match.
             MethodInfo swapOpenDoorSFXInfo = typeof(Patches).GetMethod(nameof(SwapOpenDoorSFX), BindingFlags.Static | BindingFlags.NonPublic);
             FieldInfo isEntranceToBuildingInfo = typeof(EntranceTeleport).GetField(nameof(EntranceTeleport.isEntranceToBuilding), BindingFlags.Instance | BindingFlags.Public);
-            _ = codeMatcher.SetInstructionAndAdvance(new(OpCodes.Ldloca_S, (sbyte)0)) // Replace instruction to preserve label(s).
+            codeMatcher.SetInstructionAndAdvance(new(OpCodes.Ldloca_S, (sbyte)0)) // Replace instruction to preserve label(s).
             .InsertAndAdvance(
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldfld, isEntranceToBuildingInfo),
@@ -1172,7 +1172,7 @@ namespace LethalLevelLoader
 
         //DunGen Optimization Patches (Credit To LadyRaphtalia, Author Of Scarlet Devil Mansion)
         [HarmonyPatch(typeof(DoorwayPairFinder), nameof(DoorwayPairFinder.GetDoorwayPairs)), HarmonyPrefix, HarmonyPriority(priority)]
-        internal static bool GetDoorwayPairsPatch(DoorwayPairFinder __instance, int? maxCount, ref Queue<DoorwayPair> __result)
+        internal static bool GetDoorwayPairsPatch(DoorwayPairFinder __instance, ref int? maxCount, ref Queue<DoorwayPair> __result)
         {
             __instance.tileOrder = __instance.CalculateOrderedListOfTiles();
             IEnumerable<DoorwayPair> doorwayPairs = (__instance.PreviousTile == null) ?
@@ -1190,7 +1190,7 @@ namespace LethalLevelLoader
             return false;
         }
 
-        private class DoorwayPairComparer : IComparer<DoorwayPair>
+        private sealed class DoorwayPairComparer : IComparer<DoorwayPair>
         {
             public int Compare(DoorwayPair a, DoorwayPair b)
             {
@@ -1241,7 +1241,7 @@ namespace LethalLevelLoader
             .Repeat(matcher =>
                 {
                     string saveKey = $"{matcher.Operand}";
-                    if (saveKey.StartsWith("Level{0}"))
+                    if (saveKey.StartsWith("Level{0}", StringComparison.Ordinal))
                     {
                         matcher.SearchForward(ci => ci.Is(OpCodes.Ldfld, levelIDInfo)) // Skip to `SelectableLevel.levelID`.
                             .SetAndAdvance(OpCodes.Callvirt, gameObjectGetter)

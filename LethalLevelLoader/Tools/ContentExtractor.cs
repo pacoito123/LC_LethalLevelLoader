@@ -1,5 +1,4 @@
-﻿using DunGen.Graph;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -88,21 +87,7 @@ namespace LethalLevelLoader
 
                 OriginalContent.SelectableLevels = [.. startOfRound.levels];
                 OriginalContent.MoonsCatalogue = [.. TerminalManager.Terminal.moonsCatalogueList];
-
             }
-            //DebugHelper.DebugScrapedVanillaContent();
-        }
-
-        internal static void TryScrapeCustomContent()
-        {
-            /*
-            foreach (EnemyType enemyType in Resources.FindObjectsOfTypeAll(typeof(EnemyType)))
-                if (!OriginalContent.Enemies.Contains(enemyType))
-                    PatchedContent.Enemies.Add(enemyType);
-
-            foreach (Item item in Resources.FindObjectsOfTypeAll(typeof(Item)))
-                if (!OriginalContent.Items.Contains(item))
-                    PatchedContent.Items.Add(item);*/
         }
 
         internal static void ObtainSpecialContentReferences()
@@ -223,13 +208,6 @@ namespace LethalLevelLoader
                 TryAddReference(OriginalContent.SpawnableOutsideObjects, spawnableOutsideObject.spawnableObject);
 
             TryAddReference(OriginalContent.LevelAmbienceLibraries, selectableLevel.levelAmbienceClips);
-        }
-
-        internal static void ExtractDungeonFlowReferences(DungeonFlow dungeonFlow)
-        {
-            /*foreach (Tile tile in dungeonFlow.GetTiles())
-                foreach (RandomScrapSpawn randomScrapSpawn in tile.gameObject.GetComponentsInChildren<RandomScrapSpawn>())
-                    TryAddReference(OriginalContent.ItemGroups, randomScrapSpawn.spawnableItems);*/
         }
 
         internal static void TryAddReference<T>(List<T> referenceList, T reference) where T : UnityEngine.Object

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace LethalLevelLoader
 {
-    public class EnemyManager
+    public static class EnemyManager
     {
         public static HashSet<EnemyType> TinyEnemyTypes { get; } = [];
         public static HashSet<EnemyType> GiantEnemyTypes { get; } = [];
@@ -150,14 +150,7 @@ namespace LethalLevelLoader
         }
     }
 
-    struct EnemyData
-    {
-        public EnemyAI enemyAI;
-        public GameObject gamePrefab;
-        public GameObject networkPrefab;
-    }
-
-    enum SpawnableEnemyType
+    internal enum SpawnableEnemyType
     {
         None = -1,
         Inside,

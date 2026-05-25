@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace LethalLevelLoader
 {
@@ -6,8 +7,18 @@ namespace LethalLevelLoader
     {
         internal static void PatchVanillaVehiclesLists()
         {
-            Patches.Terminal.buyableVehicles = PatchedContent.ExtendedBuyableVehicles.Select(v => v.BuyableVehicle).ToArray();
-            Patches.StartOfRound.VehiclesList = PatchedContent.ExtendedBuyableVehicles.Select(v => v.BuyableVehicle.vehiclePrefab).ToArray();
+            List<BuyableVehicle> buyableVehicles = new List<BuyableVehicle>(PatchedContent.ExtendedBuyableVehicles.Count);
+            List<GameObject> vehiclePrefabs = new List<GameObject>(PatchedContent.ExtendedBuyableVehicles.Count);
+            foreach (ExtendedBuyableVehicle extendedVehicle in PatchedContent.ExtendedBuyableVehicles)
+            {
+                if (extendedVehicle != null && extendedVehicle.BuyableVehicle != null && extendedVehicle.BuyableVehicle.vehiclePrefab != null)
+                {
+                    buyableVehicles.Add(extendedVehicle.BuyableVehicle);
+                    vehiclePrefabs.Add(extendedVehicle.BuyableVehicle.vehiclePrefab);
+                }
+            }
+            Patches.Terminal.buyableVehicles = [.. buyableVehicles];
+            Patches.StartOfRound.VehiclesList = [.. vehiclePrefabs];
         }
 
         internal static void SetBuyableVehicleIDs()
@@ -31,7 +42,6 @@ namespace LethalLevelLoader
             foreach (ExtendedBuyableVehicle extendedBuyableVehicle in PatchedContent.ExtendedBuyableVehicles)
                 if (extendedBuyableVehicle.BuyableVehicle.vehiclePrefab.TryGetComponent(out VehicleController vehicleController))
                     vehicleController.vehicleID = extendedBuyableVehicle.VehicleID;
-
         }
     }
 }

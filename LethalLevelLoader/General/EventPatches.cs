@@ -11,7 +11,7 @@ namespace LethalLevelLoader
     //This class is dedicated to the patches needed to collect data sent to events inside the current ExtendedLevel and ExtendedDungeonFlow.
     //They are separated for organisation purposes and to enforce that all of these patches should only be reading information and sending it off
     //Nothing in this class should modify the game in any way.
-    internal class EventPatches
+    internal static class EventPatches
     {
         internal static DayMode previousDayMode = DayMode.None;
         internal static readonly List<GrabbableObject> scrapSpawnedThisRound = [];
@@ -276,7 +276,7 @@ namespace LethalLevelLoader
     {
         public override int Listeners => base.Listeners + paramListeners.Count;
         private event ParameterEvent<T> onParameterEvent;
-        private List<ParameterEvent<T>> paramListeners = new List<ParameterEvent<T>>();
+        private readonly List<ParameterEvent<T>> paramListeners = new List<ParameterEvent<T>>();
 
         public void Invoke(T param)
         {
@@ -310,7 +310,7 @@ namespace LethalLevelLoader
         public bool HasListeners => (Listeners != 0);
 
         public virtual int Listeners => listeners.Count;
-        private List<Action> listeners = new List<Action>();
+        private readonly List<Action> listeners = new List<Action>();
 
         public void Invoke()
         {
