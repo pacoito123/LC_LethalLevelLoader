@@ -517,6 +517,12 @@ namespace LethalLevelLoader
                     extendedFootstepSurface.Initialize();
                     PatchedContent.ExtendedFootstepSurfaces.Add(extendedFootstepSurface);
                 }
+                foreach (ExtendedContent content in extendedMod.ExtendedContents)
+                {
+                    _ = content.ContentTags.RemoveAll(tag => string.Equals(tag.contentTagName, "Custom", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(tag.contentTagName, "Vanilla", StringComparison.OrdinalIgnoreCase));
+                    content.ContentTags.Insert(0, ExtendedMod.CustomContentTag); // Add Custom ContentTag to the start.
+                }
             }
             //DebugHelper.DebugAllLevels();
         }
@@ -582,7 +588,6 @@ namespace LethalLevelLoader
                 PatchedContent.ExtendedItems.Add(extendedVanillaItem);
             }
 
-
             Terminal terminal = TerminalManager.Terminal;
             int counter = 0;
             foreach (Item item in terminal.buyableItemsList)
@@ -608,7 +613,7 @@ namespace LethalLevelLoader
         {
             foreach (EnemyType enemyType in OriginalContent.Enemies)
             {
-                ExtendedEnemyType newExtendedEnemyType = ExtendedEnemyType.Create(enemyType, PatchedContent.VanillaMod, ContentType.Vanilla);
+                ExtendedEnemyType newExtendedEnemyType = ExtendedEnemyType.Create(enemyType, extendedMod: PatchedContent.VanillaMod, ContentType.Vanilla);
                 PatchedContent.ExtendedEnemyTypes.Add(newExtendedEnemyType);
 
                 ScanNodeProperties[] allEnemyScanNodes = newExtendedEnemyType.EnemyType.enemyPrefab.GetComponentsInChildren<ScanNodeProperties>(includeInactive: true);
@@ -655,7 +660,7 @@ namespace LethalLevelLoader
                 : dungeonName.StartsWith("Level3", StringComparison.Ordinal) ? "Mineshaft"
                 : dungeonName.StartsWith("Level4", StringComparison.Ordinal) ? "Aquarium" // What if I call it though...
                 : "Unknown";
-
+            extendedDungeonFlow.ContentTags.Add(ExtendedMod.VanillaContentTag);
             extendedDungeonFlow.Initialize();
             PatchedContent.VanillaMod.RegisterExtendedContent(extendedDungeonFlow);
             PatchedContent.ExtendedDungeonFlows.Add(extendedDungeonFlow);
@@ -674,6 +679,7 @@ namespace LethalLevelLoader
         internal static void CreateVanillaExtendedBuyableVehicle(BuyableVehicle buyableVehicle)
         {
             ExtendedBuyableVehicle newExtendedVanillaBuyableVehicle = ExtendedBuyableVehicle.Create(buyableVehicle);
+            newExtendedVanillaBuyableVehicle.ContentTags.Add(ExtendedMod.VanillaContentTag);
             PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedVanillaBuyableVehicle);
             PatchedContent.ExtendedBuyableVehicles.Add(newExtendedVanillaBuyableVehicle);
         }
@@ -687,6 +693,7 @@ namespace LethalLevelLoader
         internal static void CreateVanillaExtendedUnlockableItem(UnlockableItem unlockableItem)
         {
             ExtendedUnlockableItem newExtendedVanillaUnlockableItem = ExtendedUnlockableItem.Create(unlockableItem, PatchedContent.VanillaMod, ContentType.Vanilla);
+            newExtendedVanillaUnlockableItem.ContentTags.Add(ExtendedMod.VanillaContentTag);
             PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedVanillaUnlockableItem);
             PatchedContent.ExtendedUnlockableItems.Add(newExtendedVanillaUnlockableItem);
         }
@@ -715,6 +722,7 @@ namespace LethalLevelLoader
         internal static void CreateVanillaExtendedFootstepSurface(FootstepSurface footstepSurface, bool allowSinking, TerrainWithIndices[] associatedTerrains)
         {
             ExtendedFootstepSurface newExtendedFootstepSurface = ExtendedFootstepSurface.Create(footstepSurface, allowSinking, associatedTerrains);
+            newExtendedFootstepSurface.ContentTags.Add(ExtendedMod.VanillaContentTag);
             newExtendedFootstepSurface.Initialize();
             PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedFootstepSurface);
             PatchedContent.ExtendedFootstepSurfaces.Add(newExtendedFootstepSurface);
@@ -804,7 +812,7 @@ namespace LethalLevelLoader
 
         internal static void CreateLoadingBundlesHeaderText(PreInitSceneScript preInitSceneScript)
         {
-            GameObject newHeader = GameObject.Instantiate(preInitSceneScript.headerText.gameObject, preInitSceneScript.headerText.transform.parent);
+            GameObject newHeader = Instantiate(preInitSceneScript.headerText.gameObject, preInitSceneScript.headerText.transform.parent);
             RectTransform newHeaderRectTransform = newHeader.GetComponent<RectTransform>();
             TextMeshProUGUI newHeaderText = newHeader.GetComponent<TextMeshProUGUI>();
 

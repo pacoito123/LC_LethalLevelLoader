@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.4</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed `Custom` ContentTag being applied indiscriminately to all ExtendedContent
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.3</summary>**
 
 **<details><summary>Fixes</summary>**

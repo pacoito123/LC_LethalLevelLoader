@@ -62,7 +62,8 @@ namespace LethalLevelLoader
                 {
                     ExtendedItem extendedItem = allVanillaItems[foundIndex];
                     DebugHelper.Log($"Applying CSV Tags For Imported Item #{++counter} / {importedItemContentTagDictionary.Count}: {importedItemData.Key} To ExtendedItem: {extendedItem.Item.itemName}({extendedItem.Item.name})", DebugType.Developer);
-                    extendedItem.ContentTags = ContentTagManager.CreateNewContentTags(["Vanilla", .. importedItemData.Value]);
+                    extendedItem.ContentTags.Add(ExtendedMod.VanillaContentTag);
+                    extendedItem.ContentTags.AddRange(ContentTagManager.CreateNewContentTags([.. importedItemData.Value]));
                     allVanillaItems.RemoveAt(foundIndex);
                 }
                 else
@@ -81,7 +82,8 @@ namespace LethalLevelLoader
                 {
                     ExtendedLevel extendedLevel = allVanillaLevels[foundIndex];
                     DebugHelper.Log($"Applying CSV Tags For Imported Level #{++counter} / {importedLevelContentTagDictionary.Count}: {importedLevelData.Key} To ExtendedLevel: {extendedLevel.SelectableLevel.PlanetName}({extendedLevel.SelectableLevel.name})", DebugType.Developer);
-                    extendedLevel.ContentTags = ContentTagManager.CreateNewContentTags(["Vanilla", .. importedLevelData.Value]);
+                    extendedLevel.ContentTags.Add(ExtendedMod.VanillaContentTag);
+                    extendedLevel.ContentTags.AddRange(ContentTagManager.CreateNewContentTags([.. importedLevelData.Value]));
                     allVanillaLevels.RemoveAt(foundIndex);
                 }
                 else
@@ -100,7 +102,8 @@ namespace LethalLevelLoader
                 {
                     ExtendedEnemyType extendedEnemy = allVanillaEnemies[foundIndex];
                     DebugHelper.Log($"Applying CSV Tags For Imported Enemy #{++counter} / {importedEnemyContentTagDictionary.Count}: {importedEnemyData.Key} To ExtendedEnemyType: {extendedEnemy.EnemyType.enemyName}({extendedEnemy.EnemyType.name})", DebugType.Developer);
-                    extendedEnemy.ContentTags = ContentTagManager.CreateNewContentTags(["Vanilla", .. importedEnemyData.Value]);
+                    extendedEnemy.ContentTags.Add(ExtendedMod.VanillaContentTag);
+                    extendedEnemy.ContentTags.AddRange(ContentTagManager.CreateNewContentTags([.. importedEnemyData.Value]));
                     allVanillaEnemies.RemoveAt(foundIndex);
                 }
                 else

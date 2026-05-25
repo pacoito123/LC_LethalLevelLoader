@@ -43,6 +43,16 @@ namespace LethalLevelLoader
         [field: SerializeField]
         public List<string> StreamingLethalBundleNames { get; private set; } = new List<string>();
 
+        public static ContentTag VanillaContentTag
+        {
+            get
+            {
+                if (field == null)
+                    field = ContentTag.Create("Vanilla");
+                return field;
+            }
+        }
+
         public static ContentTag CustomContentTag
         {
             get
@@ -168,7 +178,6 @@ namespace LethalLevelLoader
             TryThrowInvalidContentException(extendedContent, extendedContent.TryValidateContent());
 
             extendedContentList.Add(extendedContent);
-            extendedContent.ContentTags.Add(CustomContentTag);
             extendedContent.ExtendedMod = this;
         }
 
