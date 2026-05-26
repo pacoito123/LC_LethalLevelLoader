@@ -35,7 +35,7 @@ namespace LethalLevelLoader
     internal static class TimeOfDayPatches
     {
         [HarmonyPrepare]
-        private static void PrepareLethalLibCompatibility(MethodBase original)
+        private static void PrepareTimeOfDayPatches(MethodBase original)
         {
             if (original == null)
                 DebugHelper.Log("Patching TimeOfDay speed multipliers!", DebugType.User);

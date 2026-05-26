@@ -32,16 +32,14 @@ namespace LethalLevelLoader
         internal static void PrepareDungeon()
         {
             DungeonGenerator dungeonGenerator = Patches.RoundManager.dungeonGenerator.Generator;
-            ExtendedLevel currentExtendedLevel = LevelManager.CurrentExtendedLevel;
-            ExtendedDungeonFlow currentExtendedDungeonFlow = DungeonManager.CurrentExtendedDungeonFlow;
-
-            //PatchDungeonSize(dungeonGenerator, currentExtendedLevel, currentExtendedDungeonFlow);
-
             dungeonGenerator.retryCount = 50; //I shouldn't really do this but I'm curious if it silently helps some custom interiors
 
+            ExtendedDungeonFlow currentExtendedDungeonFlow = DungeonManager.CurrentExtendedDungeonFlow;
+            if (currentExtendedDungeonFlow == null) return;
             if (currentExtendedDungeonFlow.IsDynamicOutOfBoundsTriggerEnabled)
                 dungeonGenerator.OnGenerationStatusChanged += PatchOutOfBoundsTriggers;
 
+            ExtendedLevel currentExtendedLevel = LevelManager.CurrentExtendedLevel;
             PatchFireEscapes(dungeonGenerator, currentExtendedLevel, SceneManager.GetSceneByName(currentExtendedLevel.SelectableLevel.sceneName));
             PatchDynamicGlobalProps(dungeonGenerator, currentExtendedDungeonFlow);
         }
@@ -50,17 +48,17 @@ namespace LethalLevelLoader
         {
             ExtendedDungeonFlow extendedDungeonFlow = DungeonManager.CurrentExtendedDungeonFlow;
             ExtendedLevel extendedLevel = LevelManager.CurrentExtendedLevel;
-            float calculatedMultiplier = CalculateDungeonMultiplier(LevelManager.CurrentExtendedLevel, DungeonManager.CurrentExtendedDungeonFlow);
+            float calculatedMultiplier = CalculateDungeonMultiplier(extendedLevel, DungeonManager.CurrentExtendedDungeonFlow);
             if (DungeonManager.CurrentExtendedDungeonFlow != null && DungeonManager.CurrentExtendedDungeonFlow.IsDynamicDungeonSizeRestrictionEnabled == true)
             {
                 if (calculatedMultiplier > extendedDungeonFlow.DynamicDungeonSizeMax)
                     calculatedMultiplier = Mathf.Lerp(calculatedMultiplier, extendedDungeonFlow.DynamicDungeonSizeMax, extendedDungeonFlow.DynamicDungeonSizeLerpRate); //This is how vanilla does it.
                 else if (calculatedMultiplier < extendedDungeonFlow.DynamicDungeonSizeMin)
                     calculatedMultiplier = Mathf.Lerp(calculatedMultiplier, extendedDungeonFlow.DynamicDungeonSizeMin, extendedDungeonFlow.DynamicDungeonSizeLerpRate);//This is how vanilla does it.
-                DebugHelper.Log("Current ExtendedLevel: " + LevelManager.CurrentExtendedLevel.NumberlessPlanetName + " ExtendedLevel DungeonSize Is: " + LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier + " | Overriding DungeonSize To: " + calculatedMultiplier, DebugType.User);
+                DebugHelper.Log("Current ExtendedLevel: " + extendedLevel.NumberlessPlanetName + " ExtendedLevel DungeonSize Is: " + extendedLevel.SelectableLevel.factorySizeMultiplier + " | Overriding DungeonSize To: " + calculatedMultiplier, DebugType.User);
             }
             else
-                DebugHelper.Log("CurrentLevel: " + LevelManager.CurrentExtendedLevel.NumberlessPlanetName + " DungeonSize Is: " + LevelManager.CurrentExtendedLevel.SelectableLevel.factorySizeMultiplier + " | Leaving DungeonSize As: " + calculatedMultiplier, DebugType.User);
+                DebugHelper.Log("CurrentLevel: " + extendedLevel.NumberlessPlanetName + " DungeonSize Is: " + extendedLevel.SelectableLevel.factorySizeMultiplier + " | Leaving DungeonSize As: " + calculatedMultiplier, DebugType.User);
             return (calculatedMultiplier);
         }
 
@@ -96,7 +94,19 @@ namespace LethalLevelLoader
                     //entranceTeleport.dungeonFlowId = extendedDungeonFlow.DungeonID; //I'm pretty sure this is fine but this would be something to check if stuff goes weird.
                 }
 
-                debugString += "EntranceTeleport's Found, " + extendedLevel.NumberlessPlanetName + " Contains " + (entranceTeleports.Count) + " Entrances! ( " + (entranceTeleports.Count - 1) + " Fire Escapes) " + "\n";
+                if (entranceTeleports.Count == 0)
+                {
+                    DebugHelper.LogFatal("No EntranceTeleports Found In The Scene!", DebugType.User);
+                    foreach (GlobalPropSettings globalPropSettings in dungeonGenerator.DungeonFlow.GlobalProps)
+                        if (globalPropSettings.ID == 1231)
+                        {
+                            globalPropSettings.Count = new(0, 0);
+                            break;
+                        }
+                    return;
+                }
+
+                debugString += "EntranceTeleports Found, " + extendedLevel.NumberlessPlanetName + " Contains " + (entranceTeleports.Count) + " Entrances! ( " + (entranceTeleports.Count - 1) + " Fire Escapes) " + "\n";
                 debugString += "Main Entrance: " + entranceTeleports[0].gameObject.name + " (Entrance ID: " + entranceTeleports[0].entranceId + ")" + "\n";
                 foreach (EntranceTeleport entranceTeleport in entranceTeleports)
                     if (entranceTeleport.entranceId != 0)

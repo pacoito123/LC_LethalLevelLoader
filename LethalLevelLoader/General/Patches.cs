@@ -570,7 +570,8 @@ namespace LethalLevelLoader
             if (currentLevel != null && currentLevel.IsLevelLoaded && currentLevel.ContentType is not ContentType.External)
             {
                 LevelLoader.RefreshShipAnimatorClips(currentLevel, randomSeed);
-                LevelLoader.RestoreRuntimeDungeon();
+                if (currentLevel.SelectableLevel != null && currentLevel.SelectableLevel.spawnEnemiesAndScrap)
+                    LevelLoader.RestoreRuntimeDungeon();
             }
         }
 
@@ -629,8 +630,8 @@ namespace LethalLevelLoader
                 DebugHelper.LogFatal($"Critical Failure! Scene '{sceneName}' has no selection entry for ExtendedLevel {extendedLevel.NumberlessPlanetName}!", DebugType.User);
         }
 
-        [HarmonyPatch(typeof(DungeonGenerator), "Generate"), HarmonyPrefix, HarmonyPriority(priority)]
-        internal static void DungeonGeneratorGenerate_Prefix(DungeonGenerator __instance)
+        [HarmonyPatch(typeof(DungeonGenerator), nameof(DungeonGenerator.Generate)), HarmonyPrefix, HarmonyPriority(priority)]
+        internal static void DungeonGeneratorGenerate_Prefix()
         {
             if (LevelManager.CurrentExtendedLevel != null)
                 DungeonLoader.PrepareDungeon();
@@ -690,7 +691,8 @@ namespace LethalLevelLoader
         //Called via Transpiler.
         internal static void InjectHostDungeonFlowSelection(RoundManager roundManager)
         {
-            if (LevelManager.CurrentExtendedLevel != null)
+            ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
+            if (currentLevel != null && currentLevel.IsLevelLoaded && currentLevel.SelectableLevel != null && currentLevel.SelectableLevel.spawnEnemiesAndScrap)
                 DungeonLoader.SelectDungeon();
             else
                 roundManager.GenerateNewFloor();

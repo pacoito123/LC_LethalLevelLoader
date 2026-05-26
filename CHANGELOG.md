@@ -5,6 +5,7 @@
 
 **<details><summary>Fixes</summary>**
 
+* Fixed a few issues with RuntimeDungeon restoration when landing on certain moons
 * Fixed `Custom` ContentTag being applied indiscriminately to all ExtendedContent
 
 </details>

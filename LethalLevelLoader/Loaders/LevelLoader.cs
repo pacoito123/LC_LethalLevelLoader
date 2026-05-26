@@ -383,6 +383,8 @@ namespace LethalLevelLoader
                 dungeon.Generator.AllowTilePooling = true; // Yippee!
                 dungeon.Generator.GenerateAsynchronously = true;
 
+                Patches.RoundManager.dungeonGenerator = dungeon;
+                dungeon.Generator.DungeonFlow = Patches.RoundManager.dungeonFlowTypes[0].dungeonFlow; // Set Facility as default, before interior selection.
                 DebugHelper.Log("RuntimeDungeon created, proceeding as usual!", DebugType.User);
             }
         }

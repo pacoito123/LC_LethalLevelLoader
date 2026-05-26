@@ -12,7 +12,8 @@ namespace LethalLevelLoader
         {
             get
             {
-                if (Patches.RoundManager == null || Patches.RoundManager.dungeonGenerator == null) return (null);
+                if (Patches.RoundManager == null || Patches.RoundManager.dungeonGenerator == null || Patches.RoundManager.dungeonGenerator.Generator == null || Patches.RoundManager.dungeonGenerator.Generator.DungeonFlow == null)
+                    return (null);
                 if (field == null || Patches.RoundManager.dungeonGenerator.Generator.DungeonFlow != field.DungeonFlow)
                     if (PatchedContent.TryGetExtendedContent(Patches.RoundManager.dungeonGenerator.Generator.DungeonFlow, out field))
                         DebugHelper.Log($"Dungeon switched to: {field.DungeonFlow.name}", DebugType.IAmBatby);
