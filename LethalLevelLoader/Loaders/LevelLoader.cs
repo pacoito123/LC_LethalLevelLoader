@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using DunGen;
 using DunGen.Adapters;
+using GameNetcodeStuff;
 using LethalLevelLoader.Tools;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -252,13 +253,21 @@ namespace LethalLevelLoader
             }
         }
 
-        internal static void ApplyCameraDistanceOverride() // TODO: Overhaul!
+        internal static void ApplyCameraDistanceOverride(PlayerControllerB player, bool outside, bool inOrbit = false)
         {
-            float newDistance = 0;
-            if (LevelManager.CurrentExtendedLevel.OverrideCameraMaxDistance > 400f || (DungeonManager.CurrentExtendedDungeonFlow != null && DungeonManager.CurrentExtendedDungeonFlow.OverrideCameraMaxDistance > 400f))
-                newDistance = Mathf.Max(LevelManager.CurrentExtendedLevel.OverrideCameraMaxDistance, DungeonManager.CurrentExtendedDungeonFlow.OverrideCameraMaxDistance);
-            foreach (KeyValuePair<Camera, float> cameraPair in Patches.playerCameras)
-                cameraPair.Key.farClipPlane = Mathf.Max(cameraPair.Value, newDistance);
+            if (player == null || player.gameplayCamera == null) return;
+            if (!outside)
+            {
+                ExtendedDungeonFlow currentDungeon = DungeonManager.CurrentExtendedDungeonFlow;
+                if (currentDungeon != null && currentDungeon.ContentType is not ContentType.External)
+                    player.gameplayCamera.farClipPlane = currentDungeon.OverrideCameraFarPlaneDistanceInside;
+            }
+            else
+            {
+                ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
+                if (currentLevel != null && currentLevel.ContentType is not ContentType.External)
+                    player.gameplayCamera.farClipPlane = inOrbit ? currentLevel.OverrideCameraFarPlaneDistanceInOrbit : currentLevel.OverrideCameraFarPlaneDistanceOutside;
+            }
         }
 
         internal static void RefreshTimeOfDayMusic(ExtendedLevel extendedLevel)

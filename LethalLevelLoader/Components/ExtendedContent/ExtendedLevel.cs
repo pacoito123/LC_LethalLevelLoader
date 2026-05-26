@@ -38,9 +38,14 @@ namespace LethalLevelLoader
         [field: SerializeField] public List<StringWithRarity> SceneSelections { get; set; } = new List<StringWithRarity>();
 
         [field: Space(5)]
-        [field: Tooltip("Overrides vanilla camera Far Plane Clip Distance, The highest value between current Level and Interior will be used.")]
-        [field: Range(0f, 10000f)]
-        [field: SerializeField] public float OverrideCameraMaxDistance = 400;
+        [field: Tooltip("Overrides Vanilla Camera Far Plane Clip Distance Outside.")]
+        [field: Range(0.1f, 10000f)]
+        [field: SerializeField] public float OverrideCameraFarPlaneDistanceOutside { get; set; } = 400f;
+
+        [field: Space(5)]
+        [field: Tooltip("Overrides Vanilla Camera Far Plane Clip Distance In Orbit.")]
+        [field: Range(0.1f, 10000f)]
+        [field: SerializeField] public float OverrideCameraFarPlaneDistanceInOrbit { get; set; } = 400f;
 
         [field: Space(5)]
         [field: Header("Weather Effect Override Settings")]
@@ -102,6 +107,7 @@ namespace LethalLevelLoader
         [Space(25)]
         [Header("Obsolete (Legacy Fields, Will Be Removed In The Future)")]
         [Obsolete] public SelectableLevel selectableLevel;
+        [Obsolete][field: Range(0.1f, 10000f)] public float OverrideCameraMaxDistance = 400f;
         [Obsolete][Space(5)] public string contentSourceName = string.Empty; //Levels from AssetBundles will have this as their Assembly Name.
         [Obsolete][Space(5)] public List<string> levelTags = new List<string>();
         [Obsolete][field: SerializeField] public AnimationClip ShipFlyToMoonClip { get; set; }
@@ -292,6 +298,13 @@ namespace LethalLevelLoader
                 DebugHelper.LogWarning("ExtendedLevel.ShipFlyFromMoonClip Is Obsolete and will be removed in following releases, Please use ExtendedLevel.ShipFlyFromMoonClips instead.", DebugType.Developer);
                 if (ShipFlyFromMoonClips.Count == 0)
                     ShipFlyFromMoonClips.Add(new(ShipFlyFromMoonClip, 300));
+            }
+
+            if (OverrideCameraMaxDistance != 400f && OverrideCameraFarPlaneDistanceOutside == 400f && OverrideCameraFarPlaneDistanceInOrbit == 400f)
+            {
+                DebugHelper.LogWarning("ExtendedLevel.OverrideCameraMaxDistance Is Obsolete and will be removed in following releases, Please use ExtendedLevel.OverrideCameraFarPlaneDistanceOutside instead.", DebugType.Developer);
+                OverrideCameraFarPlaneDistanceOutside = OverrideCameraMaxDistance;
+                OverrideCameraFarPlaneDistanceInOrbit = OverrideCameraMaxDistance;
             }
         }
 

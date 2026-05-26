@@ -23,8 +23,6 @@ namespace LethalLevelLoader
 
         internal static List<string> allSceneNamesCalledToLoad = new List<string>();
 
-        internal static Dictionary<Camera, float> playerCameras = new Dictionary<Camera, float>();
-
         internal static bool IsServer => NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
 
         //Caching this because I need it for checks while the local client is disconnecting which may make direct comparisons inconsistent.
@@ -182,11 +180,6 @@ namespace LethalLevelLoader
             //Disable Spatialization In All AudioSources To Fix Log Spam Bug.
             foreach (AudioSource audioSource in Resources.FindObjectsOfTypeAll<AudioSource>())
                 audioSource.spatialize = false;
-
-            playerCameras.Clear();
-            foreach (Camera camera in UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (camera.targetTexture != null && camera.targetTexture.name == "PlayerScreen")
-                    playerCameras.Add(camera, camera.farClipPlane);
 
             if (Plugin.IsSetupComplete == false)
             {
@@ -553,6 +546,7 @@ namespace LethalLevelLoader
                     TerrainManager.BakeTerrainFootsteps();
                     SceneManager.sceneUnloaded += TerrainManager.CleanupTerrainFootsteps;
                 }
+                LevelLoader.ApplyCameraDistanceOverride(player: GameNetworkManager.Instance.localPlayerController, outside: true);
             }
 
             EventPatches.previousDayMode = DayMode.None;
@@ -724,10 +718,7 @@ namespace LethalLevelLoader
 
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel != null && currentLevel.IsLevelLoaded && currentLevel.ContentType is not ContentType.External)
-            {
                 LevelLoader.RestoreShaders();
-                LevelLoader.ApplyCameraDistanceOverride();
-            }
         }
 
         [HarmonyPatch(typeof(StoryLog), "Start"), HarmonyPrefix, HarmonyPriority(priority)]
@@ -1109,6 +1100,28 @@ namespace LethalLevelLoader
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel != null && currentLevel.ContentType is not ContentType.External && currentLevel.OverrideCreakShutDoorSFX?.Length > 0)
                 shutDoorClipsOutside = currentLevel.OverrideCreakShutDoorSFX;
+        }
+
+        [HarmonyPatch(typeof(EntranceTeleport), nameof(EntranceTeleport.TeleportPlayerServerRpc)), HarmonyPrefix, HarmonyPriority(priority)]
+        internal static void EntranceTeleportTeleportPlayerServerRpc_Prefix(EntranceTeleport __instance)
+        {
+            if (__instance.__rpc_exec_stage is NetworkBehaviour.__RpcExecStage.Send) // Only run on the player calling the ServerRpc.
+                LevelLoader.ApplyCameraDistanceOverride(GameNetworkManager.Instance.localPlayerController, outside: !__instance.isEntranceToBuilding);
+        }
+
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.TeleportPlayer)), HarmonyPostfix, HarmonyPriority(priority)]
+        internal static void PlayerControllerBTeleportPlayer_Postfix(PlayerControllerB __instance)
+        {
+            if (__instance.IsOwner)
+                LevelLoader.ApplyCameraDistanceOverride(__instance, outside: !__instance.isInsideFactory);
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ShipHasLeft))]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ChangePlanet)), HarmonyPostfix, HarmonyPriority(priority)]
+        internal static void StartOfRoundChangePlanet_Postfix()
+        {
+            if (GameNetworkManager.Instance != null)
+                LevelLoader.ApplyCameraDistanceOverride(GameNetworkManager.Instance.localPlayerController, outside: true, inOrbit: true);
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnClientConnect)), HarmonyPostfix, HarmonyPriority(priority)]

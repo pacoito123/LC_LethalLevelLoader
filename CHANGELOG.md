@@ -3,6 +3,17 @@
 
 **<details><summary>Version 1.7.4</summary>**
 
+**<details><summary>Features</summary>**
+
+* Overhauled player camera `farClipPlane` distance overriding:
+  * Added `OverrideCameraFarPlaneDistanceInside` field to ExtendedDungeonFlow
+  * Added `OverrideCameraFarPlaneDistanceOutside` and `OverrideCameraFarPlaneDistanceInOrbit` fields to ExtendedLevel
+  * Made distance values be applied separately for their respective content type, instead of just using the largest value
+    * Going indoors will apply the value defined in ExtendedDungeonFlow, going outdoors will reapply the value defined in ExtendedLevel
+  * Made it only affect the local player's gameplay camera, instead of every camera that is targeting a player
+
+</details>
+
 **<details><summary>Fixes</summary>**
 
 * Fixed a few issues with RuntimeDungeon restoration when landing on certain moons

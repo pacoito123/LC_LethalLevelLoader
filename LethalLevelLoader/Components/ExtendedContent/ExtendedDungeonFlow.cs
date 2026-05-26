@@ -44,9 +44,9 @@ namespace LethalLevelLoader
         [field: SerializeField] public AudioClip[] OverrideCreakShutDoorSFX { get; set; }
 
         [field: Space(5)]
-        [field: Tooltip("Overrides vanilla camera Far Plane Clip Distance, The highest value between current Level and Interior will be used.")]
-        [field: Range(0f, 10000f)]
-        [field: SerializeField] public float OverrideCameraMaxDistance = 400;
+        [field: Tooltip("Overrides Vanilla Camera Far Plane Clip Distance Inside.")]
+        [field: Range(0.1f, 10000f)]
+        [field: SerializeField] public float OverrideCameraFarPlaneDistanceInside { get; set; } = 400f;
 
         [field: Space(10)]
         [field: Header("Misc. Settings")]
@@ -68,6 +68,7 @@ namespace LethalLevelLoader
         [Obsolete] public List<StringWithRarity> dynamicCurrentWeatherList = new List<StringWithRarity>();
         [Obsolete] public List<StringWithRarity> manualPlanetNameReferenceList = new List<StringWithRarity>();
         [Obsolete] public List<StringWithRarity> manualContentSourceNameReferenceList = new List<StringWithRarity>();
+        [Obsolete][field: Range(0.1f, 10000f)] public float OverrideCameraMaxDistance = 400f;
         [Obsolete][field: SerializeField] public List<SpawnableMapObject> SpawnableMapObjects { get; set; } = new List<SpawnableMapObject>();
         [Obsolete][field: SerializeField] public Vector3 OverrideRestrictedTilePlacementBounds { get; set; } = Vector3.zero;
 
@@ -239,8 +240,11 @@ namespace LethalLevelLoader
                 DebugHelper.LogWarning("ExtendedDungeonFlow.OverrideRestrictedTilePlacementBounds Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.RestrictBounds instead.", DebugType.Developer);
                 RestrictBounds = OverrideRestrictedTilePlacementBounds;
             }
-            if (Application.isEditor)
-                SpawnableMapObjects.Clear();
+            if (OverrideCameraMaxDistance != 400f && OverrideCameraFarPlaneDistanceInside == 400f)
+            {
+                DebugHelper.LogWarning("ExtendedDungeonFlow.OverrideCameraMaxDistance Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.OverrideCameraFarPlaneDistanceInside instead.", DebugType.Developer);
+                OverrideCameraFarPlaneDistanceInside = OverrideCameraMaxDistance;
+            }
         }
     }
 
