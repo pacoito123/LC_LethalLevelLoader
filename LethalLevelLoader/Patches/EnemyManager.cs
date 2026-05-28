@@ -107,6 +107,11 @@ namespace LethalLevelLoader
                         extendedEnemyType.ScanNodeProperties = allEnemyScanNodes[i];
                     allEnemyScanNodes[i].creatureScanID = extendedEnemyType.EnemyID;
                 }
+                if (string.IsNullOrEmpty(extendedEnemyType.EnemyDisplayName))
+                {
+                    extendedEnemyType.EnemyDisplayName = (extendedEnemyType.ScanNodeProperties != null) ? extendedEnemyType.ScanNodeProperties.headerText : extendedEnemyType.EnemyType.enemyName;
+                    DebugHelper.LogWarning($"EnemyDisplayName field empty for '{extendedEnemyType.name}'! Using '{extendedEnemyType.EnemyDisplayName}' as fallback...", DebugType.User);
+                }
                 DebugHelper.Log($"Set Enemy ID '{extendedEnemyType.EnemyID}' For Custom EnemyType: {extendedEnemyType.EnemyType.enemyName}", DebugType.Developer);
             }
         }
