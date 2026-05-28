@@ -3,7 +3,6 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
@@ -37,7 +36,7 @@ public static class NetworkScenePatcher
     public static bool TryGetSceneIndex(int levelSceneIndex, string levelScenePath, out int sceneIndex)
     {
         sceneIndex = -1;
-        int[] levelSceneIndexes = levelSceneDict.Keys.ToArray();
+        int[] levelSceneIndexes = [.. levelSceneDict.Keys];
         if (levelSceneDict.TryGetValue(levelSceneIndexes[levelSceneIndex], out string path))
         {
             if (path == levelScenePath)

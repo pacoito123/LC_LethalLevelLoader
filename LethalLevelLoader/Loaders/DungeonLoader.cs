@@ -1,21 +1,24 @@
 ﻿using DunGen;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static DunGen.Graph.DungeonFlow;
 
 namespace LethalLevelLoader
 {
-    [System.Serializable]
-    public class ExtendedDungeonFlowWithRarity
+    [Serializable]
+    public class ExtendedDungeonFlowWithRarity(ExtendedDungeonFlow newExtendedDungeonFlow, int newRarity)
     {
-        public ExtendedDungeonFlow extendedDungeonFlow;
-        public int rarity;
-
-        public ExtendedDungeonFlowWithRarity(ExtendedDungeonFlow newExtendedDungeonFlow, int newRarity) { extendedDungeonFlow = newExtendedDungeonFlow; rarity = newRarity; }
+        public ExtendedDungeonFlow extendedDungeonFlow = newExtendedDungeonFlow;
+        public int rarity = newRarity;
 
         public bool UpdateRarity(int newRarity) { if (newRarity > rarity) { rarity = newRarity; return (true); } return (false); }
+
+        internal sealed class ExtendedDungeonFlowWithRarityComparer(bool ascending = true) : IComparer<ExtendedDungeonFlowWithRarity>
+        {
+            public int Compare(ExtendedDungeonFlowWithRarity a, ExtendedDungeonFlowWithRarity b) => ascending ? a.rarity - b.rarity : b.rarity - a.rarity;
+        }
     }
 
     public static class DungeonLoader
@@ -35,12 +38,12 @@ namespace LethalLevelLoader
             dungeonGenerator.retryCount = 50; //I shouldn't really do this but I'm curious if it silently helps some custom interiors
 
             ExtendedDungeonFlow currentExtendedDungeonFlow = DungeonManager.CurrentExtendedDungeonFlow;
-            if (currentExtendedDungeonFlow == null) return;
+            if (currentExtendedDungeonFlow == null || currentExtendedDungeonFlow.ContentType is ContentType.External) return;
             if (currentExtendedDungeonFlow.IsDynamicOutOfBoundsTriggerEnabled)
                 dungeonGenerator.OnGenerationStatusChanged += PatchOutOfBoundsTriggers;
 
             ExtendedLevel currentExtendedLevel = LevelManager.CurrentExtendedLevel;
-            PatchFireEscapes(dungeonGenerator, currentExtendedLevel, SceneManager.GetSceneByName(currentExtendedLevel.SelectableLevel.sceneName));
+            PatchFireEscapes(dungeonGenerator, currentExtendedLevel);
             PatchDynamicGlobalProps(dungeonGenerator, currentExtendedDungeonFlow);
         }
 
@@ -64,64 +67,62 @@ namespace LethalLevelLoader
 
         public static float CalculateDungeonMultiplier(ExtendedLevel extendedLevel, ExtendedDungeonFlow extendedDungeonFlow)
         {
-            foreach (IndoorMapType indoorMapType in RoundManager.Instance.dungeonFlowTypes)
+            foreach (IndoorMapType indoorMapType in Patches.RoundManager.dungeonFlowTypes)
                 if (indoorMapType.dungeonFlow == extendedDungeonFlow.DungeonFlow)
-                    return (extendedLevel.SelectableLevel.factorySizeMultiplier / indoorMapType.MapTileSize * RoundManager.Instance.mapSizeMultiplier);
-
+                    return (extendedLevel.SelectableLevel.factorySizeMultiplier / indoorMapType.MapTileSize * Patches.RoundManager.mapSizeMultiplier);
             return 1f;
         }
 
-        internal static List<EntranceTeleport> GetEntranceTeleports(Scene scene)
+        internal static List<EntranceTeleport> GetEntranceTeleports()
         {
             List<EntranceTeleport> entranceTeleports = new List<EntranceTeleport>();
-            foreach (GameObject rootObject in scene.GetRootGameObjects())
+            foreach (GameObject rootObject in LevelLoader.currentLevelScene.GetRootGameObjects())
                 foreach (EntranceTeleport entranceTeleport in rootObject.GetComponentsInChildren<EntranceTeleport>())
                     entranceTeleports.Add(entranceTeleport);
             return (entranceTeleports);
         }
 
-        internal static void PatchFireEscapes(DungeonGenerator dungeonGenerator, ExtendedLevel extendedLevel, Scene scene)
+        internal static void PatchFireEscapes(DungeonGenerator dungeonGenerator, ExtendedLevel extendedLevel)
         {
-            string debugString = "Fire Exit Patch Report, Details Below;" + "\n" + "\n";
+            string debugString = "Fire Exit Patch Report, Details Below;\n\n";
 
-            if (DungeonManager.TryGetExtendedDungeonFlow(dungeonGenerator.DungeonFlow, out ExtendedDungeonFlow extendedDungeonFlow))
+            List<EntranceTeleport> allEntranceTeleports = GetEntranceTeleports();
+            if (allEntranceTeleports.Count == 0)
             {
-                List<EntranceTeleport> entranceTeleports = GetEntranceTeleports(scene).OrderBy(o => o.entranceId).ToList();
-
-                foreach (EntranceTeleport entranceTeleport in entranceTeleports)
-                {
-                    entranceTeleport.entranceId = entranceTeleports.IndexOf(entranceTeleport);
-                    //entranceTeleport.dungeonFlowId = extendedDungeonFlow.DungeonID; //I'm pretty sure this is fine but this would be something to check if stuff goes weird.
-                }
-
-                if (entranceTeleports.Count == 0)
-                {
-                    DebugHelper.LogFatal("No EntranceTeleports Found In The Scene!", DebugType.User);
-                    foreach (GlobalPropSettings globalPropSettings in dungeonGenerator.DungeonFlow.GlobalProps)
-                        if (globalPropSettings.ID == 1231)
-                        {
-                            globalPropSettings.Count = new(0, 0);
-                            break;
-                        }
-                    return;
-                }
-
-                debugString += "EntranceTeleports Found, " + extendedLevel.NumberlessPlanetName + " Contains " + (entranceTeleports.Count) + " Entrances! ( " + (entranceTeleports.Count - 1) + " Fire Escapes) " + "\n";
-                debugString += "Main Entrance: " + entranceTeleports[0].gameObject.name + " (Entrance ID: " + entranceTeleports[0].entranceId + ")" + "\n";
-                foreach (EntranceTeleport entranceTeleport in entranceTeleports)
-                    if (entranceTeleport.entranceId != 0)
-                        debugString += "Alternate Entrance: " + entranceTeleport.gameObject.name + " (Entrance ID: " + entranceTeleport.entranceId + ")" + "\n";
-
+                DebugHelper.LogFatal("No EntranceTeleports Found In The Scene!", DebugType.User);
                 foreach (GlobalPropSettings globalPropSettings in dungeonGenerator.DungeonFlow.GlobalProps)
                     if (globalPropSettings.ID == 1231)
                     {
-                        debugString += "Found Fire Escape GlobalProp: (ID: 1231), Modifying Spawn rate Count From (" + globalPropSettings.Count.Min + "," + globalPropSettings.Count.Max + ") To (" + (entranceTeleports.Count - 1) + "," + (entranceTeleports.Count - 1) + ")" + "\n";
-                        globalPropSettings.Count = new IntRange(entranceTeleports.Count - 1, entranceTeleports.Count - 1); //-1 Because .Count includes the Main Entrance.
+                        globalPropSettings.Count = new(0, 0);
                         break;
                     }
-
-                DebugHelper.Log(debugString + "\n", DebugType.User);
+                return;
             }
+
+            List<EntranceTeleport> mainEntrances = allEntranceTeleports.FindAll(entrance => entrance.entranceId == 0);
+            if (mainEntrances.Count == 0)
+                DebugHelper.LogError("No EntranceTeleport For Main Entrance Found In The Scene! A Fire Exit Will Act As Main Entrance Instead...", DebugType.User);
+            else if (mainEntrances.Count > 1)
+                DebugHelper.LogError($"'{mainEntrances.Count}' EntranceTeleports For Main Entrance Found In The Scene! Only One Will Act As Main Entrance...", DebugType.User);
+
+            for (int i = 0; i < allEntranceTeleports.Count; i++)
+                allEntranceTeleports[i].entranceId = i;
+
+            debugString += $"EntranceTeleports Found, {extendedLevel.NumberlessPlanetName} Contains {allEntranceTeleports.Count} Entrances! ( {allEntranceTeleports.Count - 1} Fire Escapes)\n";
+            debugString += $"Main Entrance: {allEntranceTeleports[0].name} (Entrance ID: {allEntranceTeleports[0].entranceId})\n";
+            foreach (EntranceTeleport entranceTeleport in allEntranceTeleports)
+                if (entranceTeleport.entranceId != 0)
+                    debugString += $"Alternate Entrance: {entranceTeleport.name} (Entrance ID: {entranceTeleport.entranceId})\n";
+
+            foreach (GlobalPropSettings globalPropSettings in dungeonGenerator.DungeonFlow.GlobalProps)
+                if (globalPropSettings.ID == 1231)
+                {
+                    debugString += $"Found Fire Escape GlobalProp: (ID: 1231), Modifying Spawn rate Count From ({globalPropSettings.Count.Min},{globalPropSettings.Count.Max}) To ({allEntranceTeleports.Count - 1},{allEntranceTeleports.Count - 1})\n";
+                    globalPropSettings.Count = new IntRange(allEntranceTeleports.Count - 1, allEntranceTeleports.Count - 1); //-1 Because .Count includes the Main Entrance.
+                    break;
+                }
+
+            DebugHelper.Log(debugString + '\n', DebugType.User);
         }
 
         public static void PatchDynamicGlobalProps(DungeonGenerator dungeonGenerator, ExtendedDungeonFlow extendedDungeonFlow)
@@ -141,7 +142,7 @@ namespace LethalLevelLoader
             generator.OnGenerationStatusChanged -= PatchOutOfBoundsTriggers;
 
             float lowestPoint = generator.CurrentDungeon.transform.TransformPoint(generator.CurrentDungeon.Bounds.min).y;
-            foreach (GameObject rootObject in SceneManager.GetSceneByName(StartOfRound.Instance.currentLevel.sceneName).GetRootGameObjects())
+            foreach (GameObject rootObject in SceneManager.GetSceneByName(Patches.StartOfRound.currentLevel.sceneName).GetRootGameObjects())
                 foreach (OutOfBoundsTrigger trigger in rootObject.GetComponentsInChildren<OutOfBoundsTrigger>(includeInactive: true))
                 {
                     Vector3 position = trigger.transform.position;

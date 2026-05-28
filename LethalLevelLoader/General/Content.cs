@@ -1,7 +1,6 @@
 ﻿using DunGen.Graph;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine.Audio;
 
 namespace LethalLevelLoader
@@ -300,12 +299,9 @@ namespace LethalLevelLoader
 
         internal static void SortExtendedMods()
         {
-            ExtendedMods = new List<ExtendedMod>(ExtendedMods.OrderBy(o => o.ModName).ToList());
-
+            ExtendedMods.Sort(new ExtendedMod.ExtendedModComparer());
             foreach (ExtendedMod extendedMod in ExtendedMods)
-            {
                 extendedMod.SortRegisteredContent();
-            }
         }
 
         internal static void PopulateContentDictionaries()

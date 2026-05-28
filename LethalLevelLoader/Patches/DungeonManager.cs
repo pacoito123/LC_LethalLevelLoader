@@ -1,7 +1,5 @@
 ﻿using DunGen.Graph;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -73,24 +71,24 @@ namespace LethalLevelLoader
                     debugString += tag.contentTagName + ", ";
                 debugString = debugString.TrimEnd([',', ' ']);
                 debugString += " | Route Price: " + extendedLevel.RoutePrice + " | Current Weather: " + extendedLevel.SelectableLevel.currentWeather.ToString();
-                debugString += "\n";
+                debugString += '\n';
 
-                List<ExtendedDungeonFlow> viableDungeonFlows = returnExtendedDungeonFlowsList.Select(d => d.extendedDungeonFlow).ToList();
+                List<ExtendedDungeonFlow> viableDungeonFlows = returnExtendedDungeonFlowsList.ConvertAll(d => d.extendedDungeonFlow);
                 debugString += "Unviable ExtendedDungeonFlows: ";
                 foreach (ExtendedDungeonFlowWithRarity extendedDungeonFlowWithRarity in potentialExtendedDungeonFlowsList)
                     if (!viableDungeonFlows.Contains(extendedDungeonFlowWithRarity.extendedDungeonFlow))
                         debugString += extendedDungeonFlowWithRarity.extendedDungeonFlow.DungeonName + ", ";
                 debugString = debugString.TrimEnd([',', ' ']);
-                debugString += "\n";
+                debugString += '\n';
 
-                returnExtendedDungeonFlowsList = returnExtendedDungeonFlowsList.OrderBy(e => e.rarity).Reverse().ToList();
+                returnExtendedDungeonFlowsList.Sort(new ExtendedDungeonFlowWithRarity.ExtendedDungeonFlowWithRarityComparer(ascending: false));
 
                 debugString += "Viable ExtendedDungeonFlows: ";
                 foreach (ExtendedDungeonFlowWithRarity extendedDungeonFlowWithRarity in returnExtendedDungeonFlowsList)
                     debugString += extendedDungeonFlowWithRarity.extendedDungeonFlow.DungeonName + " (" + extendedDungeonFlowWithRarity.rarity + ")" + ", ";
                 debugString = debugString.TrimEnd([',', ' ']);
 
-                DebugHelper.Log(debugString + "\n", DebugType.User);
+                DebugHelper.Log(debugString + '\n', DebugType.User);
             }
 
             DebugStopwatch.StopStopWatch("Get Valid ExtendedDungeonFlows");

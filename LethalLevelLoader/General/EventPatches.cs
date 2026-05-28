@@ -199,10 +199,7 @@ namespace LethalLevelLoader
         internal static void EntranceTeleportTeleportPlayerServerRpc_Prefix(EntranceTeleport __instance, int playerObj)
         {
             // Only run on the player calling the ServerRpc.
-            if (__instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Send)
-            {
-                return;
-            }
+            if (__instance.__rpc_exec_stage is not NetworkBehaviour.__RpcExecStage.Send) return;
 
             PlayerControllerB player = Patches.StartOfRound.allPlayerScripts[playerObj];
             if (player == null || !player.IsOwner) return;

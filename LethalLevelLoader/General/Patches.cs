@@ -130,11 +130,11 @@ namespace LethalLevelLoader
             }
         }
 
-        [HarmonyPatch(typeof(GameNetworkManager), "SaveGameValues"), HarmonyPostfix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.SaveGameValues)), HarmonyPostfix, HarmonyPriority(priority)]
         internal static void GameNetworkManagerSaveGameValues_Postfix(GameNetworkManager __instance)
         {
             // Vanilla checks
-            if (!__instance.isHostingGame || !StartOfRound.Instance.inShipPhase || StartOfRound.Instance.isChallengeFile)
+            if (!__instance.isHostingGame || !StartOfRound.inShipPhase || StartOfRound.isChallengeFile)
                 return;
             SaveManager.SaveGameValues();
         }

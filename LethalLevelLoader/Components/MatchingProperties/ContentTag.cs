@@ -21,5 +21,10 @@ namespace LethalLevelLoader
         {
             return (Create(tag, Color.white));
         }
+
+        public override string ToString()
+        {
+            return contentTagName.Sanitized(toLower: false).RemoveWhitespace();
+        }
     }
 }

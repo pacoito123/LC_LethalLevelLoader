@@ -1,9 +1,6 @@
-﻿#if !HARMONY_DISABLED
-using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -87,22 +84,22 @@ namespace LethalLevelLoader
         internal static bool OnBeforeRouteNodeLoaded(ref TerminalNode currentNode, ref TerminalNode loadNode)
         {
             TerminalNode confirmNode = loadNode.terminalOptions[1].result;
-            if (confirmNode.buyRerouteToMoon < 0 || confirmNode.buyRerouteToMoon > StartOfRound.Instance.levels.Length - 1)
+            if (confirmNode.buyRerouteToMoon < 0 || confirmNode.buyRerouteToMoon > Patches.StartOfRound.levels.Length - 1)
             {
-                DebugHelper.LogError("Invalid DisplayPlanetInfo For Route Node: " + confirmNode.name, DebugType.User);
+                DebugHelper.LogError($"Invalid DisplayPlanetInfo For Route Node: {confirmNode.name}", DebugType.User);
                 return (true);
             }
-            ExtendedLevel extendedLevel = LevelManager.GetExtendedLevel(StartOfRound.Instance.levels[confirmNode.buyRerouteToMoon]);
+            ExtendedLevel extendedLevel = LevelManager.GetExtendedLevel(Patches.StartOfRound.levels[confirmNode.buyRerouteToMoon]);
 
             if (extendedLevel == null)
             {
-                DebugHelper.LogError("ExtendedLevel Was Null For Route Node: " + confirmNode.name, DebugType.User);
+                DebugHelper.LogError($"ExtendedLevel Was Null For Route Node: {confirmNode.name}", DebugType.User);
                 return (true);
             }
             if (currentNode != null)
-                DebugHelper.Log("LockedNodeEventTest: ExtendedLevel Is: " + extendedLevel + ", CurrentNode Is: " + currentNode.name + ", LoadNode Is: " + confirmNode.name, DebugType.User);
+                DebugHelper.Log($"LockedNodeEventTest: ExtendedLevel Is: {extendedLevel}, CurrentNode Is: {currentNode.name}, LoadNode Is: {confirmNode.name}", DebugType.User);
             else
-                DebugHelper.Log("LockedNodeEventTest: ExtendedLevel Is: " + extendedLevel + ", CurrentNode Is Null, LoadNode Is: " + confirmNode.name, DebugType.User);
+                DebugHelper.Log($"LockedNodeEventTest: ExtendedLevel Is: {extendedLevel}, CurrentNode Is Null, LoadNode Is: {confirmNode.name}", DebugType.User);
 
             if (extendedLevel.IsRouteLocked == true)
                 SwapRouteNodeToLockedNode(extendedLevel, ref loadNode);
@@ -111,19 +108,16 @@ namespace LethalLevelLoader
 
         internal static void SwapRouteNodeToLockedNode(ExtendedLevel extendedLevel, ref TerminalNode terminalNode)
         {
-            if (extendedLevel.LockedRouteNodeText != string.Empty)
-                lockedNode.displayText = extendedLevel.LockedRouteNodeText + "\n\n\n";
-            else
-                lockedNode.displayText = "Route to " + extendedLevel.SelectableLevel.PlanetName + " is currently locked." + "\n\n\n";
-
+            lockedNode.displayText = (!string.IsNullOrEmpty(extendedLevel.LockedRouteNodeText))
+                ? $"{extendedLevel.LockedRouteNodeText}\n\n\n"
+                : $"Route to {extendedLevel.SelectableLevel.PlanetName} is currently locked.\n\n\n";
             terminalNode = lockedNode;
         }
 
         internal static void RefreshExtendedLevelGroups()
         {
-            currentMoonsCataloguePage.ExtendedLevelGroups.Clear();
-            currentMoonsCataloguePage = new MoonsCataloguePage(defaultMoonsCataloguePage.ExtendedLevelGroups);
-            if (Settings.levelPreviewSortType != SortInfoType.None)
+            currentMoonsCataloguePage.RebuildLevelGroups(defaultMoonsCataloguePage.ExtendedLevelGroups, Settings.moonsCatalogueSplitCount);
+            if (Settings.levelPreviewSortType is not SortInfoType.None)
                 SortMoonsCataloguePage(currentMoonsCataloguePage);
             FilterMoonsCataloguePage(currentMoonsCataloguePage);
 
@@ -139,11 +133,10 @@ namespace LethalLevelLoader
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
                 if (node.terminalEvent.ContainsSanitized(extendedLevel.NumberlessPlanetName))
                 {
-                    node.displayText = GetSimulationResultsText(extendedLevel) + "\n" + "\n";
+                    node.displayText = $"{GetSimulationResultsText(extendedLevel)}\n\n";
                     node.clearPreviousText = true;
                     node.isConfirmationNode = true;
                 }
-
             return (true);
         }
 
@@ -151,12 +144,12 @@ namespace LethalLevelLoader
         {
             if (onBeforeLoadNewNodeRegisteredEventsDictionary.TryGetValue(node, out LoadNodeAction pair))
             {
-                DebugHelper.Log("Running OnBeforeLoadNewNode Event For: " + node.name + ", CurrentNode Is: " + Terminal.currentNode, DebugType.Developer);
+                DebugHelper.Log($"Running OnBeforeLoadNewNode Event For: {node.name}, CurrentNode Is: {Terminal.currentNode}", DebugType.Developer);
                 return (pair.Invoke(ref Terminal.currentNode, ref node));
             }
             else
             {
-                DebugHelper.Log("Could Not Find Registered Event For: " + node.name, DebugType.Developer);
+                DebugHelper.Log($"Could Not Find Registered Event For: {node.name}", DebugType.Developer);
                 return (true);
             }
         }
@@ -209,11 +202,11 @@ namespace LethalLevelLoader
         public static bool RefreshMoonsCataloguePage(ref TerminalNode currentNode, ref TerminalNode loadNode)
         {
             //DebugHelper.Log("Running LLL Terminal Event: " + node.terminalEvent + "| EnumValue: " + GetTerminalEventEnum(node.terminalEvent) + " | StringValue: " + GetTerminalEventString(node.terminalEvent));
-            if (loadNode.name.Contains("preview") && Enum.TryParse(typeof(PreviewInfoType), GetTerminalEventEnum(loadNode.terminalEvent), out object previewEnumValue))
+            if (loadNode.name.Contains("preview", StringComparison.OrdinalIgnoreCase) && Enum.TryParse(typeof(PreviewInfoType), GetTerminalEventEnum(loadNode.terminalEvent), out object previewEnumValue))
                 Settings.levelPreviewInfoType = (PreviewInfoType)previewEnumValue;
-            else if (loadNode.name.Contains("sort") && Enum.TryParse(typeof(SortInfoType), GetTerminalEventEnum(loadNode.terminalEvent), out object sortEnumValue))
+            else if (loadNode.name.Contains("sort", StringComparison.OrdinalIgnoreCase) && Enum.TryParse(typeof(SortInfoType), GetTerminalEventEnum(loadNode.terminalEvent), out object sortEnumValue))
                 Settings.levelPreviewSortType = (SortInfoType)sortEnumValue;
-            else if (loadNode.name.Contains("filter") && Enum.TryParse(typeof(FilterInfoType), GetTerminalEventEnum(loadNode.terminalEvent), out object filterEnumValue))
+            else if (loadNode.name.Contains("filter", StringComparison.OrdinalIgnoreCase) && Enum.TryParse(typeof(FilterInfoType), GetTerminalEventEnum(loadNode.terminalEvent), out object filterEnumValue))
             {
                 Settings.levelPreviewFilterType = (FilterInfoType)filterEnumValue;
                 currentTagFilter = GetTerminalEventString(loadNode.terminalEvent);
@@ -225,7 +218,7 @@ namespace LethalLevelLoader
             Terminal.modifyingText = true;
             Terminal.screenText.interactable = true;
 
-            Terminal.screenText.text = Terminal.TextPostProcess("\n" + "\n" + "\n" + GetMoonsTerminalText(), Terminal.currentNode);
+            Terminal.screenText.text = Terminal.TextPostProcess($"\n\n\n{GetMoonsTerminalText()}", Terminal.currentNode);
             Terminal.currentText = Terminal.screenText.text;
 
             Terminal.textAdded = 0;
@@ -239,58 +232,51 @@ namespace LethalLevelLoader
             List<ExtendedLevel> removeLevelList = new List<ExtendedLevel>();
 
             foreach (ExtendedLevelGroup extendedLevelGroup in moonsCataloguePage.ExtendedLevelGroups)
-                foreach (ExtendedLevel extendedLevel in new List<ExtendedLevel>(extendedLevelGroup.extendedLevelsList))
+                foreach (ExtendedLevel extendedLevel in extendedLevelGroup.extendedLevelsList)
                 {
-                    bool removeExtendedLevel = extendedLevel.IsRouteHidden;
-
-                    if (Settings.levelPreviewFilterType.Equals(FilterInfoType.Price))
-                        removeExtendedLevel = (extendedLevel.RoutePrice > Terminal.groupCredits);
-                    else if (Settings.levelPreviewFilterType.Equals(FilterInfoType.Weather))
-                        removeExtendedLevel = (GetWeatherConditions(extendedLevel) != string.Empty);
-                    else if (Settings.levelPreviewFilterType.Equals(FilterInfoType.Tag))
-                        removeExtendedLevel = (!extendedLevel.TryGetTag(currentTagFilter));
+                    bool removeExtendedLevel = (Settings.levelPreviewFilterType) switch
+                    {
+                        FilterInfoType.Price => (extendedLevel.RoutePrice > Terminal.groupCredits),
+                        FilterInfoType.Weather => (!string.IsNullOrEmpty(GetWeatherConditions(extendedLevel))),
+                        FilterInfoType.Tag => (!extendedLevel.TryGetTag(currentTagFilter)),
+                        _ or FilterInfoType.None or FilterInfoType.TraveledThisRun or FilterInfoType.TraveledThisQuota => extendedLevel.IsRouteHidden,
+                    };
 
                     if (removeExtendedLevel == true)
                         removeLevelList.Add(extendedLevel);
                 }
-
+            int removedLevels = 0;
             foreach (ExtendedLevelGroup extendedLevelGroup in moonsCataloguePage.ExtendedLevelGroups)
-                foreach (ExtendedLevel extendedLevel in removeLevelList)
-                    if (extendedLevelGroup.extendedLevelsList.Contains(extendedLevel))
-                        extendedLevelGroup.extendedLevelsList.Remove(extendedLevel);
+                removedLevels += extendedLevelGroup.extendedLevelsList.RemoveAll(removeLevelList.Contains);
+            if (removedLevels > 0)
+                DebugHelper.Log($"Removed '{removedLevels}' filtered or hidden levels from the Moons Catalogue.", DebugType.IAmBatby);
 
-            if (Settings.levelPreviewFilterType != FilterInfoType.None)
-                moonsCataloguePage.RebuildLevelGroups(new List<ExtendedLevelGroup>(moonsCataloguePage.ExtendedLevelGroups), Settings.moonsCatalogueSplitCount);
+            if (Settings.levelPreviewFilterType is not FilterInfoType.None)
+                moonsCataloguePage.RebuildLevelGroups(moonsCataloguePage.ExtendedLevelGroups, Settings.moonsCatalogueSplitCount);
         }
 
         internal static void SortMoonsCataloguePage(MoonsCataloguePage cataloguePage)
         {
             if (Settings.levelPreviewSortType.Equals(SortInfoType.Price))
-                cataloguePage.RebuildLevelGroups(cataloguePage.ExtendedLevels.OrderBy(o => o.RoutePrice), Settings.moonsCatalogueSplitCount);
+            {
+                cataloguePage.ExtendedLevels.Sort(new ExtendedLevel.ExtendedLevelRoutePriceComparer());
+                cataloguePage.RebuildLevelGroups(cataloguePage.ExtendedLevels, Settings.moonsCatalogueSplitCount);
+            }
             else if (Settings.levelPreviewSortType.Equals(SortInfoType.Difficulty))
-                cataloguePage.RebuildLevelGroups(cataloguePage.ExtendedLevels.OrderBy(o => o.CalculatedDifficultyRating), Settings.moonsCatalogueSplitCount);
-        }
-
-        internal static void SetStoryLogAuthorPostProcessText()
-        {
-
-
+            {
+                cataloguePage.ExtendedLevels.Sort(new ExtendedLevel.ExtendedLevelDifficultyComparer());
+                cataloguePage.RebuildLevelGroups(cataloguePage.ExtendedLevels, Settings.moonsCatalogueSplitCount);
+            }
         }
 
         public static void AddTerminalNodeEventListener(TerminalNode node, LoadNodeAction action, LoadNodeActionType loadNodeActionType)
         {
             if (node != null && action != null)
             {
-                if (loadNodeActionType == LoadNodeActionType.Before && !onBeforeLoadNewNodeRegisteredEventsDictionary.ContainsKey(node))
-                {
-                    onBeforeLoadNewNodeRegisteredEventsDictionary.Add(node, action);
-                    DebugHelper.Log("Successfully Registered OnBeforeLoadNode Action: " + action.Method.Name + " To TerminalNode: " + node.name, DebugType.Developer);
-                }
-                else if (loadNodeActionType == LoadNodeActionType.After && !onLoadNewNodeRegisteredEventsDictionary.ContainsKey(node))
-                {
-                    onLoadNewNodeRegisteredEventsDictionary.Add(node, action);
-                    DebugHelper.Log("Successfully Registered OnLoadNode Action: " + action.Method.Name + " To TerminalNode: " + node.name, DebugType.Developer);
-                }
+                if (loadNodeActionType is LoadNodeActionType.Before && onBeforeLoadNewNodeRegisteredEventsDictionary.TryAdd(node, action))
+                    DebugHelper.Log($"Successfully Registered OnBeforeLoadNode Action: {action.Method.Name} To TerminalNode: {node.name}", DebugType.Developer);
+                else if (loadNodeActionType is LoadNodeActionType.After && onLoadNewNodeRegisteredEventsDictionary.TryAdd(node, action))
+                    DebugHelper.Log($"Successfully Registered OnLoadNode Action: {action.Method.Name} To TerminalNode: {node.name}", DebugType.Developer);
             }
         }
 
@@ -298,39 +284,16 @@ namespace LethalLevelLoader
 
         internal static string GetMoonsTerminalText()
         {
-            string fallbackOverviewText = "Welcome to the exomoons catalogue.\r\nTo route the autopilot to a moon, use the word ROUTE.\r\nTo learn about any moon, use the word INFO.\r\n____________________________\r\n\r\n* The Company Building   //   Buying at [companyBuyingPercent].\r\n\r\n";
-            string overviewText = moonsKeyword.specialKeywordResult.displayText;
-            if (overviewText.Contains("\n\n"))
-            {
-                overviewText = overviewText.Substring(overviewText.IndexOf("\n\n"));
-                overviewText = overviewText.SkipToLetters();
-                if (overviewText.Contains("\n\n"))
-                {
-                    overviewText = overviewText.Substring(overviewText.IndexOf("\n\n"));
-                    if (moonsKeyword.specialKeywordResult.displayText.Contains(overviewText))
-                    {
-                        overviewText = overviewText.Substring(overviewText.IndexOf("\n\n"));
-                        overviewText = moonsKeyword.specialKeywordResult.displayText.Replace(overviewText, string.Empty) + "\n\n";
-                    }
-                    else
-                    {
-                        DebugHelper.LogError("Failed To get Moons Catalogue overview text dynamically, falling back to hardcoded English variant.", DebugType.Developer);
-                        overviewText = fallbackOverviewText;
-                    }
-                }
-                else
-                {
-                    DebugHelper.LogError("Failed To get Moons Catalogue overview text dynamically, falling back to hardcoded English variant.", DebugType.Developer);
-                    overviewText = fallbackOverviewText;
-                }
-            }
-            else
-            {
-                DebugHelper.LogError("Failed To get Moons Catalogue overview text dynamically, falling back to hardcoded English variant.", DebugType.Developer);
-                overviewText = fallbackOverviewText;
-            }
+            string overviewText = "Welcome to the exomoons catalogue.\r\nTo route the autopilot to a moon, use the word ROUTE.\r\nTo learn about any moon, use the word INFO.\r\n____________________________\r\n\r\n* The Company Building   //   Buying at [companyBuyingPercent].\r\n\r\n";
+            string[] lines = moonsKeyword.specialKeywordResult.displayText.Split('\n', StringSplitOptions.None);
 
-            return (overviewText + GetMoonCatalogDisplayListings() + "\r\n");
+            int moonsIndex = Array.FindIndex(lines, line => line.Contains("[planetTime]", StringComparison.Ordinal));
+            if (moonsIndex != -1)
+                overviewText = string.Join('\n', lines[..moonsIndex]) + '\n';
+            else
+                DebugHelper.LogError("Failed To get Moons Catalogue overview text dynamically, falling back to hardcoded English variant.", DebugType.Developer);
+
+            return ($"{overviewText}{GetMoonCatalogDisplayListings()}\r\n");
         }
 
         //This is some absolute super arbitrary wizardry to replicate base game >moons command
@@ -345,7 +308,7 @@ namespace LethalLevelLoader
                 foreach (ExtendedLevel extendedLevel in extendedLevelGroup.extendedLevelsList)
                     if (extendedLevel.IsRouteHidden == false)
                     {
-                        groupString += "* " + extendedLevel.NumberlessPlanetName + ' ' + GetExtendedLevelPreviewInfo(extendedLevel) + '\n';
+                        groupString += $"* {extendedLevel.NumberlessPlanetName} {GetExtendedLevelPreviewInfo(extendedLevel)}\n";
                         if (++groupCounter == Settings.moonsCatalogueSplitCount)
                         {
                             groupString += '\n';
@@ -355,41 +318,33 @@ namespace LethalLevelLoader
                 if (!string.IsNullOrEmpty(groupString))
                     returnString += groupString;
             }
-            if (returnString.Contains('\n'))
-                returnString.Replace(returnString.Substring(returnString.LastIndexOf('\n')), string.Empty);
+            returnString = returnString.TrimEnd('\n');
 
-            string tagString = Settings.levelPreviewFilterType.ToString().ToUpper();
+            string tagString = Settings.levelPreviewFilterType.ToString().ToUpperInvariant();
             if (Settings.levelPreviewFilterType == FilterInfoType.Tag)
-                tagString = currentTagFilter.ToUpper();
+                tagString = currentTagFilter.ToUpperInvariant();
 
-            return (returnString + "\n" + "____________________________" + "\n" + "PREVIEW: " + Settings.levelPreviewInfoType.ToString().ToUpper() + " | " + "SORT: " + Settings.levelPreviewSortType.ToString().ToUpper() + " | " + "FILTER: " + tagString + "\n");
+            return ($"{returnString}\n____________________________\nPREVIEW: {Settings.levelPreviewInfoType.ToString().ToUpperInvariant()} | SORT: {Settings.levelPreviewSortType.ToString().ToUpperInvariant()} | FILTER: {tagString}\n");
         }
 
         public static string GetExtendedLevelPreviewInfo(ExtendedLevel extendedLevel)
         {
-            string levelPreviewInfo = string.Empty;
-            //string offset = GetOffsetExtendedLevelName(extendedLevel);
-            string offset = string.Empty;
-
-            if (Settings.levelPreviewInfoType.Equals(PreviewInfoType.Weather))
-                levelPreviewInfo = GetWeatherConditions(extendedLevel);
-            else if (Settings.levelPreviewInfoType.Equals(PreviewInfoType.Price))
-                levelPreviewInfo = offset + "($" + extendedLevel.RoutePrice + ")";
-            else if (Settings.levelPreviewInfoType.Equals(PreviewInfoType.Difficulty))
-                levelPreviewInfo = offset + "(" + extendedLevel.SelectableLevel.riskLevel + ")";
-            else if (Settings.levelPreviewInfoType.Equals(PreviewInfoType.History))
-                levelPreviewInfo = offset + GetHistoryConditions(extendedLevel);
-            else if (Settings.levelPreviewInfoType.Equals(PreviewInfoType.All))
-                levelPreviewInfo = offset + "(" + extendedLevel.SelectableLevel.riskLevel + ") " + "($" + extendedLevel.RoutePrice + ") " + GetWeatherConditions(extendedLevel);
-            else if (Settings.levelPreviewInfoType.Equals(PreviewInfoType.Vanilla))
-                levelPreviewInfo = offset + "[planetTime]";
-            else if (Settings.levelPreviewInfoType.Equals(PreviewInfoType.Override))
-                levelPreviewInfo = offset + Settings.GetOverridePreviewInfo(extendedLevel);
+            string levelPreviewInfo = Settings.levelPreviewInfoType switch
+            {
+                PreviewInfoType.Price => $"(${extendedLevel.RoutePrice})",
+                PreviewInfoType.Difficulty => $"({extendedLevel.SelectableLevel.riskLevel})",
+                PreviewInfoType.Weather => GetWeatherConditions(extendedLevel),
+                PreviewInfoType.History => $"{GetHistoryConditions(extendedLevel)}",
+                PreviewInfoType.All => $"({extendedLevel.SelectableLevel.riskLevel}) (${extendedLevel.RoutePrice}) {GetWeatherConditions(extendedLevel)}",
+                PreviewInfoType.Vanilla => $"[planetTime]",
+                PreviewInfoType.Override => $"{Settings.GetOverridePreviewInfo(extendedLevel)}",
+                _ or PreviewInfoType.None => string.Empty,
+            };
             if (extendedLevel.IsRouteLocked == true)
                 levelPreviewInfo += " (Locked)";
 
             string overridePreviewInfo = onBeforePreviewInfoTextAdded?.Invoke(extendedLevel, Settings.levelPreviewInfoType);
-            if (overridePreviewInfo != null && overridePreviewInfo != string.Empty)
+            if (!string.IsNullOrEmpty(overridePreviewInfo))
                 levelPreviewInfo = overridePreviewInfo;
 
             return (levelPreviewInfo);
@@ -401,56 +356,39 @@ namespace LethalLevelLoader
             string returnString = string.Empty;
             /*if (extendedLevel.currentExtendedWeatherEffect != null)
                 returnString = "(" + extendedLevel.currentExtendedWeatherEffect.weatherDisplayName + ")";*/
-            if (extendedLevel.SelectableLevel.currentWeather != LevelWeatherType.None)
-                returnString = "(" + extendedLevel.SelectableLevel.currentWeather.ToString() + ")";
+            if (extendedLevel.SelectableLevel.currentWeather is not LevelWeatherType.None)
+                returnString = $"({extendedLevel.SelectableLevel.currentWeather})";
             return (returnString);
         }
 
         public static string GetHistoryConditions(ExtendedLevel extendedLevel)
         {
-            DayHistory dayHistory = null;
-
-            foreach (DayHistory loggedDayHistory in LevelManager.dayHistoryList)
-                if (loggedDayHistory.extendedLevel == extendedLevel)
-                    dayHistory = loggedDayHistory;
-
+            DayHistory dayHistory = LevelManager.dayHistoryList.Find(dayHistory => dayHistory.extendedLevel == extendedLevel);
             if (dayHistory == null)
-                return ("(Unexplored)");
-            else if (TimeOfDay.Instance.timesFulfilledQuota == dayHistory.quota && LevelManager.daysTotal == dayHistory.day)
-                return ("(Explored Yesterday)");
-            else if (TimeOfDay.Instance.timesFulfilledQuota == dayHistory.quota)
-                return ("(Explored " + (LevelManager.daysTotal - dayHistory.day) + " Ago)");
-            else if ((TimeOfDay.Instance.timesFulfilledQuota - 1) == dayHistory.quota)
-                return ("(Explored Last Quota)");
+                return ($"(Unexplored)");
+            else if (Patches.TimeOfDay.timesFulfilledQuota == dayHistory.quota && LevelManager.daysTotal == dayHistory.day)
+                return ($"(Explored Yesterday)");
+            else if (Patches.TimeOfDay.timesFulfilledQuota == dayHistory.quota)
+                return ($"(Explored {LevelManager.daysTotal - dayHistory.day} Ago)");
+            else if ((Patches.TimeOfDay.timesFulfilledQuota - 1) == dayHistory.quota)
+                return ($"(Explored Last Quota)");
             else
-                return ("Explored " + (TimeOfDay.Instance.timesFulfilledQuota - dayHistory.quota) + " Quota's Ago)");
+                return ($"Explored {Patches.TimeOfDay.timesFulfilledQuota - dayHistory.quota} Quotas Ago)");
         }
 
-        public static string GetTerminalEventString(string terminalEventString)
-        {
-            string returnString = string.Empty;
-            if (terminalEventString.Contains(";"))
-                returnString = terminalEventString.Substring(terminalEventString.IndexOf(";") + 1);
-            return (returnString);
-        }
-
-        public static string GetTerminalEventEnum(string terminalEventString)
-        {
-            if (terminalEventString.Contains(";"))
-                terminalEventString = terminalEventString.Replace(terminalEventString.Substring(terminalEventString.IndexOf(";")), "");
-            return (terminalEventString);
-        }
+        public static string GetTerminalEventString(string terminalEventString) => (terminalEventString.Split(';', StringSplitOptions.RemoveEmptyEntries)[^1]);
+        public static string GetTerminalEventEnum(string terminalEventString) => (terminalEventString.Split(';', StringSplitOptions.RemoveEmptyEntries)[0]);
 
         public static string GetSimulationResultsText(ExtendedLevel extendedLevel)
         {
-            List<ExtendedDungeonFlowWithRarity> availableExtendedFlowsList = new List<ExtendedDungeonFlowWithRarity>(DungeonManager.GetValidExtendedDungeonFlows(extendedLevel, true).OrderBy(o => -(o.rarity)).ToList());
-            string overrideString = "Simulating arrival to " + extendedLevel.SelectableLevel.PlanetName + "\nAnalyzing potential remnants found on surface. \nListing generated probabilities below.\n____________________________ \n\nPOSSIBLE STRUCTURES: \n";
+            List<ExtendedDungeonFlowWithRarity> availableExtendedFlowsList = [.. DungeonManager.GetValidExtendedDungeonFlows(extendedLevel, true)];
+            availableExtendedFlowsList.Sort(new ExtendedDungeonFlowWithRarity.ExtendedDungeonFlowWithRarityComparer(ascending: false));
+            string overrideString = $"Simulating arrival to {extendedLevel.SelectableLevel.PlanetName}\nAnalyzing potential remnants found on surface. \nListing generated probabilities below.\n____________________________ \n\nPOSSIBLE STRUCTURES: \n";
             int totalRarityPool = 0;
             foreach (ExtendedDungeonFlowWithRarity extendedDungeonFlowResult in availableExtendedFlowsList)
                 totalRarityPool += extendedDungeonFlowResult.rarity;
             foreach (ExtendedDungeonFlowWithRarity extendedDungeonFlowResult in availableExtendedFlowsList)
-                overrideString += "* " + extendedDungeonFlowResult.extendedDungeonFlow.DungeonName.PadRight(22).Truncate(22) + " //   " + GetSimulationDataText(extendedDungeonFlowResult.rarity, totalRarityPool) + '\n';
-
+                overrideString += $"* {extendedDungeonFlowResult.extendedDungeonFlow.DungeonName.PadRight(22).Truncate(22)} //   {GetSimulationDataText(extendedDungeonFlowResult.rarity, totalRarityPool)}\n";
             return (overrideString);
         }
 
@@ -478,7 +416,7 @@ namespace LethalLevelLoader
             }
 
             for (int i = 0; i < (longestLevelName - extendedLevel.NumberlessPlanetName.Length); i++)
-                returnString += " ";
+                returnString += ' ';
 
             return returnString;
         }
@@ -493,7 +431,7 @@ namespace LethalLevelLoader
                 TerminalKeyword nounKeyword = foundKeyword;
                 if (ValidateNounKeyword(lastParsedVerbKeyword, nounKeyword) == false)
                     foreach (TerminalKeyword newNounKeyword in Terminal.terminalNodes.allKeywords)
-                        if (newNounKeyword.isVerb == false && newNounKeyword != nounKeyword && newNounKeyword.word == playerInput)
+                        if (newNounKeyword.isVerb == false && newNounKeyword != nounKeyword && string.Equals(newNounKeyword.word, playerInput, StringComparison.OrdinalIgnoreCase))
                             if (ValidateNounKeyword(lastParsedVerbKeyword, newNounKeyword) == true)
                             {
                                 lastParsedVerbKeyword = null;
@@ -544,79 +482,69 @@ namespace LethalLevelLoader
             List<ExtendedLevel> hiddenVanillaLevels = new List<ExtendedLevel>();
             foreach (ExtendedLevel extendedLevel in PatchedContent.VanillaExtendedLevels)
             {
-                if (!moonsKeyword.specialKeywordResult.displayText.Contains(extendedLevel.NumberlessPlanetName))
+                if (!moonsKeyword.specialKeywordResult.displayText.Contains(extendedLevel.NumberlessPlanetName, StringComparison.Ordinal))
                 {
                     extendedLevel.IsRouteHidden = true;
                     hiddenVanillaLevels.Add(extendedLevel);
                 }
             }
-
-            hiddenVanillaLevels = hiddenVanillaLevels.OrderBy(l => l.CalculatedDifficultyRating).ToList();
+            hiddenVanillaLevels.Sort(new ExtendedLevel.ExtendedLevelDifficultyComparer());
 
             DebugHelper.Log("Creating ExtendedLevelGroups", DebugType.Developer);
             foreach (SelectableLevel level in OriginalContent.MoonsCatalogue)
-                DebugHelper.Log(level.PlanetName.ToString(), DebugType.Developer);
+                DebugHelper.Log($"{level.PlanetName}", DebugType.Developer);
             ExtendedLevelGroup vanillaGroupA = new ExtendedLevelGroup(OriginalContent.MoonsCatalogue.GetRange(0, 3));
             ExtendedLevelGroup vanillaGroupB = new ExtendedLevelGroup(OriginalContent.MoonsCatalogue.GetRange(3, 3));
             ExtendedLevelGroup vanillaGroupC = new ExtendedLevelGroup(OriginalContent.MoonsCatalogue.GetRange(6, 3));
             ExtendedLevelGroup vanillaGroupD = new ExtendedLevelGroup(hiddenVanillaLevels);
 
             Dictionary<string, List<ExtendedLevel>> extendedLevelsContentSourceNameDictionary = new Dictionary<string, List<ExtendedLevel>>();
-
             foreach (ExtendedLevel customExtendedLevel in PatchedContent.CustomExtendedLevels)
             {
                 if (extendedLevelsContentSourceNameDictionary.TryGetValue(customExtendedLevel.ModName, out List<ExtendedLevel> extendedLevels))
                     extendedLevels.Add(customExtendedLevel);
                 else
-                    extendedLevelsContentSourceNameDictionary.Add(customExtendedLevel.ModName, new List<ExtendedLevel> { customExtendedLevel });
+                    extendedLevelsContentSourceNameDictionary.Add(customExtendedLevel.ModName, [customExtendedLevel]);
             }
-
-            List<ExtendedLevelGroup> defaultVanillaExtendedLevelGroups = new List<ExtendedLevelGroup>() { vanillaGroupA, vanillaGroupB, vanillaGroupC, vanillaGroupD };
-            List<ExtendedLevelGroup> defaultCustomGroupedExtendedLevelGroups = new List<ExtendedLevelGroup>();
-            List<ExtendedLevelGroup> defaultCustomSingleExtendedLevelGroups = new List<ExtendedLevelGroup>();
-
             List<ExtendedLevel> singleExtendedLevelsList = new List<ExtendedLevel>();
-
+            List<ExtendedLevelGroup> combinedOrderedCustomExtendedLevelGroups = new List<ExtendedLevelGroup>();
             foreach (KeyValuePair<string, List<ExtendedLevel>> customExtendedLevelLists in new Dictionary<string, List<ExtendedLevel>>(extendedLevelsContentSourceNameDictionary))
             {
-                extendedLevelsContentSourceNameDictionary[customExtendedLevelLists.Key] = customExtendedLevelLists.Value.OrderBy(o => o.CalculatedDifficultyRating).ToList();
+                customExtendedLevelLists.Value.Sort(new ExtendedLevel.ExtendedLevelDifficultyComparer());
+                extendedLevelsContentSourceNameDictionary[customExtendedLevelLists.Key] = customExtendedLevelLists.Value;
                 if (customExtendedLevelLists.Value.Count == 1)
                     singleExtendedLevelsList.Add(customExtendedLevelLists.Value[0]);
                 else if (customExtendedLevelLists.Value.Count != 0)
-                    foreach (ExtendedLevelGroup extendedLevelGroup in GetExtendedLevelGroups(customExtendedLevelLists.Value.ToArray(), Settings.moonsCatalogueSplitCount))
-                        defaultCustomGroupedExtendedLevelGroups.Add(extendedLevelGroup);
+                    foreach (ExtendedLevelGroup extendedLevelGroup in GetExtendedLevelGroups([.. customExtendedLevelLists.Value], Settings.moonsCatalogueSplitCount))
+                        combinedOrderedCustomExtendedLevelGroups.Add(extendedLevelGroup);
             }
+            singleExtendedLevelsList.Sort(new ExtendedLevel.ExtendedLevelDifficultyComparer());
+            combinedOrderedCustomExtendedLevelGroups.AddRange(GetExtendedLevelGroups([.. singleExtendedLevelsList], Settings.moonsCatalogueSplitCount));
+            combinedOrderedCustomExtendedLevelGroups.Sort(new ExtendedLevelGroup.ExtendedLevelGroupDifficultyComparer());
 
-            //defaultCustomExtendedLevelGroups.Add(new ExtendedLevelGroup(singleExtendedLevelsList.OrderBy(o => o.CalculatedDifficultyRating).ToList()));
-            //defaultCustomExtendedLevelGroups = defaultCustomExtendedLevelGroups.OrderBy(o => o.AverageCalculatedDifficulty).ToList();
-            singleExtendedLevelsList = singleExtendedLevelsList.OrderBy(o => o.CalculatedDifficultyRating).ToList();
-            defaultCustomSingleExtendedLevelGroups = GetExtendedLevelGroups(singleExtendedLevelsList.ToArray(), Settings.moonsCatalogueSplitCount);
-
-            List<ExtendedLevelGroup> combinedOrderedCustomExtendedLevelGroups = defaultCustomGroupedExtendedLevelGroups.Concat(defaultCustomSingleExtendedLevelGroups).OrderBy(o => o.AverageCalculatedDifficulty).ToList();
-            List<ExtendedLevelGroup> allDefaultExtendedLevelGroups = defaultVanillaExtendedLevelGroups.Concat(combinedOrderedCustomExtendedLevelGroups).ToList();
-            string debugString = "Debugging DefaultExtendedLevelsGroup" + "\n";
-            int counter = 0;
-            foreach (ExtendedLevelGroup extendedLevelGroup in allDefaultExtendedLevelGroups)
+            List<ExtendedLevelGroup> allDefaultExtendedLevelGroups = [vanillaGroupA, vanillaGroupB, vanillaGroupC, vanillaGroupD, .. combinedOrderedCustomExtendedLevelGroups];
+            string debugString = "Debugging DefaultExtendedLevelsGroups:\n";
+            for (int i = 0; i < allDefaultExtendedLevelGroups.Count; i++)
             {
-                debugString += "Group #" + counter + " ";
-                foreach (ExtendedLevel extendedLevel in extendedLevelGroup.extendedLevelsList)
-                    debugString += extendedLevel.NumberlessPlanetName + "(" + extendedLevel.ModName + ") , ";
-                debugString += "\n";
-
-                counter++;
+                debugString += $"Group #{i} -> ";
+                foreach (ExtendedLevel extendedLevel in allDefaultExtendedLevelGroups[i].extendedLevelsList)
+                    debugString += $"{extendedLevel.NumberlessPlanetName}({extendedLevel.ModName}), ";
+                debugString = debugString.TrimEnd([',', ' ']);
             }
             DebugHelper.Log(debugString, DebugType.Developer);
             defaultMoonsCataloguePage = new MoonsCataloguePage(allDefaultExtendedLevelGroups);
-            currentMoonsCataloguePage = new MoonsCataloguePage(new List<ExtendedLevelGroup>());
+            currentMoonsCataloguePage = new MoonsCataloguePage([]);
             RefreshExtendedLevelGroups();
         }
 
         internal static void CreateLevelTerminalData(ExtendedLevel extendedLevel, int routePrice)
         {
+            string sanitizedName = extendedLevel.NumberlessPlanetName.Sanitized(toLower: false).RemoveWhitespace();
+
             //Terminal Route Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
-            terminalKeyword.name = extendedLevel.NumberlessPlanetName.Sanitized() + "Keyword";
-            terminalKeyword.word = extendedLevel.TerminalNoun;
+            terminalKeyword.name = $"{sanitizedName}Keyword";
+            terminalKeyword.word = sanitizedName.ToLowerInvariant();
             terminalKeyword.defaultVerb = routeKeyword;
 
             //Terminal Route Node
@@ -626,14 +554,9 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeRoute = CreateNewTerminalNode();
-                terminalNodeRoute.name = extendedLevel.NumberlessPlanetName.Sanitized() + "Route";
-                if (extendedLevel.OverrideRouteNodeDescription != string.Empty)
-                    terminalNodeRoute.displayText = extendedLevel.OverrideRouteNodeDescription;
-                else
-                {
-                    terminalNodeRoute.displayText = "The cost to route to " + extendedLevel.SelectableLevel.PlanetName + " is [totalCost]. It is currently [currentPlanetTime] on this moon.";
-                    terminalNodeRoute.displayText += "\n" + "\n" + "Please CONFIRM or DENY." + "\n" + "\n";
-                }
+                terminalNodeRoute.name = $"{sanitizedName}Route";
+                terminalNodeRoute.displayText = (!string.IsNullOrEmpty(extendedLevel.OverrideRouteNodeDescription)) ? extendedLevel.OverrideRouteNodeDescription
+                    : $"The cost to route to {extendedLevel.SelectableLevel.PlanetName} is [totalCost]. It is currently [currentPlanetTime] on this moon.\n\nPlease CONFIRM or DENY.\n\n";
                 terminalNodeRoute.clearPreviousText = true;
                 terminalNodeRoute.buyRerouteToMoon = -2;
                 terminalNodeRoute.displayPlanetInfo = extendedLevel.SelectableLevel.levelID;
@@ -648,11 +571,9 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeRouteConfirm = CreateNewTerminalNode();
-                terminalNodeRouteConfirm.name = extendedLevel.NumberlessPlanetName.Sanitized() + "RouteConfirm";
-                if (extendedLevel.OverrideRouteConfirmNodeDescription != string.Empty)
-                    terminalNodeRouteConfirm.displayText = extendedLevel.OverrideRouteConfirmNodeDescription;
-                else
-                    terminalNodeRouteConfirm.displayText = "Routing autopilot to " + extendedLevel.SelectableLevel.PlanetName + " Your new balance is [playerCredits]. \n\nPlease enjoy your flight.";
+                terminalNodeRouteConfirm.name = $"{sanitizedName}RouteConfirm";
+                terminalNodeRouteConfirm.displayText = (!string.IsNullOrEmpty(extendedLevel.OverrideRouteConfirmNodeDescription)) ? extendedLevel.OverrideRouteConfirmNodeDescription
+                    : $"Routing autopilot to {extendedLevel.SelectableLevel.PlanetName} Your new balance is [playerCredits]. \n\nPlease enjoy your flight.";
                 terminalNodeRouteConfirm.clearPreviousText = true;
                 terminalNodeRouteConfirm.buyRerouteToMoon = extendedLevel.SelectableLevel.levelID;
                 terminalNodeRouteConfirm.itemCost = routePrice;
@@ -665,30 +586,17 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeInfo = CreateNewTerminalNode();
-                terminalNodeInfo.name = extendedLevel.NumberlessPlanetName.Sanitized() + "Info";
+                terminalNodeInfo.name = $"{sanitizedName}Info";
                 terminalNodeInfo.clearPreviousText = true;
                 terminalNodeInfo.maxCharactersToType = 35;
                 string infoString;
-                if (extendedLevel.OverrideInfoNodeDescription != string.Empty)
+                if (!string.IsNullOrEmpty(extendedLevel.OverrideInfoNodeDescription))
                     infoString = extendedLevel.OverrideInfoNodeDescription;
                 else
                 {
-                    infoString = extendedLevel.SelectableLevel.PlanetName + "\n" + "----------------------" + "\n";
-                    List<string> selectableLevelLines = new List<string>();
-
-                    string inputString = extendedLevel.SelectableLevel.LevelDescription;
-
-                    while (inputString.Contains("\n"))
-                    {
-                        string inputStringWithoutTextBeforeFirstComma = inputString.Substring(inputString.IndexOf("\n"));
-                        selectableLevelLines.Add(inputString.Replace(inputStringWithoutTextBeforeFirstComma, ""));
-                        if (inputStringWithoutTextBeforeFirstComma.Contains("\n"))
-                            inputString = inputStringWithoutTextBeforeFirstComma.Substring(inputStringWithoutTextBeforeFirstComma.IndexOf("\n") + 1);
-                    }
-                    selectableLevelLines.Add(inputString);
-
-                    foreach (string line in selectableLevelLines)
-                        infoString += "\n" + line + "\n";
+                    infoString = $"{extendedLevel.SelectableLevel.PlanetName}\n----------------------\n";
+                    foreach (string line in extendedLevel.SelectableLevel.LevelDescription.Split('\n', StringSplitOptions.None))
+                        infoString += $"\n{line}\n";
                 }
 
                 terminalNodeInfo.displayText = infoString;
@@ -720,13 +628,14 @@ namespace LethalLevelLoader
                 Terminal.logEntryFiles.Add(newStoryLog.assignedNode);
                 return;
             }
+            string sanitizedName = newStoryLog.storyLogTitle.Sanitized(toLower: false).RemoveWhitespace();
 
             TerminalKeyword newStoryLogKeyword = CreateNewTerminalKeyword();
-            newStoryLogKeyword.word = newStoryLog.terminalKeywordNoun;
-            newStoryLogKeyword.name = newStoryLog.terminalKeywordNoun + "Keyword";
+            newStoryLogKeyword.name = $"{sanitizedName}Keyword";
+            newStoryLogKeyword.word = newStoryLog.terminalKeywordNoun.Sanitized().RemoveWhitespace();
             newStoryLogKeyword.defaultVerb = viewKeyword;
             TerminalNode newStoryLogNode = CreateNewTerminalNode();
-            newStoryLogNode.name = "LogFile" + (Terminal.logEntryFiles.Count + 1);
+            newStoryLogNode.name = $"LogFile{Terminal.logEntryFiles.Count + 1}";
             newStoryLogNode.displayText = newStoryLog.storyLogDescription;
             newStoryLogNode.clearPreviousText = true;
             newStoryLogNode.creatureName = newStoryLog.storyLogTitle;
@@ -740,12 +649,13 @@ namespace LethalLevelLoader
 
         internal static void CreateItemTerminalData(ExtendedItem extendedItem)
         {
+            string sanitizedName = extendedItem.Item.itemName.Sanitized(toLower: false).RemoveWhitespace();
             int buyableItemIndex = Terminal.buyableItemsList.Length;
 
             //Terminal Buy Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
-            terminalKeyword.name = extendedItem.Item.itemName.Sanitized() + "Keyword";
-            terminalKeyword.word = extendedItem.Item.itemName.Sanitized();
+            terminalKeyword.name = $"{sanitizedName}Keyword";
+            terminalKeyword.word = sanitizedName.ToLowerInvariant();
             terminalKeyword.defaultVerb = buyKeyword;
 
             //Terminal Buy Keyword
@@ -755,18 +665,10 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeBuy = CreateNewTerminalNode();
-                terminalNodeBuy.name = extendedItem.Item.itemName.Sanitized() + "Buy";
-                if (extendedItem.OverrideBuyNodeDescription != string.Empty)
-                    terminalNodeBuy.displayText = extendedItem.OverrideBuyNodeDescription;
-                else
-                {
-                    if (!string.IsNullOrEmpty(extendedItem.PluralisedItemName))
-                        terminalNodeBuy.displayText = "You have requested to order " + extendedItem.PluralisedItemName + ". Amount: [variableAmount].";
-                    else
-                        terminalNodeBuy.displayText = "You have requested to order " + extendedItem.Item.itemName + ". Amount: [variableAmount].";
-                    terminalNodeBuy.displayText += "\n Total cost of items: [totalCost].";
-                    terminalNodeBuy.displayText += "\n" + "\n" + "Please CONFIRM or DENY." + "\n" + "\n";
-                }
+                terminalNodeBuy.name = $"{sanitizedName}Buy";
+                terminalNodeBuy.displayText = (!string.IsNullOrEmpty(extendedItem.OverrideBuyNodeDescription)) ? extendedItem.OverrideBuyNodeDescription
+                    : $"You have requested to order {(!string.IsNullOrEmpty(extendedItem.PluralisedItemName) ? extendedItem.PluralisedItemName
+                    : extendedItem.Item.itemName)}. Amount: [variableAmount].\n Total cost of items: [totalCost].\n\nPlease CONFIRM or DENY.\n\n";
                 terminalNodeBuy.clearPreviousText = true;
                 terminalNodeBuy.maxCharactersToType = 15;
                 terminalNodeBuy.isConfirmationNode = true;
@@ -782,18 +684,10 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeBuyConfirm = CreateNewTerminalNode();
-                terminalNodeBuyConfirm.name = extendedItem.Item.itemName.Sanitized() + "BuyConfirm";
-                if (extendedItem.OverrideBuyConfirmNodeDescription != string.Empty)
-                    terminalNodeBuyConfirm.displayText = extendedItem.OverrideBuyConfirmNodeDescription;
-                else
-                {
-                    if (!string.IsNullOrEmpty(extendedItem.PluralisedItemName))
-                        terminalNodeBuyConfirm.displayText = "Ordered [variableAmount] " + extendedItem.PluralisedItemName + ". Your new balance is";
-                    else
-                        terminalNodeBuyConfirm.displayText = "Ordered [variableAmount] " + extendedItem.Item.itemName + ". Your new balance is";
-                    terminalNodeBuyConfirm.displayText += "[playerCredits]";
-                    terminalNodeBuyConfirm.displayText += "\n" + "\n" + "Our contractors enjoy fast, free shipping while on the job! Any purchased items will arrive hourly at your approximate location.";
-                }
+                terminalNodeBuyConfirm.name = $"{sanitizedName}BuyConfirm";
+                terminalNodeBuyConfirm.displayText = (!string.IsNullOrEmpty(extendedItem.OverrideBuyConfirmNodeDescription)) ? extendedItem.OverrideBuyConfirmNodeDescription
+                    : $"Ordered [variableAmount] {(!string.IsNullOrEmpty(extendedItem.PluralisedItemName) ? extendedItem.PluralisedItemName
+                    : extendedItem.Item.itemName)}. Your new balance is[playerCredits]\n\nOur contractors enjoy fast, free shipping while on the job! Any purchased items will arrive hourly at your approximate location.";
                 terminalNodeBuyConfirm.clearPreviousText = true;
                 terminalNodeBuyConfirm.maxCharactersToType = 35;
                 terminalNodeBuyConfirm.isConfirmationNode = false;
@@ -810,10 +704,10 @@ namespace LethalLevelLoader
                 else
                 {
                     terminalNodeInfo = CreateNewTerminalNode();
-                    terminalNodeInfo.name = extendedItem.Item.itemName.Sanitized() + "Info";
+                    terminalNodeInfo.name = $"{sanitizedName}Info";
                     terminalNodeInfo.clearPreviousText = true;
                     terminalNodeInfo.maxCharactersToType = 25;
-                    terminalNodeInfo.displayText = "\n" + extendedItem.OverrideInfoNodeDescription;
+                    terminalNodeInfo.displayText = '\n' + extendedItem.OverrideInfoNodeDescription;
                 }
             }
 
@@ -836,14 +730,15 @@ namespace LethalLevelLoader
                 Patches.Terminal.enemyFiles.Add(extendedEnemyType.EnemyInfoNode);
                 return;
             }
+            string sanitizedName = extendedEnemyType.EnemyDisplayName.Sanitized(toLower: false).RemoveWhitespace();
 
             TerminalKeyword newEnemyInfoKeyword = CreateNewTerminalKeyword();
-            newEnemyInfoKeyword.name = extendedEnemyType.name + "BestiaryKeyword";
-            newEnemyInfoKeyword.word = extendedEnemyType.EnemyDisplayName.ToLower();
+            newEnemyInfoKeyword.name = $"{sanitizedName}BestiaryKeyword";
+            newEnemyInfoKeyword.word = sanitizedName.ToLowerInvariant();
             newEnemyInfoKeyword.defaultVerb = routeInfoKeyword;
 
             TerminalNode newEnemyInfoNode = CreateNewTerminalNode();
-            newEnemyInfoNode.name = extendedEnemyType.name + "BestiaryNode";
+            newEnemyInfoNode.name = $"{sanitizedName}BestiaryNode";
             newEnemyInfoNode.displayText = extendedEnemyType.InfoNodeDescription;
             newEnemyInfoNode.creatureFileID = extendedEnemyType.EnemyID;
             newEnemyInfoNode.creatureName = extendedEnemyType.EnemyDisplayName;
@@ -863,40 +758,35 @@ namespace LethalLevelLoader
 
         internal static void CreateBuyableVehicleTerminalData(ExtendedBuyableVehicle extendedBuyableVehicle)
         {
+            string sanitizedName = extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName.Sanitized(toLower: false).RemoveWhitespace();
+
             TerminalKeyword newVehicleTerminalKeyword = CreateNewTerminalKeyword();
-            newVehicleTerminalKeyword.name = extendedBuyableVehicle.name + "Keyword";
-            newVehicleTerminalKeyword.word = extendedBuyableVehicle.TerminalKeywordName.ToLower();
+            newVehicleTerminalKeyword.name = $"{sanitizedName}Keyword";
+            newVehicleTerminalKeyword.word = extendedBuyableVehicle.TerminalKeywordName.ToLowerInvariant();
             newVehicleTerminalKeyword.defaultVerb = buyKeyword;
 
             TerminalNode newVehicleBuyNode = CreateNewTerminalNode();
-            newVehicleBuyNode.name = extendedBuyableVehicle.name + "Buy";
+            newVehicleBuyNode.name = $"{sanitizedName}Buy";
             newVehicleBuyNode.itemCost = extendedBuyableVehicle.BuyableVehicle.creditsWorth;
             newVehicleBuyNode.buyVehicleIndex = extendedBuyableVehicle.VehicleID;
             newVehicleBuyNode.isConfirmationNode = true;
             newVehicleBuyNode.overrideOptions = true;
             newVehicleBuyNode.clearPreviousText = true;
             newVehicleBuyNode.maxCharactersToType = 15;
-            newVehicleBuyNode.displayText =
-                "You have requested to order the " + extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName + "." + "\n" +
-                "[warranty] Total cost of items: [totalCost]." + "\n\n" +
-                "Please CONFIRM or DENY." + "\n\n";
-
-
-
+            newVehicleBuyNode.displayText = $"You have requested to order the {extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName}.\n[warranty] Total cost of items: [totalCost].\n\nPlease CONFIRM or DENY.\n\n";
 
             TerminalNode newVehicleBuyConfirmNode = CreateNewTerminalNode();
-            newVehicleBuyConfirmNode.name = extendedBuyableVehicle.name + "BuyConfirm";
+            newVehicleBuyConfirmNode.name = $"{sanitizedName}BuyConfirm";
             newVehicleBuyConfirmNode.itemCost = extendedBuyableVehicle.BuyableVehicle.creditsWorth;
             newVehicleBuyConfirmNode.buyVehicleIndex = extendedBuyableVehicle.VehicleID;
             newVehicleBuyConfirmNode.clearPreviousText = true;
             newVehicleBuyConfirmNode.maxCharactersToType = 35;
             newVehicleBuyConfirmNode.playSyncedClip = 0;
-            newVehicleBuyConfirmNode.displayText =
-                "Ordered the " + extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName + ". Your new balance is [playerCredits]." + "\n\n" +
-                "We are so confident in the quality of this product, it comes with a life-time warranty! If your " + extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName + " is lost or destroyed, you can get one free replacement. Items cannot be purchased while the vehicle is en route." + "\n\n";
+            newVehicleBuyConfirmNode.displayText = $"Ordered the {extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName}. Your new balance is [playerCredits].\n\nWe are so confident in the quality of this product, it comes with a life-time warranty! "
+                + $"If your {extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName} is lost or destroyed, you can get one free replacement. Items cannot be purchased while the vehicle is en route." + "\n\n";
 
             TerminalNode newVehicleInfoNode = CreateNewTerminalNode();
-            newVehicleInfoNode.name = extendedBuyableVehicle.name + "Info";
+            newVehicleInfoNode.name = $"{sanitizedName}Info";
 
             extendedBuyableVehicle.VehicleBuyNode = newVehicleBuyNode;
             extendedBuyableVehicle.VehicleBuyConfirmNode = newVehicleBuyConfirmNode;
@@ -910,10 +800,12 @@ namespace LethalLevelLoader
 
         internal static void CreateUnlockableItemTerminalData(ExtendedUnlockableItem extendedUnlockableItem)
         {
+            string sanitizedName = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized(toLower: false).RemoveWhitespace();
+
             //Terminal Buy Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
-            terminalKeyword.name = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized() + "Keyword";
-            terminalKeyword.word = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized();
+            terminalKeyword.name = $"{sanitizedName}Keyword";
+            terminalKeyword.word = sanitizedName.ToLowerInvariant();
             terminalKeyword.defaultVerb = buyKeyword;
 
             //Terminal Buy Keyword
@@ -923,21 +815,15 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeBuy = CreateNewTerminalNode();
-                terminalNodeBuy.name = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized() + "Buy";
+                terminalNodeBuy.name = $"{sanitizedName}Buy";
                 terminalNodeBuy.itemCost = extendedUnlockableItem.ItemCost;
                 terminalNodeBuy.isConfirmationNode = false;
                 terminalNodeBuy.overrideOptions = true;
                 terminalNodeBuy.clearPreviousText = true;
                 terminalNodeBuy.maxCharactersToType = 15;
                 terminalNodeBuy.creatureName = extendedUnlockableItem.UnlockableItem.unlockableName;
-                if (extendedUnlockableItem.OverrideBuyNodeDescription != string.Empty)
-                    terminalNodeBuy.displayText = extendedUnlockableItem.OverrideBuyNodeDescription;
-                else
-                {
-                    terminalNodeBuy.displayText = $"You have requested to order the {terminalNodeBuy.creatureName}.";
-                    terminalNodeBuy.displayText += "\n Total cost of item: [totalCost].";
-                    terminalNodeBuy.displayText += "\n" + "\n" + "Please CONFIRM or DENY." + "\n" + "\n";
-                }
+                terminalNodeBuy.displayText = (!string.IsNullOrEmpty(extendedUnlockableItem.OverrideBuyNodeDescription)) ? extendedUnlockableItem.OverrideBuyNodeDescription
+                    : $"You have requested to order the {terminalNodeBuy.creatureName}.\n Total cost of item: [totalCost].\n\nPlease CONFIRM or DENY.\n\n";
             }
             terminalNodeBuy.shipUnlockableID = extendedUnlockableItem.UnlockableItemID;
 
@@ -948,7 +834,7 @@ namespace LethalLevelLoader
             else
             {
                 terminalNodeBuyConfirm = CreateNewTerminalNode();
-                terminalNodeBuyConfirm.name = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized() + "BuyConfirm";
+                terminalNodeBuyConfirm.name = $"{sanitizedName}BuyConfirm";
                 terminalNodeBuyConfirm.itemCost = extendedUnlockableItem.ItemCost;
                 terminalNodeBuyConfirm.isConfirmationNode = false;
                 terminalNodeBuyConfirm.clearPreviousText = true;
@@ -956,13 +842,8 @@ namespace LethalLevelLoader
                 terminalNodeBuyConfirm.maxCharactersToType = 35;
                 terminalNodeBuyConfirm.playSyncedClip = 0;
                 terminalNodeBuyConfirm.creatureName = extendedUnlockableItem.UnlockableItem.unlockableName;
-                if (extendedUnlockableItem.OverrideBuyConfirmNodeDescription != string.Empty)
-                    terminalNodeBuyConfirm.displayText = extendedUnlockableItem.OverrideBuyConfirmNodeDescription;
-                else
-                {
-                    terminalNodeBuyConfirm.displayText = $"Ordered the {terminalNodeBuyConfirm.creatureName}! ";
-                    terminalNodeBuyConfirm.displayText += "Your new balance is [playerCredits]";
-                }
+                terminalNodeBuyConfirm.displayText = (!string.IsNullOrEmpty(extendedUnlockableItem.OverrideBuyConfirmNodeDescription)) ? extendedUnlockableItem.OverrideBuyConfirmNodeDescription
+                    : $"Ordered the {terminalNodeBuyConfirm.creatureName}! Your new balance is [playerCredits]";
             }
             terminalNodeBuyConfirm.shipUnlockableID = extendedUnlockableItem.UnlockableItemID;
 
@@ -975,14 +856,13 @@ namespace LethalLevelLoader
                 else
                 {
                     terminalNodeInfo = CreateNewTerminalNode();
-                    terminalNodeInfo.name = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized() + "Info";
+                    terminalNodeInfo.name = $"{sanitizedName}Info";
                     terminalNodeInfo.clearPreviousText = true;
                     terminalNodeInfo.maxCharactersToType = 25;
-                    terminalNodeInfo.displayText = "\n" + extendedUnlockableItem.OverrideInfoNodeDescription;
+                    terminalNodeInfo.displayText = '\n' + extendedUnlockableItem.OverrideInfoNodeDescription;
                     terminalNodeInfo.creatureName = extendedUnlockableItem.UnlockableItem.unlockableName;
                 }
             }
-
 
             //Population Into Base game
 
@@ -1001,53 +881,48 @@ namespace LethalLevelLoader
             extendedUnlockableItem.UnlockableItem.shopSelectionNode = extendedUnlockableItem.BuyNode;
         }
 
-        internal static void RegisterStoryLog(TerminalKeyword terminalKeyword, TerminalNode terminalNode)
-        {
-
-        }
-
         internal static void CreateMoonsFilterTerminalAssets()
         {
             //Preview & Sort Keywords
             int previewIndex = Terminal.terminalNodes.allKeywords.Length;
-            foreach (TerminalNode previewNode in CreateTerminalEventNodes("preview", new List<Enum>() { PreviewInfoType.Price, PreviewInfoType.Difficulty, PreviewInfoType.Weather, PreviewInfoType.History, PreviewInfoType.All, PreviewInfoType.None }))
+            foreach (TerminalNode previewNode in CreateTerminalEventNodes("Preview", [PreviewInfoType.Price, PreviewInfoType.Difficulty, PreviewInfoType.Weather, PreviewInfoType.History, PreviewInfoType.All, PreviewInfoType.None]))
                 AddTerminalNodeEventListener(previewNode, TryRefreshMoonsCataloguePage, LoadNodeActionType.Before);
             previewKeyword = Terminal.terminalNodes.allKeywords[previewIndex];
 
             int sortIndex = Terminal.terminalNodes.allKeywords.Length;
-            foreach (TerminalNode sortNode in CreateTerminalEventNodes("sort", new List<Enum>() { SortInfoType.Price, SortInfoType.Difficulty, SortInfoType.None }))
+            foreach (TerminalNode sortNode in CreateTerminalEventNodes("Sort", [SortInfoType.Price, SortInfoType.Difficulty, SortInfoType.None]))
                 AddTerminalNodeEventListener(sortNode, TryRefreshMoonsCataloguePage, LoadNodeActionType.Before);
             sortKeyword = Terminal.terminalNodes.allKeywords[sortIndex];
 
             int filterIndex = Terminal.terminalNodes.allKeywords.Length;
-            foreach (TerminalNode filterNode in CreateTerminalEventNodes("filter", new List<Enum>() { FilterInfoType.Price, FilterInfoType.Weather, FilterInfoType.None }))
+            foreach (TerminalNode filterNode in CreateTerminalEventNodes("Filter", [FilterInfoType.Price, FilterInfoType.Weather, FilterInfoType.None]))
                 AddTerminalNodeEventListener(filterNode, TryRefreshMoonsCataloguePage, LoadNodeActionType.Before);
             filterKeyword = Terminal.terminalNodes.allKeywords[filterIndex];
 
             //Tag Keywords
             List<string> tagMoonWordsList = new List<string>();
             List<string> tagMoonTerminalEventsList = new List<string>();
-            List<string> allLevelTags = new List<string>();
+
+            HashSet<ContentTag> allLevelTags = new HashSet<ContentTag>();
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
-                foreach (ContentTag contentTag in extendedLevel.ContentTags)
-                    if (!allLevelTags.Contains(contentTag.contentTagName))
-                        allLevelTags.Add(contentTag.contentTagName);
-            foreach (string levelTag in allLevelTags)
+                allLevelTags.UnionWith(extendedLevel.ContentTags);
+
+            foreach (ContentTag levelTag in allLevelTags)
             {
-                tagMoonWordsList.Add(levelTag);
-                tagMoonTerminalEventsList.Add("Tag;" + levelTag);
+                tagMoonWordsList.Add($"{levelTag}");
+                tagMoonTerminalEventsList.Add($"Tag;{levelTag}");
             }
 
-            foreach (TerminalNode filterNode in CreateTerminalEventNodes("filter", tagMoonWordsList, tagMoonTerminalEventsList, createNewVerbKeyword: false))
+            foreach (TerminalNode filterNode in CreateTerminalEventNodes("Filter", tagMoonWordsList, tagMoonTerminalEventsList, createNewVerbKeyword: false))
                 AddTerminalNodeEventListener(filterNode, TryRefreshMoonsCataloguePage, LoadNodeActionType.Before);
 
             //Simulate Keywords
             List<string> simulateMoonsKeywords = new List<string>();
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
-                simulateMoonsKeywords.Add(extendedLevel.TerminalNoun);
+                simulateMoonsKeywords.Add(extendedLevel.NumberlessPlanetName.Sanitized(toLower: false).RemoveWhitespace());
 
             int counter = 0;
-            foreach (TerminalNode simulateNode in CreateTerminalEventNodes("simulate", simulateMoonsKeywords))
+            foreach (TerminalNode simulateNode in CreateTerminalEventNodes("Simulate", simulateMoonsKeywords))
             {
                 AddTerminalNodeEventListener(simulateNode, SetSimulationResultsText, LoadNodeActionType.Before);
                 PatchedContent.ExtendedLevels[counter].SimulateNode = simulateNode;
@@ -1067,23 +942,24 @@ namespace LethalLevelLoader
 
         internal static List<TerminalNode> CreateTerminalEventNodes(string newVerbKeywordWord, List<string> nounWords, List<string> terminalEventStrings = null, bool createNewVerbKeyword = true)
         {
+            string sanitizedName = newVerbKeywordWord.Sanitized(toLower: false).RemoveWhitespace();
             List<TerminalNode> newTerminalNodes = new List<TerminalNode>();
-            TerminalKeyword verbKeyword = null;
-            if (createNewVerbKeyword == true)
-                verbKeyword = CreateNewTerminalKeyword();
-            else
-                foreach (TerminalKeyword terminalKeyword in Terminal.terminalNodes.allKeywords)
-                    if (terminalKeyword.isVerb == true && terminalKeyword.word == newVerbKeywordWord.ToLower())
-                        verbKeyword = terminalKeyword;
-            verbKeyword.word = newVerbKeywordWord.ToLower();
-            verbKeyword.name = newVerbKeywordWord.ToLower() + "Keyword";
+            TerminalKeyword verbKeyword = createNewVerbKeyword ? CreateNewTerminalKeyword()
+                : Array.Find(Terminal.terminalNodes.allKeywords, keyword => string.Equals(keyword.word.Sanitized(toLower: false).RemoveWhitespace(), sanitizedName, StringComparison.OrdinalIgnoreCase));
+            if (verbKeyword == null)
+                return (newTerminalNodes);
+            verbKeyword.word = sanitizedName.ToLowerInvariant();
+            verbKeyword.name = $"{sanitizedName}Keyword";
             verbKeyword.isVerb = true;
 
-            if (terminalEventStrings == null)
-                terminalEventStrings = nounWords;
-
-            foreach (string newNode in nounWords)
-                newTerminalNodes.Add(CreateTerminalEventNode(verbKeyword, newNode, terminalEventStrings[nounWords.IndexOf(newNode)]));
+            terminalEventStrings ??= nounWords;
+            if (nounWords.Count != terminalEventStrings.Count)
+                DebugHelper.LogError($"Number of event strings does not match number of noun words for TerminalKeyword {newVerbKeywordWord}! Some events may not be registered...", DebugType.Developer);
+            for (int i = 0; i < nounWords.Count; i++)
+            {
+                if (i > terminalEventStrings.Count) break;
+                newTerminalNodes.Add(CreateTerminalEventNode(verbKeyword, nounWords[i], terminalEventStrings[i]));
+            }
 
             return (newTerminalNodes);
         }
@@ -1094,11 +970,11 @@ namespace LethalLevelLoader
             TerminalKeyword newKeyword = CreateNewTerminalKeyword();
             TerminalNode newNode = CreateNewTerminalNode();
 
-            newKeyword.name = verbKeyword.word + GetTerminalEventEnum(nounWord) + "Keyword";
-            newKeyword.word = GetTerminalEventEnum(nounWord).ToLower();
+            newKeyword.name = $"{verbKeyword.word}{GetTerminalEventEnum(nounWord)}Keyword";
+            newKeyword.word = GetTerminalEventEnum(nounWord).ToLowerInvariant();
             newKeyword.defaultVerb = verbKeyword;
             newNode.terminalEvent = terminalEventString;
-            newNode.name = verbKeyword.word + GetTerminalEventEnum(nounWord) + "Node";
+            newNode.name = $"{verbKeyword.word}{GetTerminalEventEnum(nounWord)}Node";
 
             verbKeyword.AddCompatibleNoun(newKeyword, newNode);
 
@@ -1110,9 +986,9 @@ namespace LethalLevelLoader
             TerminalKeyword newTerminalKeyword = ScriptableObject.CreateInstance<TerminalKeyword>();
             newTerminalKeyword.name = "NewLethalLevelLoaderTerminalKeyword";
 
-            newTerminalKeyword.compatibleNouns = new CompatibleNoun[0];
+            newTerminalKeyword.compatibleNouns = [];
             newTerminalKeyword.defaultVerb = null;
-            Terminal.terminalNodes.allKeywords = Terminal.terminalNodes.allKeywords.AddItem(newTerminalKeyword).ToArray();
+            Terminal.terminalNodes.allKeywords = [.. Terminal.terminalNodes.allKeywords, newTerminalKeyword];
 
             return (newTerminalKeyword);
         }
@@ -1132,10 +1008,9 @@ namespace LethalLevelLoader
             newTerminalNode.creatureFileID = -1;
             newTerminalNode.storyLogFileID = -1;
             newTerminalNode.playSyncedClip = -1;
-            newTerminalNode.terminalOptions = new CompatibleNoun[0];
+            newTerminalNode.terminalOptions = [];
 
             return (newTerminalNode);
         }
     }
 }
-#endif

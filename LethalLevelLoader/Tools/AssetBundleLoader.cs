@@ -1,11 +1,7 @@
-﻿using DunGen;
-using DunGen.Graph;
-using LethalLevelLoader.Tools;
+﻿using LethalLevelLoader.Tools;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -14,19 +10,7 @@ namespace LethalLevelLoader
 {
     public class AssetBundleLoader : MonoBehaviour
     {
-        public static AssetBundleLoader Instance;
-
-        internal Plugin pluginInstace;
-
-        public const string specifiedFileExtension = "*.lethalbundle";
-
-        internal static DirectoryInfo lethalLibFile = new DirectoryInfo(Assembly.GetExecutingAssembly().Location);
-        internal static DirectoryInfo lethalLibFolder;
-        internal static DirectoryInfo pluginsFolder;
-
         internal static List<AssetBundleInfo> AssetBundleInfos { get; private set; } = new List<AssetBundleInfo>();
-
-        internal static Dictionary<string, ExtendedMod> obtainedExtendedModsDictionary = new Dictionary<string, ExtendedMod>();
 
         public enum LoadingStatus { Inactive, Loading, Complete };
         public static LoadingStatus CurrentLoadingStatus { get; internal set; } = LoadingStatus.Inactive;
@@ -65,10 +49,6 @@ namespace LethalLevelLoader
         public static event BundleFinishedLoading onBundleFinishedLoading;
 
         internal static TextMeshProUGUI loadingBundlesHeaderText;
-
-        internal static bool noBundlesFound = false;
-
-        internal static bool hasRequestedToLoadMainMenu;
 
         //This Function is used to Register NetworkPrefabs to the GameNetworkManager on GameNetworkManager.Start()
         internal static void NetworkRegisterCustomContent(NetworkManager networkManager)
@@ -281,10 +261,6 @@ namespace LethalLevelLoader
             }
         }
         */
-        internal static void RegisterNewExtendedMod()
-        {
-
-        }
 
         public static void AddOnLethalBundleLoadedListener(Action<AssetBundle> invokedFunction, string lethalBundleFileName)
         {
@@ -846,24 +822,6 @@ namespace LethalLevelLoader
                 else
                     loadingBundlesHeaderText.text = "Loaded Bundles: " + " (" + (assetBundles.Count - (assetBundles.Count - BundlesFinishedLoadingCount)) + " // " + assetBundles.Count + ")";
             }
-        }
-
-        public static Tile[] GetAllTilesInDungeonFlow(DungeonFlow dungeonFlow)
-        {
-            DebugHelper.LogWarning("AssetBundleLoader.GetAllTilesInDungeonFlow() is deprecated. Please move to dungeonFlow.GetTiles() to prevent issues in following updates.", DebugType.Developer);
-            return (dungeonFlow.GetTiles().ToArray());
-        }
-
-        public static RandomMapObject[] GetAllMapObjectsInTiles(Tile[] tiles)
-        {
-            DebugHelper.LogWarning("AssetBundleLoader.GetAllMapObjectsInTiles() is deprecated. Please move to dungeonFlow.GetRandomMapObjects() to prevent issues in following updates.", DebugType.Developer);
-            return (new List<RandomMapObject>().ToArray());
-        }
-
-        public static SpawnSyncedObject[] GetAllSpawnSyncedObjectsInTiles(Tile[] tiles)
-        {
-            DebugHelper.LogWarning("AssetBundleLoader.GetAllSpawnSyncedObjectsInTiles() is deprecated. Please move to dungeonFlow.GetSpawnSyncedObjects() to prevent issues in following updates.", DebugType.Developer);
-            return (new List<SpawnSyncedObject>().ToArray());
         }
     }
 }

@@ -1,40 +1,31 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 
 namespace LethalLevelLoader
 {
-    public class MoonsCataloguePage
+    public class MoonsCataloguePage(List<ExtendedLevelGroup> newExtendedLevelGroups)
     {
-        public List<ExtendedLevelGroup> ExtendedLevelGroups { get; private set; }
+        public List<ExtendedLevelGroup> ExtendedLevelGroups { get; } = [.. newExtendedLevelGroups];
         public List<ExtendedLevel> ExtendedLevels
         {
             get
             {
-                List<ExtendedLevel> returnList = new List<ExtendedLevel>();
-                foreach (ExtendedLevelGroup group in ExtendedLevelGroups)
-                    foreach (ExtendedLevel level in group.extendedLevelsList)
-                        returnList.Add(level);
-
-                return (returnList);
+                if (field == null || field.Count == 0)
+                {
+                    field = new List<ExtendedLevel>();
+                    foreach (ExtendedLevelGroup group in ExtendedLevelGroups)
+                        field.AddRange(group.extendedLevelsList);
+                }
+                return (field);
             }
-        }
-
-        public MoonsCataloguePage(List<ExtendedLevelGroup> newExtendedLevelGroupList)
-        {
-            ExtendedLevelGroups = new List<ExtendedLevelGroup>();
-            ExtendedLevelGroups.Clear();
-
-            foreach (ExtendedLevelGroup newExtendedLevelGroup in newExtendedLevelGroupList)
-                ExtendedLevelGroups.Add(new ExtendedLevelGroup(newExtendedLevelGroup.extendedLevelsList));
         }
 
         public void RebuildLevelGroups(List<ExtendedLevelGroup> newExtendedLevelGroups, int splitCount)
         {
-            List<ExtendedLevel> converteredList = new List<ExtendedLevel>();
-            foreach (ExtendedLevelGroup extendedLevelGroup in ExtendedLevelGroups)
-                foreach (ExtendedLevel level in extendedLevelGroup.extendedLevelsList)
-                    converteredList.Add(level);
-            RebuildLevelGroups(converteredList.ToArray(), splitCount);
+            List<ExtendedLevel> convertedList = new List<ExtendedLevel>();
+            foreach (ExtendedLevelGroup extendedLevelGroup in newExtendedLevelGroups)
+                convertedList.AddRange(extendedLevelGroup.extendedLevelsList);
+            RebuildLevelGroups(convertedList.ToArray(), splitCount);
         }
 
         public void RebuildLevelGroups(List<ExtendedLevel> newExtendedLevels, int splitCount)
@@ -42,51 +33,42 @@ namespace LethalLevelLoader
             RebuildLevelGroups(newExtendedLevels.ToArray(), splitCount);
         }
 
-        public void RebuildLevelGroups(IOrderedEnumerable<ExtendedLevel> orderedExtendedLevels, int splitCount)
-        {
-            RebuildLevelGroups(orderedExtendedLevels.ToArray(), splitCount);
-        }
-
         public void RebuildLevelGroups(ExtendedLevel[] newExtendedLevels, int splitCount)
         {
-            ExtendedLevelGroups = TerminalManager.GetExtendedLevelGroups(newExtendedLevels, splitCount);
-        }
-
-        public void RefreshLevelGroups(List<ExtendedLevelGroup> newLevelGroups)
-        {
             ExtendedLevelGroups.Clear();
-            foreach (ExtendedLevelGroup group in newLevelGroups)
-                if (group.extendedLevelsList.Count != 0)
-                    ExtendedLevelGroups.Add(new ExtendedLevelGroup(group.extendedLevelsList));
+            ExtendedLevelGroups.AddRange(TerminalManager.GetExtendedLevelGroups(newExtendedLevels, splitCount));
         }
     }
 
-    [System.Serializable]
-    public class ExtendedLevelGroup
+    [Serializable]
+    public class ExtendedLevelGroup(List<ExtendedLevel> newExtendedLevels)
     {
-        public List<ExtendedLevel> extendedLevelsList;
+        public List<ExtendedLevel> extendedLevelsList = [.. newExtendedLevels];
 
-        public int AverageCalculatedDifficulty => GetAverageCalculatedDifficulty();
-
-        public ExtendedLevelGroup(List<ExtendedLevel> newExtendedLevelsList)
+        public int AverageCalculatedDifficulty
         {
-            extendedLevelsList = [.. newExtendedLevelsList];
-        }
+            get
+            {
+                if (field == -1)
+                    field = GetAverageCalculatedDifficulty();
+                return (field);
+            }
+        } = -1;
 
-        public ExtendedLevelGroup(List<SelectableLevel> newSelectableLevelsList)
-        {
-            extendedLevelsList = new List<ExtendedLevel>();
-            foreach (SelectableLevel level in newSelectableLevelsList)
-                extendedLevelsList.Add(LevelManager.GetExtendedLevel(level));
-        }
+        public ExtendedLevelGroup(List<SelectableLevel> newSelectableLevels) : this(newSelectableLevels.ConvertAll(LevelManager.GetExtendedLevel)) { }
 
         public int GetAverageCalculatedDifficulty()
         {
-            List<int> calculatedDifficulties = new List<int>();
+            if (extendedLevelsList.Count == 0) return 0;
+            int riskLevelSum = 0;
             foreach (ExtendedLevel level in extendedLevelsList)
-                calculatedDifficulties.Add(level.CalculatedDifficultyRating);
-            return ((int)calculatedDifficulties.Average());
+                riskLevelSum += level.CalculatedDifficultyRating;
+            return (riskLevelSum / extendedLevelsList.Count);
+        }
+
+        internal sealed class ExtendedLevelGroupDifficultyComparer : IComparer<ExtendedLevelGroup>
+        {
+            public int Compare(ExtendedLevelGroup a, ExtendedLevelGroup b) => a.AverageCalculatedDifficulty - b.AverageCalculatedDifficulty;
         }
     }
-
 }

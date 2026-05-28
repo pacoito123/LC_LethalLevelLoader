@@ -30,7 +30,7 @@ namespace LethalLevelLoader
         //internal List<AssetBundleGroup> currentRouteRequestedBundles = new List<AssetBundleGroup>();
         internal ExtendedLevel currentRouteRequestor;
 
-        private NetworkVariable<bool> allowedToLoadLevel = new NetworkVariable<bool>();
+        private readonly NetworkVariable<bool> allowedToLoadLevel = new NetworkVariable<bool>();
         internal static bool AllowedToLoadLevel => Instance == null ? false : Instance.allowedToLoadLevel.Value;
 
         //private Dictionary<ulong, bool> playersReadyDict = new Dictionary<ulong, bool>();

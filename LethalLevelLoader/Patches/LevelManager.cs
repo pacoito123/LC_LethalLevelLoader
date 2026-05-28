@@ -107,7 +107,7 @@ namespace LethalLevelLoader
         public static bool TryGetExtendedLevel(SelectableLevel selectableLevel, out ExtendedLevel returnExtendedLevel, ContentType levelType = ContentType.Any) =>
             PatchedContent.TryGetExtendedContent(selectableLevel, out returnExtendedLevel) && (levelType is ContentType.Any || levelType == returnExtendedLevel.ContentType);
 
-        public static ExtendedLevel GetExtendedLevel(SelectableLevel selectableLevel) => PatchedContent.ExtendedLevels.Find(level => level.SelectableLevel == selectableLevel);
+        public static ExtendedLevel GetExtendedLevel(SelectableLevel selectableLevel) => PatchedContent.TryGetExtendedContent(selectableLevel, out ExtendedLevel extendedLevel) ? extendedLevel : null;
 
         public static void PopulateDynamicRiskLevelDictionary()
         {
@@ -229,7 +229,7 @@ namespace LethalLevelLoader
         public static void LogDayHistory()
         {
             //Heavy early returns here because this runs from a DunGen patch and needs to be safe for unconventional Unity-Editor generation usage.
-            if (Plugin.IsSetupComplete == false || Patches.StartOfRound == null || Patches.RoundManager == null || TimeOfDay.Instance == null)
+            if (Plugin.IsSetupComplete == false || Patches.StartOfRound == null || Patches.RoundManager == null || Patches.TimeOfDay == null)
             {
                 DebugHelper.LogWarning("Game Seems Uninitialized, Exiting LogDayHistory Early!", DebugType.Developer);
                 return;
@@ -242,7 +242,7 @@ namespace LethalLevelLoader
             newDayHistory.extendedLevel = CurrentExtendedLevel;
             newDayHistory.extendedDungeonFlow = DungeonManager.CurrentExtendedDungeonFlow;
             newDayHistory.day = daysTotal;
-            newDayHistory.quota = TimeOfDay.Instance.timesFulfilledQuota;
+            newDayHistory.quota = Patches.TimeOfDay.timesFulfilledQuota;
             newDayHistory.weatherEffect = Patches.StartOfRound.currentLevel.currentWeather;
 
             string debugString = "Created New Day History Log! PlanetName: ";

@@ -1,8 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using LethalLevelLoader.Compatibility;
 using UnityEngine;
 
@@ -11,16 +11,16 @@ namespace LethalLevelLoader.AssetBundles
     public enum AssetBundleType { Unknown, Standard, Streaming }
     public enum AssetBundleLoadingStatus { None, Loading, Unloading }
 
-    public class AssetBundleInfo
+    public class AssetBundleInfo(MonoBehaviour newCoroutineHandler, string filePath, string fileName)
     {
         private bool hasInitialized;
         private AssetBundle assetBundle;
-        private MonoBehaviour coroutineHandler;
+        private readonly MonoBehaviour coroutineHandler = newCoroutineHandler;
         private AssetBundleCreateRequest activeLoadRequest;
         private AssetBundleUnloadOperation activeUnloadRequest;
 
-        private Stopwatch bundleLoadStopwatch;
-        private Stopwatch bundleUnloadStopwatch;
+        private Stopwatch bundleLoadStopwatch = new Stopwatch();
+        private Stopwatch bundleUnloadStopwatch = new Stopwatch();
 
         public string LastLoadTime => AssetBundleUtilities.GetStopWatchTime(bundleLoadStopwatch);
         public float LastTimeLoaded { get; private set; }
@@ -37,8 +37,8 @@ namespace LethalLevelLoader.AssetBundles
         public AssetBundleType AssetBundleMode { get; private set; }
         public bool IsAssetBundleLoaded => (assetBundle != null);
 
-        public string AssetBundleFileName { get; private set; } = "UNKNOWN";
-        public string AssetBundleFilePath { get; private set; } = string.Empty;
+        public string AssetBundleFileName { get; private set; } = fileName;
+        public string AssetBundleFilePath { get; private set; } = filePath;
 
         public bool IsHotReloadable { get; set; }
 
@@ -74,17 +74,7 @@ namespace LethalLevelLoader.AssetBundles
 
         public AssetBundleInfo(MonoBehaviour newCoroutineHandler, string filePath) : this(newCoroutineHandler, filePath, "UNKNOWN")
         {
-            if (filePath.Contains(Path.DirectorySeparatorChar))
-                AssetBundleFileName = filePath.Substring(filePath.LastIndexOf(Path.DirectorySeparatorChar) + 1);
-        }
-
-        public AssetBundleInfo(MonoBehaviour newCoroutineHandler, string filePath, string fileName)
-        {
-            coroutineHandler = newCoroutineHandler;
-            AssetBundleFilePath = filePath;
-            AssetBundleFileName = fileName;
-            bundleLoadStopwatch = new Stopwatch();
-            bundleUnloadStopwatch = new Stopwatch();
+            AssetBundleFileName = filePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
         }
 
         public void Initialize()
@@ -100,7 +90,7 @@ namespace LethalLevelLoader.AssetBundles
                 AssetBundleMode = AssetBundleType.Streaming;
                 AssetBundleName = bundleManifest.bundleName;
 
-                sceneNames = bundleManifest.scenePaths.Select(AssetBundleUtilities.GetSceneName).ToList();
+                sceneNames = [.. Array.ConvertAll(bundleManifest.scenePaths, AssetBundleUtilities.GetSceneName)];
                 streamingBundleScenePaths.AddRange(bundleManifest.scenePaths);
                 allAssetPaths.AddRange(bundleManifest.scenePaths);
 
@@ -113,15 +103,15 @@ namespace LethalLevelLoader.AssetBundles
             if (assetBundle.isStreamedSceneAssetBundle)
             {
                 AssetBundleMode = AssetBundleType.Streaming;
-                streamingBundleScenePaths = new List<string>(assetBundle.GetAllScenePaths());
-                allAssetPaths = new List<string>(streamingBundleScenePaths);
+                streamingBundleScenePaths = [.. assetBundle.GetAllScenePaths()];
+                allAssetPaths = [.. streamingBundleScenePaths];
 
                 AssetBundleLoader.knownSceneBundles[AssetBundleFileName] = new LethalBundleManifest()
                 {
                     fileName = AssetBundleFilePath[(AssetBundleFilePath.LastIndexOf(Path.DirectorySeparatorChar) + 1)..],
                     bundleName = AssetBundleName,
                     timestamp = File.GetLastWriteTime(AssetBundleFilePath).Ticks,
-                    scenePaths = streamingBundleScenePaths.ToArray()
+                    scenePaths = [.. streamingBundleScenePaths]
                 };
 
                 DebugHelper.Log("Adding " + AssetBundleFileName + " to known bundles.", DebugType.Developer);
@@ -129,7 +119,7 @@ namespace LethalLevelLoader.AssetBundles
             else
             {
                 AssetBundleMode = AssetBundleType.Standard;
-                allAssetPaths = new List<string>(assetBundle.GetAllAssetNames());
+                allAssetPaths = [.. assetBundle.GetAllAssetNames()];
             }
         }
 
@@ -212,7 +202,7 @@ namespace LethalLevelLoader.AssetBundles
             yield return activeUnloadRequest;
             if (activeUnloadRequest.isDone)
             {
-                Object.Destroy(assetBundle);
+                UnityEngine.Object.Destroy(assetBundle);
                 assetBundle = null; // I think we need to do this so it isn't deemed missing (?)
                 activeUnloadRequest = null;
                 bundleUnloadStopwatch.Stop();
@@ -227,16 +217,16 @@ namespace LethalLevelLoader.AssetBundles
 
         public List<T> LoadAllAssets<T>() where T : UnityEngine.Object
         {
-            if (AssetBundleMode == AssetBundleType.Unknown || AssetBundleMode == AssetBundleType.Streaming)
-                return (new List<T>());
+            if (AssetBundleMode is AssetBundleType.Unknown or AssetBundleType.Streaming)
+                return ([]);
 
             if (IsAssetBundleLoaded == false || assetBundle == null)
-                return (new List<T>());
+                return ([]);
 
-            return (new List<T>(assetBundle.LoadAllAssets<T>()));
+            return ([.. assetBundle.LoadAllAssets<T>()]);
         }
 
-        public List<string> GetSceneNames() => new List<string>(sceneNames);
+        public List<string> GetSceneNames() => [.. sceneNames];
 
         public bool Contains(string sceneNameOrPath)
         {

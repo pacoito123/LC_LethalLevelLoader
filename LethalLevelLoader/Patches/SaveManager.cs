@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -156,14 +156,12 @@ namespace LethalLevelLoader
                 int newIndex = FixAllItemsListIndex(savedShipItemData.itemAllItemsListData, itemDataDict);
                 savedShipItemData.itemAllItemsListIndex = newIndex;
 
-                if (itemDataDict.ContainsKey(newIndex))
+                if (itemDataDict.TryGetValue(newIndex, out AllItemsListItemData newItemData))
                 {
-                    AllItemsListItemData newItemData = itemDataDict[newIndex];
-
                     if (oldIndex != newIndex)
                     {
                         DebugHelper.Log($"Fixing Item ┌ {savedShipItemData.itemAllItemsListData.modName} ┬ {savedShipItemData.itemAllItemsListData.itemName} ┬ {savedShipItemData.itemAllItemsListData.itemObjectName} ┬ #{oldIndex}", DebugType.User);
-                        DebugHelper.Log($"     -----> └ {newItemData.modName                           } ┴ {newItemData.itemName                           } ┴ {newItemData.itemObjectName                           } ┴ #{newIndex}", DebugType.User);
+                        DebugHelper.Log($"     -----> └ {newItemData.modName} ┴ {newItemData.itemName} ┴ {newItemData.itemObjectName} ┴ #{newIndex}", DebugType.User);
                     }
 
                     savedShipItemData.itemAllItemsListData = newItemData;
@@ -375,10 +373,18 @@ namespace LethalLevelLoader
 
         internal static bool CompareModNames(string modNameA, string modNameB)
         {
-            var modNamesA = modNameA.Split(';');
-            var modNamesB = modNameB.Split(';');
+            string[] modNamesA = modNameA.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            string[] modNamesB = modNameB.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
-            return modNamesA.Intersect(modNamesB).Any();
+            for (int i = 0; i < modNamesA.Length; i++)
+            {
+                int matchingIndex = Array.FindIndex(modNamesB, modName => string.Equals(modName, modNamesA[i], StringComparison.Ordinal));
+                if (matchingIndex != -1)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         internal static List<AllItemsListItemData> GetAllItemsListItemDatas(List<int> itemIDs, Dictionary<int, AllItemsListItemData> itemDataDict)
@@ -387,8 +393,8 @@ namespace LethalLevelLoader
 
             foreach (int id in itemIDs)
             {
-                if (itemDataDict.ContainsKey(id))
-                    result.Add(itemDataDict[id]);
+                if (itemDataDict.TryGetValue(id, out AllItemsListItemData newItemsListData))
+                    result.Add(newItemsListData);
                 else
                     // Don't know this item somehow? Add empty junk
                     result.Add(new AllItemsListItemData("", "", "", "", id, -1, 0, false, false));
@@ -403,30 +409,22 @@ namespace LethalLevelLoader
 
             string currentSaveFileName = GameNetworkManager.Instance.currentSaveFileName;
 
-            List<int> shipGrabbableItemIDs = null;
-            List<Vector3> shipGrabbableItemPos = null;
-            List<int> shipScrapValues = null;
-            List<int> shipItemSaveData = null;
+            List<int> shipGrabbableItemIDs = new List<int>();
+            List<Vector3> shipGrabbableItemPos = new List<Vector3>();
+            List<int> shipScrapValues = new List<int>();
+            List<int> shipItemSaveData = new List<int>();
 
             if (ES3.KeyExists("shipGrabbableItemIDs", currentSaveFileName))
-                shipGrabbableItemIDs = ES3.Load<int[]>("shipGrabbableItemIDs", currentSaveFileName).ToList();
-            else
-                shipGrabbableItemIDs = new List<int>();
+                shipGrabbableItemIDs.AddRange(ES3.Load<int[]>("shipGrabbableItemIDs", currentSaveFileName));
 
             if (ES3.KeyExists("shipGrabbableItemPos", currentSaveFileName))
-                shipGrabbableItemPos = ES3.Load<Vector3[]>("shipGrabbableItemPos", currentSaveFileName).ToList();
-            else
-                shipGrabbableItemPos = new List<Vector3>();
+                shipGrabbableItemPos.AddRange(ES3.Load<Vector3[]>("shipGrabbableItemPos", currentSaveFileName));
 
             if (ES3.KeyExists("shipScrapValues", currentSaveFileName))
-                shipScrapValues = ES3.Load<int[]>("shipScrapValues", currentSaveFileName).ToList();
-            else
-                shipScrapValues = new List<int>();
+                shipScrapValues.AddRange(ES3.Load<int[]>("shipScrapValues", currentSaveFileName));
 
             if (ES3.KeyExists("shipItemSaveData", currentSaveFileName))
-                shipItemSaveData = ES3.Load<int[]>("shipItemSaveData", currentSaveFileName).ToList();
-            else
-                shipItemSaveData = new List<int>();
+                shipItemSaveData.AddRange(ES3.Load<int[]>("shipItemSaveData", currentSaveFileName));
 
             List<AllItemsListItemData> shipGrabbableItemData = GetAllItemsListItemDatas(shipGrabbableItemIDs, itemDataDict);
 
@@ -471,21 +469,12 @@ namespace LethalLevelLoader
         }
     }
 
-    public class SavedShipItemData
+    public class SavedShipItemData(int newItemAllItemsListIndex, Vector3 newItemPosition, int newItemScrapValue, int newItemAdditionalSavedData, AllItemsListItemData newItemAllItemsListData)
     {
-        public int itemAllItemsListIndex;
-        public Vector3 itemPosition;
-        public int itemScrapValue;
-        public int itemAdditionalSavedData;
-        public AllItemsListItemData itemAllItemsListData;
-
-        public SavedShipItemData(int newItemAllItemsListIndex, Vector3 newItemPosition, int newItemScrapValue, int newItemAdditionalSavedData, AllItemsListItemData newItemAllItemsListData)
-        {
-            itemAllItemsListIndex = newItemAllItemsListIndex;
-            itemPosition = newItemPosition;
-            itemScrapValue = newItemScrapValue;
-            itemAdditionalSavedData = newItemAdditionalSavedData;
-            itemAllItemsListData = newItemAllItemsListData;
-        }
+        public int itemAllItemsListIndex = newItemAllItemsListIndex;
+        public Vector3 itemPosition = newItemPosition;
+        public int itemScrapValue = newItemScrapValue;
+        public int itemAdditionalSavedData = newItemAdditionalSavedData;
+        public AllItemsListItemData itemAllItemsListData = newItemAllItemsListData;
     }
 }

@@ -42,8 +42,8 @@ namespace LethalLevelLoader
                 TerrainAlphaMaps[terrain] = alphaMaps;
             }
 
-            StartOfRound.Instance.currentTerrainAlphaMaps = alphaMaps;
-            StartOfRound.Instance.gotCurrentTerrainAlphamaps = alphaMaps != null;
+            Patches.StartOfRound.currentTerrainAlphaMaps = alphaMaps;
+            Patches.StartOfRound.gotCurrentTerrainAlphamaps = alphaMaps != null;
         }
 
         public static bool TryObtainTerrainLayerAtPoint(Vector3 point, Terrain terrain, out int terrainLayer)
@@ -98,10 +98,10 @@ namespace LethalLevelLoader
             TerrainAlphaMaps.Clear();
             TerrainFootstepsDict.Clear();
 
-            if (StartOfRound.Instance != null)
+            if (Patches.StartOfRound != null)
             {
-                StartOfRound.Instance.currentTerrainAlphaMaps = null;
-                StartOfRound.Instance.gotCurrentTerrainAlphamaps = false;
+                Patches.StartOfRound.currentTerrainAlphaMaps = null;
+                Patches.StartOfRound.gotCurrentTerrainAlphamaps = false;
             }
         }
     }

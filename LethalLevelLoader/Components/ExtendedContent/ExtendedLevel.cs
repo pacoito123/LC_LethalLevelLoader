@@ -371,6 +371,11 @@ namespace LethalLevelLoader
         {
             public int Compare(ExtendedLevel a, ExtendedLevel b) => a.CalculatedDifficultyRating - b.CalculatedDifficultyRating;
         }
+
+        internal sealed class ExtendedLevelRoutePriceComparer : IComparer<ExtendedLevel>
+        {
+            public int Compare(ExtendedLevel a, ExtendedLevel b) => a.RoutePrice - b.RoutePrice;
+        }
     }
 
     [Serializable]

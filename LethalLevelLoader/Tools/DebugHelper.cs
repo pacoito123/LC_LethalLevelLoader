@@ -230,7 +230,7 @@ namespace LethalLevelLoader
 
             Log("Obtained (" + OriginalContent.TerminalNodes.Count + " / 186) Vanilla Terminal Node References", DebugType.Developer);
 
-            foreach (TerminalNode terminalNode in Resources.FindObjectsOfTypeAll(typeof(TerminalNode)))
+            foreach (TerminalNode terminalNode in Resources.FindObjectsOfTypeAll<TerminalNode>())
                 if (!OriginalContent.TerminalNodes.Contains(terminalNode))
                     Log("Missing Terminal Node: " + terminalNode.name, DebugType.Developer);
         }
@@ -329,9 +329,9 @@ namespace LethalLevelLoader
             float playerRandomFloat = 1f;
 
             if (players + 1 > 1 && startOfRound.daysPlayersSurvivedInARow > 2 && startOfRound.daysPlayersSurvivedInARow % 3 == 0)
-                playerRandomFloat = (float)weatherRandom.Next(15, 25) / 10f;
+                playerRandomFloat = weatherRandom.Next(15, 25) / 10f;
 
-            int randomPlanetWeatherCurve = Mathf.Clamp((int)(Mathf.Clamp(startOfRound.planetsWeatherRandomCurve.Evaluate((float)weatherRandom.NextDouble()) * playerRandomFloat, 0f, 1f) * (float)selectableLevels.Count), 0, selectableLevels.Count);
+            int randomPlanetWeatherCurve = Mathf.Clamp((int)(Mathf.Clamp(startOfRound.planetsWeatherRandomCurve.Evaluate((float)weatherRandom.NextDouble()) * playerRandomFloat, 0f, 1f) * selectableLevels.Count), 0, selectableLevels.Count);
 
             //Debug Logging
 
@@ -703,7 +703,7 @@ namespace LethalLevelLoader
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class ExtendedLevelLogReport
     {
         public ExtendedLevel extendedLevel;
@@ -714,7 +714,7 @@ namespace LethalLevelLoader
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class ExtendedDungeonFlowLogReport
     {
 

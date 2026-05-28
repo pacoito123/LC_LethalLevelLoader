@@ -24,8 +24,6 @@ namespace LethalLevelLoader.AssetBundles
 
         internal static DirectoryInfo pluginsFolder = new DirectoryInfo(Assembly.GetExecutingAssembly().Location).Parent.Parent;
 
-        private Dictionary<string, AssetBundleInfo> assetBundleInfoDirectoryDict = new Dictionary<string, AssetBundleInfo>();
-
         internal List<AssetBundleInfo> AssetBundleInfos = new List<AssetBundleInfo>();
         internal List<AssetBundleGroup> AssetBundleGroups { get; private set; } = new List<AssetBundleGroup>();
 

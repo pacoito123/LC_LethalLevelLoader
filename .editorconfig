@@ -1,5 +1,8 @@
 [*.cs]
 
+# CA1001: Types that own disposable fields should be disposable
+dotnet_diagnostic.CA1001.severity = suggestion
+
 # CA1041: Provide ObsoleteAttribute message
 dotnet_diagnostic.CA1041.severity = none
 
@@ -12,6 +15,9 @@ dotnet_diagnostic.CA1051.severity = none
 # CA1708: Identifiers should differ by more than case
 dotnet_diagnostic.CA1708.severity = suggestion
 
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = suggestion
+
 # CA2211: Non-constant fields should not be visible
 dotnet_diagnostic.CA2211.severity = none
 
@@ -23,6 +29,9 @@ dotnet_diagnostic.CS0612.severity = suggestion
 
 # IDE0011: Add braces
 csharp_prefer_braces = false
+
+# IDE0022: Use expression body for method
+dotnet_diagnostic.IDE0022.severity = suggestion
 
 # IDE0022: Use block body for method
 csharp_style_expression_bodied_methods = when_on_single_line
@@ -39,6 +48,9 @@ dotnet_diagnostic.IDE0047.severity = none
 # IDE0058: Expression value is never used
 dotnet_diagnostic.IDE0058.severity = none
 
+# IDE0060: Remove unused parameter
+dotnet_diagnostic.IDE0060.severity = suggestion
+
 # IDE0090: Use 'new(...)'
 csharp_style_implicit_object_creation_when_type_is_apparent = false
 
@@ -47,3 +59,6 @@ dotnet_diagnostic.IDE0100.severity = none
 
 # IDE0130: Namespace does not match folder structure
 dotnet_style_namespace_match_folder = false
+
+# IDE1006: Naming Styles
+dotnet_diagnostic.IDE1006.severity = suggestion
