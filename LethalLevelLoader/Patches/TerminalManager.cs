@@ -650,7 +650,6 @@ namespace LethalLevelLoader
         internal static void CreateItemTerminalData(ExtendedItem extendedItem)
         {
             string sanitizedName = extendedItem.Item.itemName.Sanitized(toLower: false).RemoveWhitespace();
-            int buyableItemIndex = Terminal.buyableItemsList.Length;
 
             //Terminal Buy Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
@@ -675,7 +674,6 @@ namespace LethalLevelLoader
                 terminalNodeBuy.itemCost = extendedItem.Item.creditsWorth;
                 terminalNodeBuy.overrideOptions = true;
             }
-            terminalNodeBuy.buyItemIndex = buyableItemIndex;
 
             //Terminal Route Confirm Node
             TerminalNode terminalNodeBuyConfirm;
@@ -693,7 +691,6 @@ namespace LethalLevelLoader
                 terminalNodeBuyConfirm.isConfirmationNode = false;
                 terminalNodeBuyConfirm.playSyncedClip = 0;
             }
-            terminalNodeBuyConfirm.buyItemIndex = buyableItemIndex;
 
             //Terminal Info Node
             TerminalNode terminalNodeInfo = null;

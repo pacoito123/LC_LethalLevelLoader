@@ -18,6 +18,7 @@
 
 * Fixed a few issues with RuntimeDungeon restoration when landing on certain moons
 * Fixed `Custom` ContentTag being applied indiscriminately to all ExtendedContent
+* Fixed buyable ExtendedItems not properly updating the `buyItemIndex` field for their Terminal nodes, causing delivery issues
 
 </details>
 

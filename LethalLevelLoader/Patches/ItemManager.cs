@@ -11,8 +11,14 @@ namespace LethalLevelLoader
             // Load ExtendedItem store page entries.
             List<Item> buyableItems = [.. Patches.Terminal.buyableItemsList];
             foreach (ExtendedItem extendedItem in PatchedContent.CustomExtendedItems)
-                if (extendedItem.IsBuyableItem)
-                    buyableItems.Add(extendedItem.Item);
+            {
+                if (!extendedItem.IsBuyableItem || buyableItems.Contains(extendedItem.Item)) continue;
+                if (extendedItem.BuyNode != null)
+                    extendedItem.BuyNode.buyItemIndex = buyableItems.Count;
+                if (extendedItem.BuyConfirmNode != null)
+                    extendedItem.BuyConfirmNode.buyItemIndex = buyableItems.Count;
+                buyableItems.Add(extendedItem.Item);
+            }
             Patches.Terminal.buyableItemsList = [.. buyableItems];
         }
 
