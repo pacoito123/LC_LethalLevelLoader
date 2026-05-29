@@ -99,16 +99,27 @@ namespace LethalLevelLoader
                 return;
             }
 
-            List<EntranceTeleport> mainEntrances = allEntranceTeleports.FindAll(entrance => entrance.entranceId == 0);
+            List<EntranceTeleport> mainEntrances = new List<EntranceTeleport>(allEntranceTeleports.Count);
+            for (int i = 0; i < allEntranceTeleports.Count; i++)
+            {
+                EntranceTeleport entrance = allEntranceTeleports[i];
+                if (entrance.entranceId == 0)
+                {
+                    mainEntrances.Add(entrance);
+                    allEntranceTeleports.RemoveAt(i--);
+                }
+            }
+
             if (mainEntrances.Count == 0)
                 DebugHelper.LogError("No EntranceTeleport For Main Entrance Found In The Scene! A Fire Exit Will Act As Main Entrance Instead...", DebugType.User);
             else if (mainEntrances.Count > 1)
                 DebugHelper.LogError($"'{mainEntrances.Count}' EntranceTeleports For Main Entrance Found In The Scene! Only One Will Act As Main Entrance...", DebugType.User);
 
+            allEntranceTeleports.AddRange(mainEntrances); // Add main entrance(s) to the very end.
             for (int i = 0; i < allEntranceTeleports.Count; i++)
-                allEntranceTeleports[i].entranceId = i;
+                allEntranceTeleports[i].entranceId = (allEntranceTeleports.Count - 1) - i;
 
-            debugString += $"EntranceTeleports Found, {extendedLevel.NumberlessPlanetName} Contains {allEntranceTeleports.Count} Entrances! ( {allEntranceTeleports.Count - 1} Fire Escapes)\n";
+            debugString += $"EntranceTeleports Found, {extendedLevel.NumberlessPlanetName} Contains {allEntranceTeleports.Count} Entrances! ({allEntranceTeleports.Count - 1} Fire Escapes)\n";
             debugString += $"Main Entrance: {allEntranceTeleports[0].name} (Entrance ID: {allEntranceTeleports[0].entranceId})\n";
             foreach (EntranceTeleport entranceTeleport in allEntranceTeleports)
                 if (entranceTeleport.entranceId != 0)

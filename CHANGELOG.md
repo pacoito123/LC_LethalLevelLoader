@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.5</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed EntranceTeleport used for Main entrance being swapped with a Fire exit (in some cases)
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.4</summary>**
 
 **<details><summary>Features</summary>**
