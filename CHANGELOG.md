@@ -11,6 +11,7 @@
   * Made distance values be applied separately for their respective content type, instead of just using the largest value
     * Going indoors will apply the value defined in ExtendedDungeonFlow, going outdoors will reapply the value defined in ExtendedLevel
   * Made it only affect the local player's gameplay camera, instead of every camera that is targeting a player
+* Added a name override field to FootstepSurfaceHelper, for targeting footsteps registered by other ExtendedMods
 
 </details>
 

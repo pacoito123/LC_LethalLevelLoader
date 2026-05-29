@@ -93,7 +93,10 @@ namespace LethalLevelLoader
                     continue;
                 }
 
-                string identifier = (extendedLevel.ExtendedMod.ModMergeSetting) switch
+                string identifier = null;
+                if (!string.IsNullOrEmpty(layerWithSurface.overrideExtendedModName))
+                    identifier = layerWithSurface.overrideExtendedModName;
+                identifier ??= (extendedLevel.ExtendedMod.ModMergeSetting) switch
                 {
                     ModMergeSetting.MatchingAuthorName => extendedLevel.ExtendedMod.AuthorName,
                     ModMergeSetting.MatchingModName => extendedLevel.ExtendedMod.ModName,
@@ -115,13 +118,15 @@ namespace LethalLevelLoader
     }
 
     [Serializable]
-    public struct TerrainLayerWithSurface
+    public struct TerrainLayerWithSurface()
     {
         [Tooltip("Surface tag of the ExtendedFootstepSurface to use for this Terrain layer.")]
-        public string surfaceTag;
+        public string surfaceTag = string.Empty;
         [Tooltip("Use a vanilla tag for this Terrain layer instead. NOTE: For custom footsteps, leave as 'None' and use the field above!")]
-        public VanillaSurfaceTags useVanillaTag;
+        public VanillaSurfaceTags useVanillaTag = VanillaSurfaceTags.None;
         [Tooltip("Terrain layer to change the footsteps of.")]
-        [Space(10)] public TerrainLayer terrainLayer;
+        [Space(10)] public TerrainLayer terrainLayer = null;
+        [Tooltip("Override ExtendedMod name for this surface tag. Should be left empty unless using footsteps registered by another ExtendedMod.")]
+        public string overrideExtendedModName = string.Empty;
     }
 }
