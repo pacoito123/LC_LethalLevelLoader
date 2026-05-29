@@ -1,7 +1,6 @@
 ﻿using LethalLevelLoader.Tools;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -266,10 +265,10 @@ namespace LethalLevelLoader
         {
             if (invokedFunction != null && !string.IsNullOrEmpty(lethalBundleFileName))
             {
-                if (!AssetBundles.AssetBundleLoader.onLethalBundleLoadedRequestDict.ContainsKey(lethalBundleFileName))
-                    AssetBundles.AssetBundleLoader.onLethalBundleLoadedRequestDict.Add(lethalBundleFileName, new List<Action<AssetBundle>>() { invokedFunction });
+                if (!AssetBundles.AssetBundleLoader.onLethalBundleLoadedRequestDict.TryGetValue(lethalBundleFileName, out List<Action<AssetBundle>> list))
+                    AssetBundles.AssetBundleLoader.onLethalBundleLoadedRequestDict.Add(lethalBundleFileName, [invokedFunction]);
                 else
-                    AssetBundles.AssetBundleLoader.onLethalBundleLoadedRequestDict[lethalBundleFileName].Add(invokedFunction);
+                    list.Add(invokedFunction);
             }
         }
 
@@ -277,18 +276,18 @@ namespace LethalLevelLoader
         {
             if (invokedFunction != null && !string.IsNullOrEmpty(extendedModAuthorName))
             {
-                if (!LethalBundleManager.onExtendedModLoadedRequestDict.ContainsKey(extendedModAuthorName))
-                    LethalBundleManager.onExtendedModLoadedRequestDict.Add(extendedModAuthorName, new List<Action<ExtendedMod>>() { invokedFunction });
+                if (!LethalBundleManager.onExtendedModLoadedRequestDict.TryGetValue(extendedModAuthorName, out List<Action<ExtendedMod>> list))
+                    LethalBundleManager.onExtendedModLoadedRequestDict.Add(extendedModAuthorName, [invokedFunction]);
                 else
-                    LethalBundleManager.onExtendedModLoadedRequestDict[extendedModAuthorName].Add(invokedFunction);
+                    list.Add(invokedFunction);
             }
 
             if (invokedFunction != null && !string.IsNullOrEmpty(extendedModModName))
             {
-                if (!LethalBundleManager.onExtendedModLoadedRequestDict.ContainsKey(extendedModModName))
-                    LethalBundleManager.onExtendedModLoadedRequestDict.Add(extendedModModName, new List<Action<ExtendedMod>>() { invokedFunction });
+                if (!LethalBundleManager.onExtendedModLoadedRequestDict.TryGetValue(extendedModModName, out List<Action<ExtendedMod>> list))
+                    LethalBundleManager.onExtendedModLoadedRequestDict.Add(extendedModModName, [invokedFunction]);
                 else
-                    LethalBundleManager.onExtendedModLoadedRequestDict[extendedModModName].Add(invokedFunction);
+                    list.Add(invokedFunction);
             }
         }
         /*
@@ -761,32 +760,7 @@ namespace LethalLevelLoader
             return true;
         }
 
-        internal static void SetVanillaLevelTags(ExtendedLevel vanillaLevel)
-        {
-            foreach (IntWithRarity intWithRarity in vanillaLevel.SelectableLevel.dungeonFlowTypes)
-                if (DungeonManager.TryGetExtendedDungeonFlow(Patches.RoundManager.dungeonFlowTypes[intWithRarity.id].dungeonFlow, out ExtendedDungeonFlow extendedDungeonFlow))
-                    extendedDungeonFlow.LevelMatchingProperties.planetNames.Add(new StringWithRarity(vanillaLevel.NumberlessPlanetName, intWithRarity.rarity));
-
-            if (vanillaLevel.SelectableLevel.sceneName == "Level4March")
-                foreach (IndoorMapType indoorMapType in Patches.RoundManager.dungeonFlowTypes)
-                    if (indoorMapType.dungeonFlow.name == "Level1Flow3Exits")
-                        if (DungeonManager.TryGetExtendedDungeonFlow(indoorMapType.dungeonFlow, out ExtendedDungeonFlow marchDungeonFlow))
-                            marchDungeonFlow.LevelMatchingProperties.planetNames.Add(new StringWithRarity(vanillaLevel.NumberlessPlanetName, 300));
-
-            foreach (CompatibleNoun infoNoun in TerminalManager.routeInfoKeyword.compatibleNouns)
-                if (infoNoun.noun.word == vanillaLevel.NumberlessPlanetName.ToLower())
-                {
-                    vanillaLevel.InfoNode = infoNoun.result;
-                    break;
-                }
-        }
-
-        internal static string GetSceneName(string scenePath)
-        {
-            return (scenePath.Substring(scenePath.LastIndexOf('/') + 1).Replace(".unity", ""));
-        }
-
-        internal static void CreateLoadingBundlesHeaderText(PreInitSceneScript preInitSceneScript)
+        /* internal static void CreateLoadingBundlesHeaderText(PreInitSceneScript preInitSceneScript)
         {
             GameObject newHeader = Instantiate(preInitSceneScript.headerText.gameObject, preInitSceneScript.headerText.transform.parent);
             RectTransform newHeaderRectTransform = newHeader.GetComponent<RectTransform>();
@@ -822,6 +796,6 @@ namespace LethalLevelLoader
                 else
                     loadingBundlesHeaderText.text = "Loaded Bundles: " + " (" + (assetBundles.Count - (assetBundles.Count - BundlesFinishedLoadingCount)) + " // " + assetBundles.Count + ")";
             }
-        }
+        } */
     }
 }

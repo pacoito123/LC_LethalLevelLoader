@@ -340,7 +340,7 @@ namespace LethalLevelLoader
                 Debug.LogWarning($"Invalid DungeonFlow entry at index '{i}' for SelectableLevel: {SelectableLevel.name}");
                 dungeonFlowTypes.RemoveAt(i--);
             }
-            if (SelectableLevel.name.Equals("MarchLevel", StringComparison.Ordinal))
+            if (string.Equals(SelectableLevel.name, "MarchLevel", StringComparison.Ordinal))
             {
                 ExtendedDungeonFlow marchDungeonFlow = PatchedContent.ExtendedDungeonFlows.Find(extendedDungeonFlow =>
                     string.Equals(extendedDungeonFlow.DungeonFlow.name, "Level1Flow3Exits", StringComparison.Ordinal));
@@ -367,14 +367,14 @@ namespace LethalLevelLoader
             routePrice = newValue;
         }
 
-        internal sealed class ExtendedLevelDifficultyComparer : IComparer<ExtendedLevel>
+        internal struct ExtendedLevelDifficultyComparer : IComparer<ExtendedLevel>
         {
-            public int Compare(ExtendedLevel a, ExtendedLevel b) => a.CalculatedDifficultyRating - b.CalculatedDifficultyRating;
+            public readonly int Compare(ExtendedLevel a, ExtendedLevel b) => a.CalculatedDifficultyRating - b.CalculatedDifficultyRating;
         }
 
-        internal sealed class ExtendedLevelRoutePriceComparer : IComparer<ExtendedLevel>
+        internal struct ExtendedLevelRoutePriceComparer : IComparer<ExtendedLevel>
         {
-            public int Compare(ExtendedLevel a, ExtendedLevel b) => a.RoutePrice - b.RoutePrice;
+            public readonly int Compare(ExtendedLevel a, ExtendedLevel b) => a.RoutePrice - b.RoutePrice;
         }
     }
 

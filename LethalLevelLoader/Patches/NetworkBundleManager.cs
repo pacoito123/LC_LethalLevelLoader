@@ -198,7 +198,7 @@ namespace LethalLevelLoader
         {
             networkSceneInfos = new List<NetworkSceneInfo>();
             Dictionary<int, string> levelSceneDict = NetworkScenePatcher.GetLevelSceneDict();
-            List<string> scenePaths = new List<string>(levelSceneDict.Values);
+            List<string> scenePaths = [.. levelSceneDict.Values];
             for (int i = 0; i < levelSceneDict.Count; i++)
                 if (scenePaths.Count > i)
                     networkSceneInfos.Add(new NetworkSceneInfo(i, scenePaths[i]));
@@ -210,13 +210,10 @@ namespace LethalLevelLoader
             foreach (AssetBundleGroup group in AssetBundles.AssetBundleLoader.Instance.AssetBundleGroups)
                 foreach (string groupSceneName in group.GetSceneNames())
                 {
-                    if (assetBundleGroupSceneDict.TryGetValue(groupSceneName, out List<AssetBundleGroup> bundleList))
-                    {
-                        if (!bundleList.Contains(group))
-                            bundleList.Add(group);
-                    }
-                    else
-                        assetBundleGroupSceneDict.Add(groupSceneName, new List<AssetBundleGroup> { group });
+                    if (!assetBundleGroupSceneDict.TryGetValue(groupSceneName, out List<AssetBundleGroup> bundleList))
+                        assetBundleGroupSceneDict.Add(groupSceneName, [group]);
+                    else if (!bundleList.Contains(group))
+                        bundleList.Add(group);
                 }
         }
 
@@ -234,6 +231,5 @@ namespace LethalLevelLoader
                 DebugHelper.Log("Path: " + bundleInfo.DirectoryPath + ", IsLoaded: " + bundleInfo.IsLoaded + ", IsSceneBundle: " + bundleInfo.IsSceneBundle, DebugType.IAmBatby);
         }
         */
-
     }
 }

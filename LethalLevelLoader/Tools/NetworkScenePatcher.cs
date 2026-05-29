@@ -106,20 +106,18 @@ public static class NetworkScenePatcher
 
     static string GetScenePathByBuildIndex(int buildIndex)
     {
-        if (buildIndexToScenePath.ContainsKey(buildIndex))
+        if (buildIndexToScenePath.TryGetValue(buildIndex, out string scenePath))
         {
-            return buildIndexToScenePath[buildIndex];
+            return scenePath;
         }
-        return SceneUtility.GetScenePathByBuildIndex(buildIndex);
+        return (SceneUtility.GetScenePathByBuildIndex(buildIndex));
     }
     static int GetBuildIndexByScenePath(string scenePath)
     {
         int val = SceneUtility.GetBuildIndexByScenePath(scenePath);
-        if (val == -1)
-        {
-            if (scenePathToBuildIndex.ContainsKey(scenePath)) val = scenePathToBuildIndex[scenePath];
-        }
-        return val;
+        if (val == -1 && scenePathToBuildIndex.TryGetValue(scenePath, out int value))
+            val = value;
+        return (val);
     }
     static void GenerateScenesInBuild_Hook(Action<NetworkSceneManager> orig, NetworkSceneManager self)
     {
@@ -165,7 +163,7 @@ public static class NetworkScenePatcher
     static string SceneNameFromHash_Hook(Func<NetworkSceneManager, uint, string> orig, NetworkSceneManager self, uint sceneHash)
     {
         if (sceneHash == 0U) return "No Scene";
-        if (sceneHashToScenePath.ContainsKey(sceneHash)) return sceneHashToScenePath[sceneHash];
+        if (sceneHashToScenePath.TryGetValue(sceneHash, out string scenePath)) return scenePath;
         return orig(self, sceneHash);
     }
 

@@ -275,9 +275,9 @@ namespace LethalLevelLoader.Tools
                         foreach (CompatibleNoun compatibleNoun in new List<CompatibleNoun>(TerminalManager.routeKeyword.compatibleNouns))
                             if (compatibleNoun.result == extendedLevel.RouteNode)
                             {
-                                List<CompatibleNoun> modifiedNounsList = new List<CompatibleNoun>(TerminalManager.routeKeyword.compatibleNouns);
+                                List<CompatibleNoun> modifiedNounsList = [.. TerminalManager.routeKeyword.compatibleNouns];
                                 modifiedNounsList.Remove(compatibleNoun);
-                                TerminalManager.routeKeyword.compatibleNouns = modifiedNounsList.ToArray();
+                                TerminalManager.routeKeyword.compatibleNouns = [.. modifiedNounsList];
                                 extendedLevel.IsRouteRemoved = true;
                             }
 
@@ -311,18 +311,13 @@ namespace LethalLevelLoader.Tools
         }
     }
 
-    public class ConfigTemplate
+    public abstract class ConfigTemplate
     {
         public ConfigFile configFile;
         public string subCategory = string.Empty;
-        public int sortingPriority = 0;
+        public int sortingPriority;
 
-        private string _category = string.Empty;
-        public string Category
-        {
-            get { return (GetSortingSpaces() + _category); }
-            set { _category = value; }
-        }
+        public string Category { get => (GetSortingSpaces() + field); set; } = string.Empty;
 
         public ConfigTemplate(ConfigFile newConfigFile, string newCategory, int newSortingPriority)
         {

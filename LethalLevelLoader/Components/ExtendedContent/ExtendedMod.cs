@@ -237,9 +237,9 @@ namespace LethalLevelLoader
             ExtendedUnlockableItems.Sort(extendedComparer);
         }
 
-        internal sealed class ExtendedModComparer : IComparer<ExtendedMod>
+        internal struct ExtendedModComparer : IComparer<ExtendedMod>
         {
-            public int Compare(ExtendedMod a, ExtendedMod b) => a.ModName.CompareTo(b.ModName, StringComparison.OrdinalIgnoreCase);
+            public readonly int Compare(ExtendedMod a, ExtendedMod b) => a.ModName.CompareTo(b.ModName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

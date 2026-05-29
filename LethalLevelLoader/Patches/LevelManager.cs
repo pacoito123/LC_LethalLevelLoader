@@ -118,10 +118,10 @@ namespace LethalLevelLoader
                 DebugHelper.Log($"Risk Level Of {vanillaLevel.NumberlessPlanetName} Is: {vanillaLevel.SelectableLevel.riskLevel}", DebugType.Developer);
                 if (!string.IsNullOrEmpty(vanillaLevel.SelectableLevel.riskLevel) && !vanillaLevel.SelectableLevel.riskLevel.Contains("Safe", StringComparison.Ordinal))
                 {
-                    if (vanillaRiskLevelDictionary.TryGetValue(vanillaLevel.SelectableLevel.riskLevel, out List<int> dynamicDifficultyRatingList))
-                        dynamicDifficultyRatingList.Add(vanillaLevel.CalculatedDifficultyRating);
-                    else
+                    if (!vanillaRiskLevelDictionary.TryGetValue(vanillaLevel.SelectableLevel.riskLevel, out List<int> dynamicDifficultyRatingList))
                         vanillaRiskLevelDictionary.Add(vanillaLevel.SelectableLevel.riskLevel, [vanillaLevel.CalculatedDifficultyRating]);
+                    else
+                        dynamicDifficultyRatingList.Add(vanillaLevel.CalculatedDifficultyRating);
                 }
             }
 
@@ -143,7 +143,7 @@ namespace LethalLevelLoader
 
             foreach (KeyValuePair<string, int> dynamicRiskLevelPair in new Dictionary<string, int>(dynamicRiskLevelDictionary))
                 foreach (KeyValuePair<string, List<int>> vanillaRiskLevel in vanillaRiskLevelDictionary)
-                    if (dynamicRiskLevelPair.Key.Equals(vanillaRiskLevel.Key, StringComparison.Ordinal))
+                    if (string.Equals(dynamicRiskLevelPair.Key, vanillaRiskLevel.Key, StringComparison.Ordinal))
                     {
                         int riskLevelSum = 0;
                         foreach (int riskLevel in vanillaRiskLevel.Value)
@@ -174,9 +174,8 @@ namespace LethalLevelLoader
 
                     dynamicRiskLevelDictionary[key] = Mathf.RoundToInt((i == 0) ? (dynamicRiskLevelDictionary[currentFullRiskLevel] / 2f)
                         : (Mathf.Lerp(dynamicRiskLevelDictionary[previousFullRiskLevel], dynamicRiskLevelDictionary[currentFullRiskLevel], 0.66f)));
-
                 }
-                else if (key.Contains('+', StringComparison.Ordinal) && !key.Equals("S+", StringComparison.Ordinal))
+                else if (key.Contains('+', StringComparison.Ordinal) && !string.Equals(key, "S+", StringComparison.Ordinal))
                 {
                     currentFullRiskLevel = keys[i - 1];
                     if (!key.Contains('S', StringComparison.Ordinal))

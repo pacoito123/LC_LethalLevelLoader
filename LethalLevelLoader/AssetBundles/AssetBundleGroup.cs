@@ -151,7 +151,7 @@ namespace LethalLevelLoader.AssetBundles
         public bool ContainsAssetBundleFile(string fullFilePath)
         {
             for (int i = 0; i < assetBundleInfos.Count; i++)
-                if (assetBundleInfos[i].AssetBundleFilePath.Equals(fullFilePath, StringComparison.Ordinal))
+                if (string.Equals(assetBundleInfos[i].AssetBundleFilePath, fullFilePath, StringComparison.Ordinal))
                     return (true);
             return (false);
         }

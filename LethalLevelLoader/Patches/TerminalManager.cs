@@ -257,12 +257,12 @@ namespace LethalLevelLoader
 
         internal static void SortMoonsCataloguePage(MoonsCataloguePage cataloguePage)
         {
-            if (Settings.levelPreviewSortType.Equals(SortInfoType.Price))
+            if (Settings.levelPreviewSortType is SortInfoType.Price)
             {
                 cataloguePage.ExtendedLevels.Sort(new ExtendedLevel.ExtendedLevelRoutePriceComparer());
                 cataloguePage.RebuildLevelGroups(cataloguePage.ExtendedLevels, Settings.moonsCatalogueSplitCount);
             }
-            else if (Settings.levelPreviewSortType.Equals(SortInfoType.Difficulty))
+            else if (Settings.levelPreviewSortType is SortInfoType.Difficulty)
             {
                 cataloguePage.ExtendedLevels.Sort(new ExtendedLevel.ExtendedLevelDifficultyComparer());
                 cataloguePage.RebuildLevelGroups(cataloguePage.ExtendedLevels, Settings.moonsCatalogueSplitCount);
@@ -501,10 +501,10 @@ namespace LethalLevelLoader
             Dictionary<string, List<ExtendedLevel>> extendedLevelsContentSourceNameDictionary = new Dictionary<string, List<ExtendedLevel>>();
             foreach (ExtendedLevel customExtendedLevel in PatchedContent.CustomExtendedLevels)
             {
-                if (extendedLevelsContentSourceNameDictionary.TryGetValue(customExtendedLevel.ModName, out List<ExtendedLevel> extendedLevels))
-                    extendedLevels.Add(customExtendedLevel);
-                else
+                if (!extendedLevelsContentSourceNameDictionary.TryGetValue(customExtendedLevel.ModName, out List<ExtendedLevel> extendedLevels))
                     extendedLevelsContentSourceNameDictionary.Add(customExtendedLevel.ModName, [customExtendedLevel]);
+                else
+                    extendedLevels.Add(customExtendedLevel);
             }
             List<ExtendedLevel> singleExtendedLevelsList = new List<ExtendedLevel>();
             List<ExtendedLevelGroup> combinedOrderedCustomExtendedLevelGroups = new List<ExtendedLevelGroup>();

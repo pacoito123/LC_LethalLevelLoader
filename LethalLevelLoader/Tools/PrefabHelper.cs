@@ -7,17 +7,19 @@ using UnityEngine;
 
 namespace LethalLevelLoader
 {
-    public class PrefabHelper
+    public static class PrefabHelper
     {
         internal static Lazy<GameObject> _prefabParent;
-        internal static GameObject prefabParent { get { return _prefabParent.Value; } }
+        internal static GameObject prefabParent => _prefabParent.Value;
 
         static PrefabHelper()
         {
-            _prefabParent = new Lazy<GameObject>(() =>
+            _prefabParent = new Lazy<GameObject>(static () =>
             {
-                var parent = new GameObject("LethalLibGeneratedPrefabs");
-                parent.hideFlags = HideFlags.HideAndDontSave;
+                GameObject parent = new GameObject("LethalLibGeneratedPrefabs")
+                {
+                    hideFlags = HideFlags.HideAndDontSave
+                };
                 parent.SetActive(false);
 
                 return parent;
@@ -26,9 +28,10 @@ namespace LethalLevelLoader
 
         public static GameObject CreatePrefab(string name)
         {
-            var prefab = new GameObject(name);
-            prefab.hideFlags = HideFlags.HideAndDontSave;
-
+            GameObject prefab = new GameObject(name)
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
             prefab.transform.SetParent(prefabParent.transform);
 
             return prefab;
@@ -36,11 +39,10 @@ namespace LethalLevelLoader
 
         public static GameObject CreateNetworkPrefab(string name)
         {
-            var prefab = CreatePrefab(name);
+            GameObject prefab = CreatePrefab(name);
             prefab.AddComponent<NetworkObject>();
 
-            var hash = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(Assembly.GetCallingAssembly().GetName().Name + name));
-
+            byte[] hash = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(Assembly.GetCallingAssembly().GetName().Name + name));
             prefab.GetComponent<NetworkObject>().GlobalObjectIdHash = BitConverter.ToUInt32(hash, 0);
 
             //LethalLevelLoaderNetworkManager.RegisterNetworkPrefab(prefab);

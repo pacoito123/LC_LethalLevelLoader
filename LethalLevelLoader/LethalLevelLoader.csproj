@@ -34,7 +34,7 @@
   <!-- Code linting. -->
   <PropertyGroup>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <AnalysisMode>All</AnalysisMode>
     <AnalysisLevel>preview-recommended</AnalysisLevel>
   </PropertyGroup>

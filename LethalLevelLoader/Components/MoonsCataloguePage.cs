@@ -66,9 +66,9 @@ namespace LethalLevelLoader
             return (riskLevelSum / extendedLevelsList.Count);
         }
 
-        internal sealed class ExtendedLevelGroupDifficultyComparer : IComparer<ExtendedLevelGroup>
+        internal struct ExtendedLevelGroupDifficultyComparer : IComparer<ExtendedLevelGroup>
         {
-            public int Compare(ExtendedLevelGroup a, ExtendedLevelGroup b) => a.AverageCalculatedDifficulty - b.AverageCalculatedDifficulty;
+            public readonly int Compare(ExtendedLevelGroup a, ExtendedLevelGroup b) => a.AverageCalculatedDifficulty - b.AverageCalculatedDifficulty;
         }
     }
 }

@@ -157,13 +157,10 @@ namespace LethalLevelLoader
                 obtainedExtendedModsList.Add(extendedMod);
                 if (source != null)
                 {
-                    if (obtainedExtendedModsDict.TryGetValue(source, out List<ExtendedMod> extendedModList))
-                    {
-                        if (!extendedModList.Contains(extendedMod))
-                            extendedModList.Add(extendedMod);
-                    }
-                    else
-                        obtainedExtendedModsDict.Add(source, new List<ExtendedMod> { extendedMod });
+                    if (!obtainedExtendedModsDict.TryGetValue(source, out List<ExtendedMod> extendedModList))
+                        obtainedExtendedModsDict.Add(source, [extendedMod]);
+                    else if (!extendedModList.Contains(extendedMod))
+                        extendedModList.Add(extendedMod);
                 }
 
                 List<ExtendedContent> serializedExtendedContents = extendedMod.ExtendedContents;
@@ -263,13 +260,10 @@ namespace LethalLevelLoader
                 DebugHelper.Log("Creating New ExtendedMod: " + contentSourceName, DebugType.Developer);
                 ExtendedMod newExtendedMod = ExtendedMod.Create(contentSourceName);
                 obtainedExtendedModsList.Add(newExtendedMod);
-                if (obtainedExtendedModsDict.TryGetValue(source, out List<ExtendedMod> foundExtendedModList))
-                {
-                    if (!foundExtendedModList.Contains(newExtendedMod))
-                        foundExtendedModList.Add(newExtendedMod);
-                }
-                else
-                    obtainedExtendedModsDict.Add(source, new List<ExtendedMod> { newExtendedMod });
+                if (!obtainedExtendedModsDict.TryGetValue(source, out List<ExtendedMod> foundExtendedModList))
+                    obtainedExtendedModsDict.Add(source, [newExtendedMod]);
+                else if (!foundExtendedModList.Contains(newExtendedMod))
+                    foundExtendedModList.Add(newExtendedMod);
                 return (newExtendedMod);
             }
         }

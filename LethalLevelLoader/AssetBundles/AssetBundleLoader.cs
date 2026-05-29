@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using BepInEx;
 using UnityEngine;
@@ -33,7 +32,7 @@ namespace LethalLevelLoader.AssetBundles
         public static ExtendedEvent<AssetBundleInfo> OnBundleLoaded = new ExtendedEvent<AssetBundleInfo>();
         public static ExtendedEvent<AssetBundleInfo> OnBundleUnloaded = new ExtendedEvent<AssetBundleInfo>();
 
-        private static Dictionary<(string, string), List<ParameterEvent<AssetBundleGroup>>> processedCallbacksDict = new Dictionary<(string, string), List<ParameterEvent<AssetBundleGroup>>>();
+        private static readonly Dictionary<(string, string), List<ParameterEvent<AssetBundleGroup>>> processedCallbacksDict = new Dictionary<(string, string), List<ParameterEvent<AssetBundleGroup>>>();
 
         //Semi legacy
         internal static Dictionary<string, List<Action<AssetBundle>>> onLethalBundleLoadedRequestDict = new Dictionary<string, List<Action<AssetBundle>>>();
@@ -59,8 +58,6 @@ namespace LethalLevelLoader.AssetBundles
         }
 
         internal static bool AllowLoading { get; set; } = true;
-
-        private bool onCooldown;
 
         public static bool LoadAllBundlesRequest(DirectoryInfo directory = null, string specifiedFileName = null, string specifiedFileExtension = null, ParameterEvent<AssetBundleGroup> onProcessedCallback = null)
         {
@@ -119,10 +116,10 @@ namespace LethalLevelLoader.AssetBundles
             string callBack = callbackName.ToLowerInvariant() + callbackExtension.ToLowerInvariant();
             if (onProcessedCallback != null)
             {
-                if (processedCallbacksDict.TryGetValue((directory.FullName, callBack), out List<ParameterEvent<AssetBundleGroup>> list))
-                    list.Add(onProcessedCallback);
+                if (!processedCallbacksDict.TryGetValue((directory.FullName, callBack), out List<ParameterEvent<AssetBundleGroup>> list))
+                    processedCallbacksDict.Add((directory.FullName, callBack), [onProcessedCallback]);
                 else
-                    processedCallbacksDict.Add((directory.FullName, callBack), new List<ParameterEvent<AssetBundleGroup>>() { onProcessedCallback });
+                    list.Add(onProcessedCallback);
             }
 
             foreach (string filePath in Directory.GetFiles(directory.FullName, specifiedFileName + specifiedFileExtension, SearchOption.AllDirectories))
@@ -197,7 +194,7 @@ namespace LethalLevelLoader.AssetBundles
             DebugHelper.Log("Processing Bundle: " + info.AssetBundleName, DebugType.IAmBatby);
 
             //Semi arbitrary
-            if (info.AssetBundleMode == AssetBundleType.Streaming)
+            if (info.AssetBundleMode is AssetBundleType.Streaming)
                 info.IsHotReloadable = true;
             //info.TryUnloadBundle();
 
@@ -215,7 +212,6 @@ namespace LethalLevelLoader.AssetBundles
         {
             Instance.AssetBundleGroups.Clear();
             List<UniqueSceneGroup> uniqueSceneGroups = new List<UniqueSceneGroup>();
-
 
             //These are scene names and not paths so we need to ensure to correctly handle any duplicate scene names
             //Pretty sure LC and even Unity would reject duplicate scene names anyway but it bothers me
@@ -236,9 +232,7 @@ namespace LethalLevelLoader.AssetBundles
                 }
                 else
                     nonSceneBundlesDict.Add(new List<AssetBundleInfo> { bundleInfo });
-
             }
-
 
             foreach (KeyValuePair<string, List<AssetBundleInfo>> kvp in sceneNameDict)
             {
@@ -256,7 +250,9 @@ namespace LethalLevelLoader.AssetBundles
                         break;
             }
 
-            foreach (List<AssetBundleInfo> groupedInfos in uniqueSceneGroups.Select(s => s.AssetBundleInfosInGroup).Concat(nonSceneBundlesDict))
+            List<List<AssetBundleInfo>> allInfos = uniqueSceneGroups.ConvertAll(s => s.AssetBundleInfosInGroup);
+            allInfos.AddRange(nonSceneBundlesDict);
+            foreach (List<AssetBundleInfo> groupedInfos in allInfos)
             {
                 if (groupedInfos.Count > 0)
                 {
@@ -275,16 +271,21 @@ namespace LethalLevelLoader.AssetBundles
                     foreach (KeyValuePair<string, List<Action<AssetBundle>>> lethalBundleRequest in onLethalBundleLoadedRequestDict)
                         foreach (AssetBundleInfo info in newGroup.GetAssetBundleInfos())
                         {
-                            if (info.AssetBundleName == lethalBundleRequest.Key)
+                            if (string.Equals(info.AssetBundleName, lethalBundleRequest.Key, StringComparison.Ordinal))
                             {
-                                AssetBundle newBundle = AssetBundle.GetAllLoadedAssetBundles().FirstOrDefault(bundle => bundle.name == info.AssetBundleName);
+                                AssetBundle newBundle = null;
+                                foreach (AssetBundle bundle in AssetBundle.GetAllLoadedAssetBundles())
+                                    if (string.Equals(bundle.name, info.AssetBundleName, StringComparison.Ordinal))
+                                    {
+                                        newBundle = bundle;
+                                        break;
+                                    }
                                 if (newBundle != null)
                                     foreach (Action<AssetBundle> bundleEvent in lethalBundleRequest.Value)
                                         bundleEvent.Invoke(newBundle);
                                 break;
                             }
                         }
-
 
                     string log = "Generated New AssetBundleGroup, Contained BundleInfos Are,\n";
                     foreach (AssetBundleInfo bundleInfo in newGroup.GetAssetBundleInfos())
@@ -310,16 +311,20 @@ namespace LethalLevelLoader.AssetBundles
             return (count);
         }
 
-        private static List<AssetBundleInfo> GetAssetBundleInfos() => new List<AssetBundleInfo>(Instance.AssetBundleInfos);
+        private static List<AssetBundleInfo> GetAssetBundleInfos() => ([.. Instance.AssetBundleInfos]);
 
         private static List<AssetBundleInfo> GetAssetBundleInfos(AssetBundleType modeFilter)
         {
-            return (Instance.AssetBundleInfos.Where(a => a.AssetBundleMode == modeFilter)).ToList();
+            List<AssetBundleInfo> infos = GetAssetBundleInfos();
+            infos.RemoveAll(a => a.AssetBundleMode != modeFilter);
+            return (infos);
         }
 
         private static List<AssetBundleInfo> GetAssetBundleInfos(bool isLoadedFilter)
         {
-            return (Instance.AssetBundleInfos.Where(a => a.IsAssetBundleLoaded == isLoadedFilter)).ToList();
+            List<AssetBundleInfo> infos = GetAssetBundleInfos();
+            infos.RemoveAll(a => a.IsAssetBundleLoaded != isLoadedFilter);
+            return (infos);
         }
     }
 

@@ -1,12 +1,10 @@
-using System.Linq;
-
 namespace LethalLevelLoader
 {
     public static class UnlockableItemManager
     {
         internal static void PatchVanillaUnlockableItemLists()
         {
-            Patches.StartOfRound.unlockablesList.unlockables = [.. PatchedContent.ExtendedUnlockableItems.Select(u => u.UnlockableItem)];
+            Patches.StartOfRound.unlockablesList.unlockables = [.. PatchedContent.ExtendedUnlockableItems.ConvertAll(u => u.UnlockableItem)];
         }
 
         internal static void SetUnlockableItemIDs()

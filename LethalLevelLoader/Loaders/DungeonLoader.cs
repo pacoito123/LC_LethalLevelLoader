@@ -15,9 +15,9 @@ namespace LethalLevelLoader
 
         public bool UpdateRarity(int newRarity) { if (newRarity > rarity) { rarity = newRarity; return (true); } return (false); }
 
-        internal sealed class ExtendedDungeonFlowWithRarityComparer(bool ascending = true) : IComparer<ExtendedDungeonFlowWithRarity>
+        internal struct ExtendedDungeonFlowWithRarityComparer(bool ascending = true) : IComparer<ExtendedDungeonFlowWithRarity>
         {
-            public int Compare(ExtendedDungeonFlowWithRarity a, ExtendedDungeonFlowWithRarity b) => ascending ? a.rarity - b.rarity : b.rarity - a.rarity;
+            public readonly int Compare(ExtendedDungeonFlowWithRarity a, ExtendedDungeonFlowWithRarity b) => ascending ? a.rarity - b.rarity : b.rarity - a.rarity;
         }
     }
 

@@ -274,8 +274,8 @@ namespace LethalLevelLoader
 
                 //Debugging.
                 DebugHelper.DebugAllContentTags();
-                ItemManager.GetExtendedItemPriceData();
-                ItemManager.GetExtendedItemWeightData();
+                // ItemManager.GetExtendedItemPriceData();
+                // ItemManager.GetExtendedItemWeightData();
             }
 
             DebugStopwatch.StartStopWatch("Bind Configs");
@@ -1205,9 +1205,9 @@ namespace LethalLevelLoader
             return false;
         }
 
-        private sealed class DoorwayPairComparer : IComparer<DoorwayPair>
+        private struct DoorwayPairComparer : IComparer<DoorwayPair>
         {
-            public int Compare(DoorwayPair a, DoorwayPair b)
+            public readonly int Compare(DoorwayPair a, DoorwayPair b)
             {
                 int tileWeight = b.TileWeight.CompareTo(a.TileWeight);
                 if (tileWeight == 0) return b.DoorwayWeight.CompareTo(a.DoorwayWeight);

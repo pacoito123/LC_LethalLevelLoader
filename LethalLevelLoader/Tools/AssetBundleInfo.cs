@@ -6,31 +6,29 @@ namespace LethalLevelLoader
     public struct AssetBundleInfo
     {
         public string DirectoryPath { get; private set; }
-        private List<string> scenePathsInBundle = new List<string>();
-        private List<string> sceneNamesInBundle = new List<string>();
-        private AssetBundle assetBundle;
+        private readonly List<string> scenePathsInBundle = new List<string>();
+        private readonly List<string> sceneNamesInBundle = new List<string>();
+        private readonly AssetBundle assetBundle;
 
-        public bool IsLoaded => (assetBundle != null);
-        public bool IsSceneBundle => (sceneNamesInBundle.Count > 0);
+        public readonly bool IsLoaded => (assetBundle != null);
+        public readonly bool IsSceneBundle => (sceneNamesInBundle.Count > 0);
 
         //We are taking in bundle for now but this might change once better
         public AssetBundleInfo(string directory, AssetBundle newBundle)
         {
             DirectoryPath = directory;
             assetBundle = newBundle;
-            if (assetBundle != null)
-                if (assetBundle.isStreamedSceneAssetBundle)
-                    foreach (string scene in assetBundle.GetAllScenePaths())
-                        scenePathsInBundle.Add(scene);
-
+            if (assetBundle != null && assetBundle.isStreamedSceneAssetBundle)
+                foreach (string scene in assetBundle.GetAllScenePaths())
+                    scenePathsInBundle.Add(scene);
 
             foreach (string scene in scenePathsInBundle)
-                sceneNamesInBundle.Add(scene.Substring(scene.LastIndexOf("/") + 1).Replace(".unity", string.Empty));
+                sceneNamesInBundle.Add(scene[(scene.LastIndexOf('/') + 1)..].Replace(".unity", string.Empty));
             foreach (string scene in sceneNamesInBundle)
                 DebugHelper.Log("AssetBundleInfo Has Scene: " + scene, DebugType.User);
         }
 
-        public AssetBundle LoadAndOrGetBundle()
+        public readonly AssetBundle LoadAndOrGetBundle()
         {
             if (IsLoaded)
                 return (assetBundle);
@@ -40,19 +38,6 @@ namespace LethalLevelLoader
             return (null);
         }
 
-        public bool ContainsScene(string scenePath)
-        {
-            return (sceneNamesInBundle.Contains(scenePath));
-        }
-
-        private void LoadBundle()
-        {
-
-        }
-
-        private void UnloadBundle()
-        {
-
-        }
+        public readonly bool ContainsScene(string scenePath) => (sceneNamesInBundle.Contains(scenePath));
     }
 }

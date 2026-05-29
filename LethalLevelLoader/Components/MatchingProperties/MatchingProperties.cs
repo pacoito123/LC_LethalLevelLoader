@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -45,13 +44,12 @@ namespace LethalLevelLoader
 
         internal static int GetHighestRarityViaMatchingNormalizedString(string comparingString, List<StringWithRarity> matchingStrings)
         {
-            return (GetHighestRarityViaMatchingNormalizedStrings(new List<string>() { comparingString }, matchingStrings));
+            return (GetHighestRarityViaMatchingNormalizedStrings([comparingString], matchingStrings));
         }
 
         internal static int GetHighestRarityViaMatchingNormalizedTags(List<ContentTag> comparingTags, List<StringWithRarity> matchingStrings)
         {
-            List<string> contentTagStrings = comparingTags.Select(t => t.contentTagName).ToList();
-            return GetHighestRarityViaMatchingNormalizedStrings(contentTagStrings, matchingStrings);
+            return GetHighestRarityViaMatchingNormalizedStrings(comparingTags.ConvertAll(t => t.contentTagName), matchingStrings);
         }
 
         internal static int GetHighestRarityViaMatchingNormalizedStrings(List<string> comparingStrings, List<StringWithRarity> matchingStrings)
