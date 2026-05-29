@@ -20,6 +20,8 @@
 * Fixed a few issues with RuntimeDungeon restoration when landing on certain moons
 * Fixed `Custom` ContentTag being applied indiscriminately to all ExtendedContent
 * Fixed buyable ExtendedItems not properly updating the `buyItemIndex` field for their Terminal nodes, causing delivery issues
+* Fixed ItemGroups in (non-blank) spawnable items specified in SelectableLevel not being properly restored
+  * Still should opt for using LevelMatchingProperties in ExtendedItems to add them to a specific moon
 
 </details>
 

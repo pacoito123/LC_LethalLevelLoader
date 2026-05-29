@@ -57,12 +57,27 @@ namespace LethalLevelLoader.Tools
 
             DebugHelper.Log($"Restoring Vanilla References for SelectableLevel: {extendedLevel.SelectableLevel.name}", DebugType.IAmBatby);
 
-            foreach (SpawnableItemWithRarity spawnableItem in extendedLevel.SelectableLevel.spawnableScrap)
+            foreach (SpawnableItemWithRarity itemWithRarity in extendedLevel.SelectableLevel.spawnableScrap)
             {
-                if (spawnableItem == null || spawnableItem.spawnableItem == null || spawnableItem.spawnableItem.spawnPrefab != null) continue;
-                Item vanillaItem = OriginalContent.Items.Find(item => string.Equals(item.name, spawnableItem.spawnableItem.name, StringComparison.Ordinal));
+                Item spawnableItem = itemWithRarity?.spawnableItem;
+                if (spawnableItem == null) continue;
+                if (spawnableItem.spawnPrefab != null)
+                {
+                    for (int i = 0; i < itemWithRarity.spawnableItem.spawnPositionTypes?.Count; i++)
+                    {
+                        ItemGroup targetItemGroup = itemWithRarity.spawnableItem.spawnPositionTypes[i];
+                        if (targetItemGroup != null)
+                        {
+                            ItemGroup vanillaItemGroup = OriginalContent.ItemGroups.Find(itemGroup => string.Equals(itemGroup.name, targetItemGroup.name, StringComparison.Ordinal));
+                            if (vanillaItemGroup != null)
+                                spawnableItem.spawnPositionTypes[i] = RestoreAsset(targetItemGroup, vanillaItemGroup);
+                        }
+                    }
+                    continue;
+                }
+                Item vanillaItem = OriginalContent.Items.Find(item => string.Equals(item.name, spawnableItem.name, StringComparison.Ordinal));
                 if (vanillaItem != null)
-                    spawnableItem.spawnableItem = RestoreAsset(spawnableItem.spawnableItem, vanillaItem);
+                    itemWithRarity.spawnableItem = RestoreAsset(spawnableItem, vanillaItem);
             }
             int removedScrap = extendedLevel.SelectableLevel.spawnableScrap.RemoveAll(item => item == null || item.spawnableItem == null || item.spawnableItem.spawnPrefab == null);
             if (removedScrap > 0)
