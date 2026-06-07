@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 
 namespace LethalLevelLoader
@@ -22,10 +23,12 @@ namespace LethalLevelLoader
         //Semi legacy
         internal static Dictionary<string, List<Action<ExtendedMod>>> onExtendedModLoadedRequestDict = new Dictionary<string, List<Action<ExtendedMod>>>();
 
-        internal static void Start()
+        internal static async Task StartDelayed()
         {
-            DebugHelper.Log("LethalBundleManger: Starting!", DebugType.User);
+            await Task.Delay(1);
+            DebugHelper.Log("LethalBundleManager: Starting!", DebugType.User);
 
+            ContentTagParser.ImportVanillaContentTags();
             PatchedContent.VanillaMod = ExtendedMod.Create("LethalCompany", "Zeekerss");
 
             ReadKnownSceneBundles();
