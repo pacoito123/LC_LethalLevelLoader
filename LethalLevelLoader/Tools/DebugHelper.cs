@@ -601,8 +601,9 @@ namespace LethalLevelLoader
         {
             string debugString = $"Debug Report For ExtendedMod: {extendedMod.ModName} by {extendedMod.AuthorName}:\n\n";
 
-            debugString += $"ExtendedContents: Count - {extendedMod.ExtendedContents.Count}\n\n";
-            foreach (ExtendedContent extendedContent in extendedMod.ExtendedContents)
+            List<ExtendedContent> extendedContents = extendedMod.ExtendedContents;
+            debugString += $"ExtendedContents: Count - {extendedContents.Count}\n\n";
+            foreach (ExtendedContent extendedContent in extendedContents)
                 debugString += $"{extendedContent.name} ({extendedContent.GetType().Name})\n";
 
             Log(debugString, DebugType.Developer);

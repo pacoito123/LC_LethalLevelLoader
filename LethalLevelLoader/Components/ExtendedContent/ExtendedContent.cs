@@ -67,7 +67,7 @@ namespace LethalLevelLoader
 
         internal struct ExtendedContentComparer : IComparer<ExtendedContent>
         {
-            public readonly int Compare(ExtendedContent a, ExtendedContent b) => a.name.CompareTo(b.name, StringComparison.OrdinalIgnoreCase);
+            public readonly int Compare(ExtendedContent a, ExtendedContent b) => string.Compare(a.name, b.name, StringComparison.OrdinalIgnoreCase);
         }
     }
 

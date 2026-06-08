@@ -16,6 +16,7 @@ namespace LethalLevelLoader
 
         public static IEnumerable<Tile> GetTiles(this DungeonFlow dungeonFlow)
         {
+            if (dungeonFlow == null) return [];
             HashSet<Tile> tilesList = new HashSet<Tile>();
             HashSet<TileSet> tileSetsList = new HashSet<TileSet>();
 
@@ -44,6 +45,7 @@ namespace LethalLevelLoader
 
         public static IEnumerable<Tile> GetTilesInTileSet(this TileSet tileSet)
         {
+            if (tileSet == null) return [];
             HashSet<Tile> tilesList = new HashSet<Tile>();
 
             if (tileSet.TileWeights != null && tileSet.TileWeights.Weights != null)
@@ -60,11 +62,13 @@ namespace LethalLevelLoader
 
         public static IEnumerable<RandomMapObject> GetRandomMapObjects(this DungeonFlow dungeonFlow)
         {
+            if (dungeonFlow == null) return [];
             return dungeonFlow.GetRandomMapObjects(dungeonFlow.GetTiles());
         }
 
-        public static IEnumerable<RandomMapObject> GetRandomMapObjects(this DungeonFlow _, IEnumerable<Tile> allTiles)
+        public static IEnumerable<RandomMapObject> GetRandomMapObjects(this DungeonFlow dungeonFlow, IEnumerable<Tile> allTiles)
         {
+            if (dungeonFlow == null) return [];
             List<RandomMapObject> returnList = new List<RandomMapObject>();
 
             List<RandomMapObject> tileRandomMapObjects = new List<RandomMapObject>();
@@ -79,11 +83,13 @@ namespace LethalLevelLoader
 
         public static IEnumerable<SpawnSyncedObject> GetSpawnSyncedObjects(this DungeonFlow dungeonFlow)
         {
+            if (dungeonFlow == null) return [];
             return dungeonFlow.GetSpawnSyncedObjects(dungeonFlow.GetTiles());
         }
 
-        public static IEnumerable<SpawnSyncedObject> GetSpawnSyncedObjects(this DungeonFlow _, IEnumerable<Tile> allTiles)
+        public static IEnumerable<SpawnSyncedObject> GetSpawnSyncedObjects(this DungeonFlow dungeonFlow, IEnumerable<Tile> allTiles)
         {
+            if (dungeonFlow == null) return [];
             HashSet<SpawnSyncedObject> returnList = new HashSet<SpawnSyncedObject>();
 
             foreach (Tile dungeonTile in allTiles)

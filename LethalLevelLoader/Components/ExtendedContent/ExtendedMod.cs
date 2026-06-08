@@ -79,7 +79,7 @@ namespace LethalLevelLoader
                     .. ExtendedBuyableVehicles,
                     .. ExtendedUnlockableItems,
                 ];
-                returnList.Sort(new ExtendedContent.ExtendedContentComparer());
+                // returnList.Sort(new ExtendedContent.ExtendedContentComparer());
                 return (returnList);
             }
         }
@@ -239,7 +239,7 @@ namespace LethalLevelLoader
 
         internal struct ExtendedModComparer : IComparer<ExtendedMod>
         {
-            public readonly int Compare(ExtendedMod a, ExtendedMod b) => a.ModName.CompareTo(b.ModName, StringComparison.OrdinalIgnoreCase);
+            public readonly int Compare(ExtendedMod a, ExtendedMod b) => string.Compare(a.ModName, b.ModName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

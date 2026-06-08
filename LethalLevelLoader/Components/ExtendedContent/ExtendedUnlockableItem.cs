@@ -36,7 +36,8 @@ namespace LethalLevelLoader
             if (!Patches.StartOfRound.unlockablesList.unlockables.Contains(UnlockableItem))
                 Patches.StartOfRound.unlockablesList.unlockables.Add(UnlockableItem);
 
-            ContentRestorer.RestoreAudioAssetReferencesInParent(UnlockableItem.prefabObject);
+            if (UnlockableItem.prefabObject == null)
+                ContentRestorer.RestoreAudioAssetReferencesInParent(UnlockableItem.prefabObject);
         }
 
         internal static ExtendedUnlockableItem Create(UnlockableItem newUnlockableItem, ExtendedMod extendedMod, ContentType contentType)
