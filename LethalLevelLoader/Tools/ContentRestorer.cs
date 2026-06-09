@@ -311,7 +311,14 @@ namespace LethalLevelLoader.Tools
 
         internal static bool TryRestoreSpawnSyncedObject(SpawnSyncedObject spawnSyncedObject)
         {
-            if (spawnSyncedObject != null && TryRestoreNetworkPrefab(spawnSyncedObject.spawnPrefab, out GameObject registeredPrefab))
+            if (spawnSyncedObject == null) return (false);
+            if (spawnSyncedObject.spawnPrefab == spawnSyncedObject.gameObject)
+            {
+                DebugHelper.LogWarning($"SpawnSyncedObject '{spawnSyncedObject.name}' in '{spawnSyncedObject.transform.root.name}' contains a reference to itself! Replacing with a blank object to avoid issues...", DebugType.Developer);
+                spawnSyncedObject.spawnPrefab = new GameObject(spawnSyncedObject.name);
+            }
+
+            if (TryRestoreNetworkPrefab(spawnSyncedObject.spawnPrefab, out GameObject registeredPrefab))
             {
                 spawnSyncedObject.spawnPrefab = registeredPrefab;
                 return (true);
