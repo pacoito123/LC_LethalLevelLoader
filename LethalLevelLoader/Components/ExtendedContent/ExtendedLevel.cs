@@ -187,13 +187,7 @@ namespace LethalLevelLoader
 
         internal void Initialize(string _, bool generateTerminalAssets)
         {
-            bool mainSceneRegistered = false;
-
-            foreach (StringWithRarity sceneSelection in SceneSelections)
-                if (sceneSelection.Name == SelectableLevel.sceneName)
-                    mainSceneRegistered = true;
-
-            if (mainSceneRegistered == false)
+            if (SceneSelections.Find(scene => string.Equals(scene.Name, SelectableLevel.name, StringComparison.Ordinal)) == null)
             {
                 StringWithRarity newSceneSelection = new StringWithRarity(SelectableLevel.sceneName, 300);
                 SceneSelections.Add(newSceneSelection);
@@ -206,9 +200,22 @@ namespace LethalLevelLoader
                     SceneSelections.Remove(sceneSelection);
                 }
 
-            if (ShipFlyToMoonClips.Count == 0)
+            if (ShipFlyToMoonClips.Count > 0)
+            {
+                for (int i = 0; i < ShipFlyToMoonClips.Count; i++)
+                    if (ShipFlyToMoonClips[i].Clip == null)
+                        ShipFlyToMoonClips[i] = new ClipWithRarity(LevelLoader.defaultShipFlyToMoonClip, ShipFlyToMoonClips[i].Rarity);
+            }
+            else
                 ShipFlyToMoonClips.Add(new ClipWithRarity(LevelLoader.defaultShipFlyToMoonClip, 300));
-            if (ShipFlyFromMoonClips.Count == 0)
+
+            if (ShipFlyFromMoonClips.Count > 0)
+            {
+                for (int i = 0; i < ShipFlyFromMoonClips.Count; i++)
+                    if (ShipFlyFromMoonClips[i].Clip == null)
+                        ShipFlyFromMoonClips[i] = new ClipWithRarity(LevelLoader.defaultShipFlyFromMoonClip, ShipFlyFromMoonClips[i].Rarity);
+            }
+            else
                 ShipFlyFromMoonClips.Add(new ClipWithRarity(LevelLoader.defaultShipFlyFromMoonClip, 300));
 
             if (OverrideStartOfDayMusic == null)
@@ -251,13 +258,13 @@ namespace LethalLevelLoader
             if (removedScenes > 0)
                 DebugHelper.LogWarning($"Removed '{removedScenes}' missing or empty scene selections in ExtendedLevel: {name}", DebugType.User);
 
-            int removedFlyToMoonClips = ShipFlyToMoonClips.RemoveAll(clipSelection => clipSelection.Clip == null || clipSelection.Rarity == 0);
+            int removedFlyToMoonClips = ShipFlyToMoonClips.RemoveAll(static clipSelection => clipSelection.Rarity == 0);
             if (removedFlyToMoonClips > 0)
-                DebugHelper.LogWarning($"Removed '{removedFlyToMoonClips}' missing, empty, or zero-rarity ShipFlyToMoon clip overrides in ExtendedLevel: {name}", DebugType.User);
+                DebugHelper.LogWarning($"Removed '{removedFlyToMoonClips}' zero-rarity ShipFlyToMoon clip overrides in ExtendedLevel: {name}", DebugType.User);
 
-            int removedFlyFromMoonClips = ShipFlyFromMoonClips.RemoveAll(clipSelection => clipSelection.Clip == null || clipSelection.Rarity == 0);
+            int removedFlyFromMoonClips = ShipFlyFromMoonClips.RemoveAll(static clipSelection => clipSelection.Rarity == 0);
             if (removedFlyFromMoonClips > 0)
-                DebugHelper.LogWarning($"Removed '{removedFlyFromMoonClips}' missing, empty, or zero-rarity ShipFlyFromMoon clip overrides in ExtendedLevel: {name}", DebugType.User);
+                DebugHelper.LogWarning($"Removed '{removedFlyFromMoonClips}' zero-rarity ShipFlyFromMoon clip overrides in ExtendedLevel: {name}", DebugType.User);
 
             if (SelectableLevel == null)
                 return ((false, "SelectableLevel Was Null"));
