@@ -1,6 +1,17 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.6</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed LLL handling scene selection for moons registered outside LLL
+* Fixed LLL overriding difficulty level for moons registered outside LLL
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.5</summary>**
 
 **<details><summary>Fixes</summary>**

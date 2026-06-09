@@ -231,6 +231,12 @@ namespace LethalLevelLoader
                 }
             }
 
+            if (ContentType is ContentType.External)
+            {
+                OverrideDynamicRiskLevelAssignment = true;
+                UseTerrainFootsteps = false;
+            }
+
             SelectableLevel.spawnableMapObjects ??= [];
             SelectableLevel.indoorMapHazards ??= [];
 

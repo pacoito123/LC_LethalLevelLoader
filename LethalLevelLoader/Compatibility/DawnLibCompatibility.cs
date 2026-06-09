@@ -39,9 +39,8 @@ namespace LethalLevelLoader.Compatibility
                 dawnExtendedLevel.RouteNode = dawnMoonInfo.RouteNode;
                 dawnExtendedLevel.RouteConfirmNode = dawnMoonInfo.ReceiptNode;
                 dawnExtendedLevel.RoutePrice = dawnMoonInfo.DawnPurchaseInfo.Cost.Provide();
-                dawnExtendedLevel.UseTerrainFootsteps = false;
 
-                PatchedContent.AllLevelSceneNames.Add(dawnExtendedLevel.SelectableLevel.sceneName);
+                PatchedContent.AllLevelSceneNames.AddRange(dawnMoonInfo.Scenes.ConvertAll(static sceneInfo => sceneInfo.SceneName));
 
                 dawnExtendedLevel.ContentType = ContentType.External;
                 dawnExtendedLevel.Initialize(string.Empty, generateTerminalAssets: true);

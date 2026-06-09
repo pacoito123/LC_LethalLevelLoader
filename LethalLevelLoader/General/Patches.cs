@@ -587,7 +587,7 @@ namespace LethalLevelLoader
         private static void PerformSceneSelection(int randomMapSeed)
         {
             ExtendedLevel extendedLevel = LevelManager.CurrentExtendedLevel;
-            if (!IsServer || extendedLevel == null) return;
+            if (!IsServer || extendedLevel == null || extendedLevel.ContentType is ContentType.External) return;
 
             extendedLevel.SelectableLevel.sceneName = string.Empty;
             System.Random levelRandom = new(randomMapSeed);
