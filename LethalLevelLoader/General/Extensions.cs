@@ -97,11 +97,11 @@ namespace LethalLevelLoader
                 foreach (Doorway dungeonDoorway in dungeonTile.gameObject.GetComponentsInChildren<Doorway>())
                 {
                     foreach (GameObjectWeight doorwayTileWeight in dungeonDoorway.ConnectorPrefabWeights)
-                        returnList.UnionWith(doorwayTileWeight.GameObject.GetComponentsInChildren<SpawnSyncedObject>());
+                        returnList.UnionWith(doorwayTileWeight.GameObject.GetComponentsInChildren<SpawnSyncedObject>(includeInactive: true));
                     foreach (GameObjectWeight doorwayTileWeight in dungeonDoorway.BlockerPrefabWeights)
-                        returnList.UnionWith(doorwayTileWeight.GameObject.GetComponentsInChildren<SpawnSyncedObject>());
+                        returnList.UnionWith(doorwayTileWeight.GameObject.GetComponentsInChildren<SpawnSyncedObject>(includeInactive: true));
                 }
-                returnList.UnionWith(dungeonTile.gameObject.GetComponentsInChildren<SpawnSyncedObject>());
+                returnList.UnionWith(dungeonTile.gameObject.GetComponentsInChildren<SpawnSyncedObject>(includeInactive: true));
             }
 
             return (returnList);

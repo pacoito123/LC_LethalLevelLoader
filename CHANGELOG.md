@@ -7,6 +7,7 @@
 
 * Fixed LLL handling scene selection for moons registered outside LLL
 * Fixed LLL overriding difficulty level for moons registered outside LLL
+* Fixed inactive SpawnSyncedObjects not having their references restored at the start
 
 </details>
 

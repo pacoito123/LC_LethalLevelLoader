@@ -494,8 +494,8 @@ namespace LethalLevelLoader
                 }
                 foreach (ExtendedContent content in extendedMod.ExtendedContents)
                 {
-                    _ = content.ContentTags.RemoveAll(tag => string.Equals(tag.contentTagName, "Custom", StringComparison.OrdinalIgnoreCase)
-                        || string.Equals(tag.contentTagName, "Vanilla", StringComparison.OrdinalIgnoreCase));
+                    _ = content.ContentTags.RemoveAll(static tag => string.Equals(tag.contentTagName, ExtendedMod.CustomContentTag.contentTagName, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(tag.contentTagName, ExtendedMod.VanillaContentTag.contentTagName, StringComparison.OrdinalIgnoreCase));
                     content.ContentTags.Insert(0, ExtendedMod.CustomContentTag); // Add Custom ContentTag to the start.
                 }
             }

@@ -77,7 +77,7 @@ namespace LethalLevelLoader
         {
             List<EntranceTeleport> entranceTeleports = new List<EntranceTeleport>();
             foreach (GameObject rootObject in LevelLoader.currentLevelScene.GetRootGameObjects())
-                foreach (EntranceTeleport entranceTeleport in rootObject.GetComponentsInChildren<EntranceTeleport>())
+                foreach (EntranceTeleport entranceTeleport in rootObject.GetComponentsInChildren<EntranceTeleport>(includeInactive: false))
                     entranceTeleports.Add(entranceTeleport);
             return (entranceTeleports);
         }
