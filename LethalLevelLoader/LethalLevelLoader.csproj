@@ -5,7 +5,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>LethalLevelLoader</AssemblyName>
     <Description>A Custom API to support the manual and dynamic integration of custom levels and dungeons in Lethal Company.</Description>
-    <Version>1.7.5</Version>
+    <Version>1.7.6</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>preview</LangVersion>
 
@@ -45,6 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DiFFoZ-LethalPerformance" Version="1.2.*" PrivateAssets="all" Publicize="true" />
     <PackageReference Include="Evaisa.LethalLib" Version="1.2.*" PrivateAssets="all" Publicize="true" />
     <PackageReference Include="TeamXiaolan.DawnLib" Version="0.9.*" PrivateAssets="all" />
     <PackageReference Include="MinVer" Version="4.*" PrivateAssets="all" Private="false" />
