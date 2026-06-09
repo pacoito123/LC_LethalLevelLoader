@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using static DunGen.Graph.DungeonFlow;
 
 namespace LethalLevelLoader
@@ -34,8 +33,15 @@ namespace LethalLevelLoader
 
         internal static void PrepareDungeon()
         {
+            if (Patches.RoundManager.dungeonGenerator == null) return;
             DungeonGenerator dungeonGenerator = Patches.RoundManager.dungeonGenerator.Generator;
-            dungeonGenerator.retryCount = 50; //I shouldn't really do this but I'm curious if it silently helps some custom interiors
+
+            if (Settings.overrideDungeonGeneratorParameters)
+            {
+                dungeonGenerator.GenerateAsynchronously = Settings.generateAsynchronously;
+                dungeonGenerator.MaxAsyncFrameMilliseconds = Settings.maxAsyncFrameMilliseconds;
+                dungeonGenerator.retryCount = Settings.retryCount;
+            }
 
             ExtendedDungeonFlow currentExtendedDungeonFlow = DungeonManager.CurrentExtendedDungeonFlow;
             if (currentExtendedDungeonFlow == null || currentExtendedDungeonFlow.ContentType is ContentType.External) return;
@@ -149,11 +155,12 @@ namespace LethalLevelLoader
 
         public static void PatchOutOfBoundsTriggers(DungeonGenerator generator, GenerationStatus status)
         {
-            if (status != GenerationStatus.Complete) return;
+            if (status is not GenerationStatus.Complete) return;
             generator.OnGenerationStatusChanged -= PatchOutOfBoundsTriggers;
 
-            float lowestPoint = generator.CurrentDungeon.transform.TransformPoint(generator.CurrentDungeon.Bounds.min).y;
-            foreach (GameObject rootObject in SceneManager.GetSceneByName(Patches.StartOfRound.currentLevel.sceneName).GetRootGameObjects())
+            Dungeon currentDungeon = generator.CurrentDungeon;
+            float lowestPoint = currentDungeon.transform.TransformPoint(currentDungeon.Bounds.min).y;
+            foreach (GameObject rootObject in LevelLoader.currentLevelScene.GetRootGameObjects())
                 foreach (OutOfBoundsTrigger trigger in rootObject.GetComponentsInChildren<OutOfBoundsTrigger>(includeInactive: true))
                 {
                     Vector3 position = trigger.transform.position;

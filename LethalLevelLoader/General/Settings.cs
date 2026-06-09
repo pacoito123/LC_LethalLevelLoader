@@ -16,6 +16,10 @@
         public static int moonsCatalogueSplitCount = 3;
         public static bool injectDynamicMatchingWeights = true;
         public static string[] bundlesBlacklist;
+        public static bool overrideDungeonGeneratorParameters;
+        public static bool generateAsynchronously = true;
+        public static float maxAsyncFrameMilliseconds = 1.0f;
+        public static int retryCount = 50;
 
         public static string GetOverridePreviewInfo(ExtendedLevel extendedLevel)
         {
@@ -23,6 +27,5 @@
 
             return (returnString);
         }
-
     }
 }

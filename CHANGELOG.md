@@ -3,6 +3,12 @@
 
 **<details><summary>Version 1.7.6</summary>**
 
+**<details><summary>Features</summary>**
+
+* Added settings to override a few vanilla DungeonGenerator parameters (e.g. to tweak asynchronous generation delays)
+
+</details>
+
 **<details><summary>Fixes</summary>**
 
 * Fixed LLL handling scene selection for moons registered outside LLL
