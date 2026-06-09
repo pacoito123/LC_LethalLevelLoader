@@ -543,6 +543,9 @@ namespace LethalLevelLoader
                     SceneManager.sceneUnloaded += TerrainManager.CleanupTerrainFootsteps;
                 }
                 LevelLoader.ApplyCameraDistanceOverride(player: GameNetworkManager.Instance.localPlayerController, outside: true);
+
+                if (currentLevel.SelectableLevel != null && currentLevel.SelectableLevel.spawnEnemiesAndScrap)
+                    LevelLoader.RestoreRuntimeDungeon(); // Why wasn't I doing this here to begin with...?
             }
 
             EventPatches.previousDayMode = DayMode.None;
@@ -558,11 +561,7 @@ namespace LethalLevelLoader
 
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel != null && currentLevel.IsLevelLoaded && currentLevel.ContentType is not ContentType.External)
-            {
                 LevelLoader.RefreshShipAnimatorClips(currentLevel, randomSeed);
-                if (currentLevel.SelectableLevel != null && currentLevel.SelectableLevel.spawnEnemiesAndScrap)
-                    LevelLoader.RestoreRuntimeDungeon();
-            }
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.StartGame)), HarmonyTranspiler, HarmonyPriority(priority)]

@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
+using static DunGen.Adapters.UnityNavMeshAdapter;
 
 namespace LethalLevelLoader
 {
@@ -353,49 +354,137 @@ namespace LethalLevelLoader
             GameObject dungeonGenerator = GameObject.FindGameObjectWithTag("DungeonGenerator");
             if (dungeonGenerator == null)
             {
-                DebugHelper.LogFatal("Could not find a GameObject with a DungeonGenerator tag in the current moon!", DebugType.User);
-                return;
+                DebugHelper.LogWarning("Could not find a GameObject with a DungeonGenerator tag in the current moon! Searching for a RuntimeDungeon...", DebugType.User);
+                foreach (GameObject rootObject in currentLevelScene.GetRootGameObjects())
+                {
+                    RuntimeDungeon existingDungeon = rootObject.GetComponentInChildren<RuntimeDungeon>(includeInactive: false);
+                    if (existingDungeon != null)
+                    {
+                        DebugHelper.LogWarning("Found an existing RuntimeDungeon! Assigning DungeonGenerator tag to its GameObject...", DebugType.User);
+                        dungeonGenerator = existingDungeon.gameObject;
+                        dungeonGenerator.tag = "DungeonGenerator";
+                        break;
+                    }
+                }
+            }
+            if (dungeonGenerator == null)
+            {
+                DebugHelper.LogWarning("Could not find an existing RuntimeDungeon in the current moon! Creating one to allow landing...", DebugType.User);
+
+                GameObject levelGeneration = new GameObject("LevelGeneration");
+                SceneManager.MoveGameObjectToScene(levelGeneration, currentLevelScene);
+                levelGeneration.transform.position = new Vector3(-28.3516712f, -1.5914222f, 57.9008255f);
+
+                dungeonGenerator = new GameObject("DungeonGenerator", [typeof(RuntimeDungeon), typeof(UnityNavMeshAdapter)]);
+                dungeonGenerator.transform.SetParent(levelGeneration.transform, worldPositionStays: false);
+                dungeonGenerator.transform.localPosition = new Vector3(229.601303f, -6.1265502f, -17.9996605f);
+                dungeonGenerator.tag = "DungeonGenerator";
+
+                GameObject levelGenerationRoot = new GameObject("LevelGenerationRoot");
+                levelGenerationRoot.transform.SetParent(levelGeneration.transform, worldPositionStays: false);
+                levelGenerationRoot.transform.localPosition = new Vector3(12, -218, 12);
+
+                dungeonGenerator.GetComponent<RuntimeDungeon>().Root = levelGenerationRoot;
             }
 
-            Transform levelGenerationContainer = dungeonGenerator.transform.GetParent();
-            if (!dungeonGenerator.TryGetComponent(out RuntimeDungeon _))
+            if (!dungeonGenerator.TryGetComponent(out RuntimeDungeon runtimeDungeon))
             {
-                DebugHelper.LogWarning("RuntimeDungeon component missing! Creating a replacement to allow landing...", DebugType.User);
+                DebugHelper.LogWarning("RuntimeDungeon component missing! Creating one to allow landing...", DebugType.User);
+                runtimeDungeon = dungeonGenerator.AddComponent<RuntimeDungeon>();
+            }
+            if (!dungeonGenerator.TryGetComponent(out UnityNavMeshAdapter navMeshAdapter))
+            {
+                DebugHelper.LogWarning("UnityNavMeshAdapter component missing! Creating one to allow landing...", DebugType.User);
+                navMeshAdapter = dungeonGenerator.AddComponent<UnityNavMeshAdapter>();
+            }
 
-                RuntimeDungeon dungeon = dungeonGenerator.AddComponent<RuntimeDungeon>();
-                UnityNavMeshAdapter navMeshAdapter = dungeonGenerator.AddComponent<UnityNavMeshAdapter>();
+            ValidateRuntimeDungeon(runtimeDungeon, navMeshAdapter);
+        }
 
+        private static void ValidateRuntimeDungeon(RuntimeDungeon runtimeDungeon, UnityNavMeshAdapter navMeshAdapter)
+        {
+            if (runtimeDungeon.Root == null)
+            {
+                Transform levelGenerationContainer = runtimeDungeon.transform.GetParent();
                 for (int i = 0; i < levelGenerationContainer.childCount; i++)
                 {
                     // Try to find LevelGenerationRoot in the hierarchy.
                     if (levelGenerationContainer.GetChild(i).name.Contains("Root", System.StringComparison.InvariantCultureIgnoreCase))
                     {
-                        dungeon.Root = levelGenerationContainer.GetChild(i).gameObject;
+                        runtimeDungeon.Root = levelGenerationContainer.GetChild(i).gameObject;
                         break;
                     }
                 }
-
-                if (dungeon.Root == null)
+                if (runtimeDungeon.Root == null)
                 {
-                    DebugHelper.LogWarning("Could not locate LevelGenerationRoot GameObject, creating one as well...", DebugType.User);
+                    DebugHelper.LogWarning("Could not locate LevelGenerationRoot GameObject! Creating one to allow landing...", DebugType.User);
 
-                    Transform newDungeonRoot = new GameObject("LevelGenerationRoot").transform;
-                    newDungeonRoot.SetParent(levelGenerationContainer, worldPositionStays: false);
-                    newDungeonRoot.localPosition = new(12, -218, 12);
+                    Transform levelGenerationRoot = new GameObject("LevelGenerationRoot").transform;
+                    levelGenerationRoot.SetParent(levelGenerationContainer, worldPositionStays: false);
+                    levelGenerationRoot.localPosition = new Vector3(12, -218, 12);
 
-                    dungeon.Root = newDungeonRoot.gameObject;
+                    runtimeDungeon.Root = levelGenerationRoot.gameObject;
                 }
-
-                navMeshAdapter.BakeMode = UnityNavMeshAdapter.RuntimeNavMeshBakeMode.FullDungeonBake;
-                navMeshAdapter.LayerMask = LayerMask.GetMask("Default", "Room", "Colliders", "NavigationSurface"); // 35072
-
-                dungeon.Generator.AllowTilePooling = true; // Yippee!
-                dungeon.Generator.GenerateAsynchronously = true;
-
-                Patches.RoundManager.dungeonGenerator = dungeon;
-                dungeon.Generator.DungeonFlow = Patches.RoundManager.dungeonFlowTypes[0].dungeonFlow; // Set Facility as default, before interior selection.
-                DebugHelper.Log("RuntimeDungeon created, proceeding as usual!", DebugType.User);
             }
+
+            // Set vanilla RuntimeDungeon parameters:
+            runtimeDungeon.Generator = new DungeonGenerator()
+            {
+                allowImmediateRepeats = false,
+                Seed = 255,
+                ShouldRandomizeSeed = true,
+                MaxAttemptCount = 50, //I shouldn't really do this but I'm curious if it silently helps some custom interiors
+                UseMaximumPairingAttempts = false,
+                MaxPairingAttempts = 5,
+                UpDirection = AxisDirection.PosY,
+                OverrideRepeatMode = false,
+                RepeatMode = TileRepeatMode.Allow,
+                OverrideAllowTileRotation = false,
+                AllowTileRotation = false,
+                DebugRender = false,
+                LengthMultiplier = 0.75f,
+                TriggerPlacement = TriggerPlacementMode.ThreeDimensional,
+                TileTriggerLayer = 2,
+                GenerateAsynchronously = false,
+                MaxAsyncFrameMilliseconds = 50,
+                PauseBetweenRooms = 0.2f,
+                RestrictDungeonToBounds = false,
+                TilePlacementBounds = new Bounds()
+                {
+                    center = Vector3.zero,
+                    extents = Vector3.one * 5
+                },
+                CollisionSettings = new()
+                {
+                    DisallowOverhangs = false,
+                    OverlapThreshold = 0.01f,
+                    Padding = 0,
+                    AvoidCollisionsWithOtherDungeons = true
+                },
+                Root = null,
+                DungeonFlow = Patches.RoundManager.dungeonFlowTypes[0].dungeonFlow, // Set Facility as default, before interior selection.
+                // DisallowOverhangs = false,
+                // OverlapThreshold = 0.01f,
+                // Padding = 0,
+                // AvoidCollisionsWithOtherDungeons = true
+            };
+            runtimeDungeon.GenerateOnStart = false;
+            // ...
+
+            // Set vanilla UnityNavMeshAdapter parameters:
+            navMeshAdapter.Priority = 0;
+            navMeshAdapter.BakeMode = RuntimeNavMeshBakeMode.FullDungeonBake;
+            navMeshAdapter.LayerMask = LayerMask.GetMask("Room", "Colliders", "NavigationSurface"); // 35072
+            navMeshAdapter.AddNavMeshLinksBetweenRooms = true;
+            navMeshAdapter.NavMeshAgentTypes = [new() { DisableLinkWhenDoorIsClosed = true }];
+            navMeshAdapter.NavMeshLinkDistanceFromDoorway = 2.5f;
+            navMeshAdapter.AutoGenerateFullRebakeSurfaces = true;
+            navMeshAdapter.FullRebakeTargets = [];
+            navMeshAdapter.UseAutomaticLinkDistance = false;
+            navMeshAdapter.AutomaticLinkDistanceOffset = 0.1f;
+            // ...
+
+            Patches.RoundManager.dungeonGenerator = runtimeDungeon;
         }
     }
 }

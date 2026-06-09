@@ -5,7 +5,11 @@
 
 **<details><summary>Features</summary>**
 
-* Added settings to override a few vanilla DungeonGenerator parameters (e.g. to tweak asynchronous generation delays)
+* Added settings to override a few vanilla DungeonGenerator parameters (e.g. to tweak asynchronous generation delay)
+* Improved DungeonGenerator validation for moons at the start of the round:
+  * If no DungeonGenerator tagged object is found in the scene, one is created to allow landing
+  * RuntimeDungeon and UnityNavMeshAdapter components now have every field set to their vanilla value, in case they are accidentally misconfigured
+  * Moved RuntimeDungeon restoration to happen at an earlier point than right before the Dungeon generates
 
 </details>
 
