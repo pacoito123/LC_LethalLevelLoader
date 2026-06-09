@@ -25,6 +25,7 @@ namespace LethalLevelLoader
 
         internal static async Task StartDelayed()
         {
+            if (Plugin.IsSetupComplete) return;
             await Task.Delay(1);
             DebugHelper.Log("LethalBundleManager: Starting!", DebugType.User);
 

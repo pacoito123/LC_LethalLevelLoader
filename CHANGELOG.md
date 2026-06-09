@@ -5,20 +5,24 @@
 
 **<details><summary>Features</summary>**
 
-* Added settings to override a few vanilla DungeonGenerator parameters (e.g. to tweak asynchronous generation delay)
-* Improved some validation/restoration for moons at the start of the round:
+* Added a few general settings to override a few vanilla DungeonGenerator parameters (e.g. to tweak asynchronous generation delay)
+* Improved some validation for moons at the start of the round:
   * If no MapPropsContainer tagged object is found in the scene, one is created to avoid issues with spawning objects
   * If no DungeonGenerator tagged object is found in the scene, one is created to allow landing
   * RuntimeDungeon and UnityNavMeshAdapter components now have every field set to their vanilla value, in case they are accidentally misconfigured
   * Moved RuntimeDungeon restoration to happen at an earlier point than right before the Dungeon generates
+* Added asset restoration for ship animation overrides in ExtendedLevel
+  * If any entry without an AnimationClip defined is present, it gets replaced with the corresponding vanilla animation
 
 </details>
 
 **<details><summary>Fixes</summary>**
 
+* Fixed inactive SpawnSyncedObjects not having their references restored at the start
+  * Also added a small safeguard during SpawnSyncedObject restoration
 * Fixed LLL handling scene selection for moons registered outside LLL
 * Fixed LLL overriding difficulty level for moons registered outside LLL
-* Fixed inactive SpawnSyncedObjects not having their references restored at the start
+* Fixed some missing null checks in a few places
 
 </details>
 

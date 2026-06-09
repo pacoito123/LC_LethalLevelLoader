@@ -16,7 +16,7 @@ namespace LethalLevelLoader
     {
         public const string ModGUID = "imabatby.lethallevelloader";
         public const string ModName = "LethalLevelLoader";
-        public const string ModVersion = "1.7.5";
+        public const string ModVersion = "1.7.6";
 
         internal static Plugin Instance;
 
@@ -38,9 +38,6 @@ namespace LethalLevelLoader
             logger = Logger;
 
             Logger.LogInfo($"LethalLevelLoader loaded!!");
-
-            Harmony.PatchAll(typeof(LethalLevelLoaderNetworkManager));
-            Harmony.PatchAll(typeof(DungeonLoader));
 
             Harmony.PatchAll(typeof(Patches));
             Harmony.PatchAll(typeof(EventPatches));

@@ -4,7 +4,6 @@ using HarmonyLib;
 
 namespace LethalLevelLoader.Patcher
 {
-    [HarmonyPatch]
     internal static class ChainloaderEventPatch
     {
         [HarmonyPatch(typeof(Chainloader), nameof(Chainloader.Initialize))]

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using LethalLib.Modules;
 
 namespace LethalLevelLoader.Compatibility
 {
-    [HarmonyPatch]
     internal static class LethalLibCompatibility
     {
         /// <summary>
@@ -30,6 +30,7 @@ namespace LethalLevelLoader.Compatibility
                 DebugHelper.Log("LethalLib found! Enabling compatibility patches...", DebugType.User);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         [HarmonyPatch(typeof(Dungeon), nameof(Dungeon.RoundManager_GenerateNewFloor)), HarmonyTranspiler, HarmonyPriority(Patches.priority)]
         internal static IEnumerable<CodeInstruction> Dungeon_GenerateNewFloor_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
