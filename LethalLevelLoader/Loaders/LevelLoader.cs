@@ -349,6 +349,29 @@ namespace LethalLevelLoader
                 ContentRestorer.RestoreBridgeTrigger(bridgeTrigger);
         }
 
+        internal static void ValidateMapPropsContainer()
+        {
+            GameObject mapPropsContainer = GameObject.FindGameObjectWithTag("MapPropsContainer");
+            if (mapPropsContainer == null)
+            {
+                DebugHelper.LogWarning("Could not find a GameObject with a MapPropsContainer tag in the current moon! Creating one to allow landing...", DebugType.User);
+
+                GameObject environment = GameObject.FindGameObjectWithTag("OutsideLevelNavMesh"); // MapPropsContainer needs to be parented under Environment, for NavMesh baking.
+                if (environment == null)
+                {
+                    DebugHelper.LogFatal("Could not find a GameObject with an OutsideLevelNavMesh tag in the current moon! There will be issues!", DebugType.User);
+                    return;
+                }
+
+                mapPropsContainer = new GameObject("MapPropsContainer");
+                mapPropsContainer.transform.SetParent(environment.transform, worldPositionStays: false);
+                mapPropsContainer.transform.localPosition = new Vector3(-41.7436f, -35.9638f, 35.9276f);
+                mapPropsContainer.tag = "MapPropsContainer";
+            }
+
+            Patches.RoundManager.mapPropsContainer = mapPropsContainer;
+        }
+
         internal static void RestoreRuntimeDungeon()
         {
             GameObject dungeonGenerator = GameObject.FindGameObjectWithTag("DungeonGenerator");
