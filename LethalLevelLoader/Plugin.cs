@@ -43,7 +43,6 @@ namespace LethalLevelLoader
             Harmony.PatchAll(typeof(EventPatches));
             Harmony.PatchAll(typeof(SafetyPatches));
 
-            LethalLevelLoaderPatcher.onChainloaderFinish += static async () => await LethalBundleManager.StartDelayed();
             LethalLevelLoaderPatcher.onChainloaderFinish += HandleAdditionalCompatibilities;
 
             NetworkScenePatcher.Patch();
@@ -70,7 +69,7 @@ namespace LethalLevelLoader
 
             ConfigLoader.BindGeneralConfigs();
 
-            //LethalBundleManager.Start();
+            LethalBundleManager.Start();
             //LethalBundleManager.TryLoadLethalBundles();
 
             //AssetBundleLoader.onBundlesFinishedLoading += AssetBundleLoader.LoadContentInBundles;

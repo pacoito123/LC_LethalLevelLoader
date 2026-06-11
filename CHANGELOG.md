@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.7</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed initial game launch options screen taking suspiciously long (reverted an experimental change)
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.6</summary>**
 
 **<details><summary>Features</summary>**

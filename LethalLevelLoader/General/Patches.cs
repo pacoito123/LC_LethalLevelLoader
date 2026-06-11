@@ -43,8 +43,12 @@ namespace LethalLevelLoader
         [HarmonyPrefix]
         internal static void PreInitSceneScriptAwake_Prefix(PreInitSceneScript __instance)
         {
-            if (Plugin.IsSetupComplete == false && __instance.TryGetComponent(out AudioSource audioSource))
-                OriginalContent.AudioMixers.Add(audioSource.outputAudioMixerGroup.audioMixer);
+            if (Plugin.IsSetupComplete == false)
+            {
+                if (__instance.TryGetComponent(out AudioSource audioSource))
+                    OriginalContent.AudioMixers.Add(audioSource.outputAudioMixerGroup.audioMixer);
+                ContentTagParser.ImportVanillaContentTags();
+            }
         }
 
         [HarmonyPriority(priority)]
