@@ -25,7 +25,7 @@ namespace LethalLevelLoader.Compatibility
             {
                 ExtendedDungeonFlow deepSewersExtendedFlow = extendedMod.ExtendedDungeonFlows.Find(extendedDungeonFlow =>
                     string.Equals(extendedDungeonFlow.name, "DeepSewersExtended", StringComparison.Ordinal));
-                if (deepSewersExtendedFlow != null)
+                if (deepSewersExtendedFlow != null && deepSewersExtendedFlow.AllTiles.Length > 0)
                 {
                     Tile startTile = deepSewersExtendedFlow.AllTiles[0];
                     if (startTile != null)

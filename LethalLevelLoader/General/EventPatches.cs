@@ -315,9 +315,9 @@ namespace LethalLevelLoader
             {
                 onEvent?.Invoke();
             }
-            catch (Exception e) // Got a TypeLoadException on something calling this that broke everything...
+            catch (Exception ex) // Got a TypeLoadException on something calling this that broke everything...
             {
-                DebugHelper.LogWarning(e.Message, DebugType.User);
+                DebugHelper.LogError(ex, DebugType.User);
             }
         }
 

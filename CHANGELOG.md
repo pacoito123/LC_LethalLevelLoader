@@ -6,6 +6,7 @@
 **<details><summary>Fixes</summary>**
 
 * Fixed initial game launch options screen taking suspiciously long (reverted an experimental change)
+* Fixed small issue with a soft compatibility
 
 </details>
 
