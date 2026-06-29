@@ -22,31 +22,36 @@ namespace LethalLevelLoader
         {
             int returnRarity = 0;
 
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedTags(extendedLevel.ContentTags, levelTags), extendedLevel.name, "Content Tags");
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedLevel.AuthorName, authorNames), extendedLevel.name, "Author Name");
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings(extendedLevel.ExtendedMod.ModNameAliases, modNames), extendedLevel.name, "Mod Name");
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingWithinRanges(extendedLevel.RoutePrice, currentRoutePrice), extendedLevel.name, "Route Price");
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedLevel.NumberlessPlanetName, planetNames), extendedLevel.name, "Planet Name");
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedLevel.SelectableLevel.currentWeather.ToString(), currentWeather), extendedLevel.name, "Current Weather");
-
+            if (levelTags.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedTags(extendedLevel.ContentTags, levelTags), extendedLevel.name, "Content Tags");
+            if (authorNames.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedLevel.AuthorName, authorNames), extendedLevel.name, "Author Name");
+            if (modNames.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings(extendedLevel.ExtendedMod.ModNameAliases, modNames), extendedLevel.name, "Mod Name");
+            if (currentRoutePrice.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingWithinRanges(extendedLevel.RoutePrice, currentRoutePrice), extendedLevel.name, "Route Price");
+            if (planetNames.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedLevel.NumberlessPlanetName, planetNames), extendedLevel.name, "Planet Name");
+            if (currentWeather.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString($"{extendedLevel.SelectableLevel.currentWeather}", currentWeather), extendedLevel.name, "Current Weather");
 
             return (returnRarity);
         }
 
         public void ApplyValues(List<StringWithRarity> newModNames = null, List<StringWithRarity> newAuthorNames = null, List<StringWithRarity> newLevelTags = null, List<Vector2WithRarity> newRoutePrices = null, List<StringWithRarity> newCurrentWeathers = null, List<StringWithRarity> newPlanetNames = null)
         {
-            if (newModNames != null && newModNames.Count != 0)
-                modNames = new List<StringWithRarity>(newModNames);
-            if (newAuthorNames != null && newAuthorNames.Count != 0)
-                authorNames = new List<StringWithRarity>(newAuthorNames);
-            if (newLevelTags != null && newLevelTags.Count != 0)
-                levelTags = new List<StringWithRarity>(newLevelTags);
-            if (newRoutePrices != null && newRoutePrices.Count != 0)
-                currentRoutePrice = new List<Vector2WithRarity>(newRoutePrices);
-            if (newCurrentWeathers != null && newCurrentWeathers.Count != 0)
-                currentWeather = new List<StringWithRarity>(newCurrentWeathers);
-            if (newPlanetNames != null && newPlanetNames.Count != 0)
-                planetNames = new List<StringWithRarity>(newPlanetNames);
+            if (newModNames?.Count > 0)
+                modNames = [.. newModNames];
+            if (newAuthorNames?.Count > 0)
+                authorNames = [.. newAuthorNames];
+            if (newLevelTags?.Count > 0)
+                levelTags = [.. newLevelTags];
+            if (newRoutePrices?.Count > 0)
+                currentRoutePrice = [.. newRoutePrices];
+            if (newCurrentWeathers?.Count > 0)
+                currentWeather = [.. newCurrentWeathers];
+            if (newPlanetNames?.Count > 0)
+                planetNames = [.. newPlanetNames];
         }
     }
 }

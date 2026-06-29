@@ -19,25 +19,28 @@ namespace LethalLevelLoader
         {
             int returnRarity = 0;
 
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedTags(extendedDungeonFlow.ContentTags, dungeonNames), extendedDungeonFlow.name, "Content Tags");
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedDungeonFlow.AuthorName, authorNames), extendedDungeonFlow.name, "Author Name");
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings(extendedDungeonFlow.ExtendedMod.ModNameAliases, modNames), extendedDungeonFlow.name, "Mod Name Name");
-            UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedDungeonFlow.DungeonFlow.name, dungeonNames), extendedDungeonFlow.name, "Dungeon Name");
+            if (dungeonTags.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedTags(extendedDungeonFlow.ContentTags, dungeonTags), extendedDungeonFlow.name, "Content Tags");
+            if (authorNames.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedDungeonFlow.AuthorName, authorNames), extendedDungeonFlow.name, "Author Name");
+            if (modNames.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings(extendedDungeonFlow.ExtendedMod.ModNameAliases, modNames), extendedDungeonFlow.name, "Mod Name Name");
+            if (dungeonNames.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedDungeonFlow.DungeonFlow.name, dungeonNames), extendedDungeonFlow.name, "Dungeon Name");
 
             return (returnRarity);
         }
 
-
         public void ApplyValues(List<StringWithRarity> newModNames = null, List<StringWithRarity> newAuthorNames = null, List<StringWithRarity> newDungeonTags = null, List<StringWithRarity> newDungeonNames = null)
         {
-            if (newModNames != null && newModNames.Count != 0)
-                modNames = new List<StringWithRarity>(newModNames);
-            if (newAuthorNames != null && newAuthorNames.Count != 0)
-                authorNames = new List<StringWithRarity>(newAuthorNames);
-            if (newDungeonTags != null && newDungeonTags.Count != 0)
-                dungeonTags = new List<StringWithRarity>(newDungeonTags);
-            if (newDungeonNames != null && newDungeonNames.Count != 0)
-                dungeonNames = new List<StringWithRarity>(newDungeonNames);
+            if (newModNames?.Count > 0)
+                modNames = [.. newModNames];
+            if (newAuthorNames?.Count > 0)
+                authorNames = [.. newAuthorNames];
+            if (newDungeonTags?.Count > 0)
+                dungeonTags = [.. newDungeonTags];
+            if (newDungeonNames?.Count > 0)
+                dungeonNames = [.. newDungeonNames];
         }
     }
 }

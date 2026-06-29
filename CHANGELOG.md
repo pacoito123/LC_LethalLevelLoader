@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.8</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed DungeonMatchingProperties not actually using the `dungeonTags` field
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.7</summary>**
 
 **<details><summary>Fixes</summary>**
