@@ -6,6 +6,7 @@
 **<details><summary>Fixes</summary>**
 
 * Fixed DungeonMatchingProperties not actually using the `dungeonTags` field
+* Fixed SpawnableMapObjects in SelectableLevel not being converted to IndoorMapHazards under certain circumstances
 
 </details>
 

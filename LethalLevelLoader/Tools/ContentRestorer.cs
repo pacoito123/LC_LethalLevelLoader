@@ -119,8 +119,8 @@ namespace LethalLevelLoader.Tools
                 List<IndoorMapHazard> indoorMapHazards = new(extendedLevel.SelectableLevel.spawnableMapObjects.Length);
                 foreach (SpawnableMapObject spawnableMapObject in extendedLevel.SelectableLevel.spawnableMapObjects)
                 {
-                    if (spawnableMapObject == null || spawnableMapObject.prefabToSpawn == null || spawnableMapObject.prefabToSpawn.TryGetComponent(out NetworkObject _)) continue;
-                    IndoorMapHazardType vanillaHazard = OriginalContent.IndoorMapHazards.Find(mapHazard => string.Equals(mapHazard.prefabToSpawn.name, spawnableMapObject.prefabToSpawn.name, StringComparison.Ordinal));
+                    if (spawnableMapObject == null || spawnableMapObject.prefabToSpawn == null) continue;
+                    IndoorMapHazardType vanillaHazard = OriginalContent.IndoorMapHazards.Find(mapHazard => mapHazard.prefabToSpawn != null && string.Equals(mapHazard.prefabToSpawn.name, spawnableMapObject.prefabToSpawn.name, StringComparison.Ordinal));
                     if (vanillaHazard != null)
                     {
                         IndoorMapHazard indoorMapHazard = new()
@@ -140,8 +140,9 @@ namespace LethalLevelLoader.Tools
                 List<IndoorMapHazard> indoorMapHazards = [.. extendedLevel.SelectableLevel.indoorMapHazards];
                 foreach (IndoorMapHazard indoorMapHazard in indoorMapHazards)
                 {
-                    if (indoorMapHazard == null || indoorMapHazard.hazardType == null || (indoorMapHazard.hazardType.prefabToSpawn != null && indoorMapHazard.hazardType.prefabToSpawn.TryGetComponent(out NetworkObject _))) continue;
-                    IndoorMapHazardType vanillaHazard = OriginalContent.IndoorMapHazards.Find(mapHazard => string.Equals(mapHazard.name, indoorMapHazard.hazardType.name, StringComparison.Ordinal));
+                    if (indoorMapHazard == null || indoorMapHazard.hazardType == null) continue;
+                    IndoorMapHazardType vanillaHazard = OriginalContent.IndoorMapHazards.Find(mapHazard => string.Equals(mapHazard.name, indoorMapHazard.hazardType.name, StringComparison.Ordinal)
+                        || (indoorMapHazard.hazardType.prefabToSpawn != null && mapHazard.prefabToSpawn != null && string.Equals(mapHazard.prefabToSpawn.name, indoorMapHazard.hazardType.prefabToSpawn.name, StringComparison.Ordinal)));
                     if (vanillaHazard != null)
                         indoorMapHazard.hazardType = RestoreAsset(indoorMapHazard.hazardType, vanillaHazard);
                 }
