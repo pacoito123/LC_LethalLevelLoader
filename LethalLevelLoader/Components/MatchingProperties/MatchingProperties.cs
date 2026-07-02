@@ -36,7 +36,7 @@ namespace LethalLevelLoader
         {
             int returnInt = 0;
             foreach (Vector2WithRarity vectorWithRarity in matchingVectors)
-                if (vectorWithRarity.Rarity >= returnInt)
+                if (vectorWithRarity.Rarity > returnInt)
                     if ((comparingValue >= vectorWithRarity.Min) && (comparingValue <= vectorWithRarity.Max))
                         returnInt = vectorWithRarity.Rarity;
             return (returnInt);
@@ -44,22 +44,34 @@ namespace LethalLevelLoader
 
         internal static int GetHighestRarityViaMatchingNormalizedString(string comparingString, List<StringWithRarity> matchingStrings)
         {
-            return (GetHighestRarityViaMatchingNormalizedStrings([comparingString], matchingStrings));
+            int returnInt = 0;
+            foreach (StringWithRarity stringWithRarity in matchingStrings)
+                if (stringWithRarity.Rarity > returnInt && stringWithRarity.Name.EqualsSanitized(comparingString))
+                    returnInt = stringWithRarity.Rarity;
+            return (returnInt);
         }
 
         internal static int GetHighestRarityViaMatchingNormalizedTags(List<ContentTag> comparingTags, List<StringWithRarity> matchingStrings)
         {
-            return GetHighestRarityViaMatchingNormalizedStrings(comparingTags.ConvertAll(t => t.contentTagName), matchingStrings);
+            int returnInt = 0;
+            foreach (ContentTag comparingTag in comparingTags)
+            {
+                int rarity = GetHighestRarityViaMatchingNormalizedString(comparingTag.contentTagName, matchingStrings);
+                if (rarity > returnInt)
+                    returnInt = rarity;
+            }
+            return (returnInt);
         }
 
         internal static int GetHighestRarityViaMatchingNormalizedStrings(List<string> comparingStrings, List<StringWithRarity> matchingStrings)
         {
             int returnInt = 0;
-            foreach (StringWithRarity stringWithRarity in matchingStrings)
-                foreach (string comparingString in new List<string>(comparingStrings))
-                    if (stringWithRarity.Rarity >= returnInt)
-                        if (stringWithRarity.Name.ContainsSanitized(comparingString, bothWays: true))
-                            returnInt = stringWithRarity.Rarity;
+            foreach (string comparingString in comparingStrings)
+            {
+                int rarity = GetHighestRarityViaMatchingNormalizedString(comparingString, matchingStrings);
+                if (rarity > returnInt)
+                    returnInt = rarity;
+            }
             return (returnInt);
         }
     }

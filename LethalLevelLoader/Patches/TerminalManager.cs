@@ -131,11 +131,12 @@ namespace LethalLevelLoader
         internal static bool SetSimulationResultsText(ref TerminalNode currentNode, ref TerminalNode node)
         {
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
-                if (node.terminalEvent.ContainsSanitized(extendedLevel.NumberlessPlanetName))
+                if (node.terminalEvent.EqualsSanitized(extendedLevel.NumberlessPlanetName))
                 {
                     node.displayText = $"{GetSimulationResultsText(extendedLevel)}\n\n";
                     node.clearPreviousText = true;
                     node.isConfirmationNode = true;
+                    break;
                 }
             return (true);
         }

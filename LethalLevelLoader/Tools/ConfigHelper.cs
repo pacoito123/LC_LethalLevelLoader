@@ -52,21 +52,21 @@ namespace LethalLevelLoader
 
         public static List<SpawnableEnemyWithRarity> ConvertToSpawnableEnemyWithRarityList(string inputString, Vector2 clampRarity)
         {
-            StringWithRarity[] splitStrings = ConvertToStringWithRarityList(inputString, clampRarity).ToArray();
-            if (splitStrings.Length == 0) return [];
+            List<StringWithRarity> splitStrings = ConvertToStringWithRarityList(inputString, clampRarity);
+            if (splitStrings.Count == 0) return [];
 
-            List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>(splitStrings.Length);
+            List<SpawnableEnemyWithRarity> returnList = new List<SpawnableEnemyWithRarity>(splitStrings.Count);
             foreach (StringWithRarity stringWithRarity in splitStrings)
             {
                 foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.ExtendedEnemyTypes)
                 {
                     EnemyType enemyType = extendedEnemyType.EnemyType;
-                    bool matched = stringWithRarity.Name.ContainsSanitized(enemyType.enemyName, bothWays: true);
+                    bool matched = stringWithRarity.Name.EqualsSanitized(enemyType.enemyName);
 
                     if (!matched && enemyType.enemyPrefab != null)
                     {
                         ScanNodeProperties enemyScanNode = enemyType.enemyPrefab.GetComponentInChildren<ScanNodeProperties>(includeInactive: false);
-                        matched = (enemyScanNode != null) && stringWithRarity.Name.ContainsSanitized(enemyScanNode.headerText, bothWays: true);
+                        matched = (enemyScanNode != null) && stringWithRarity.Name.EqualsSanitized(enemyScanNode.headerText);
                     }
 
                     if (matched)
@@ -82,16 +82,16 @@ namespace LethalLevelLoader
 
         public static List<SpawnableItemWithRarity> ConvertToSpawnableItemWithRarityList(string inputString, Vector2 clampRarity)
         {
-            StringWithRarity[] splitStrings = ConvertToStringWithRarityList(inputString, clampRarity).ToArray();
-            if (splitStrings.Length == 0) return [];
+            List<StringWithRarity> splitStrings = ConvertToStringWithRarityList(inputString, clampRarity);
+            if (splitStrings.Count == 0) return [];
 
-            List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>(splitStrings.Length);
+            List<SpawnableItemWithRarity> returnList = new List<SpawnableItemWithRarity>(splitStrings.Count);
             foreach (StringWithRarity stringWithRarity in splitStrings)
             {
                 foreach (ExtendedItem extendedItem in PatchedContent.ExtendedItems)
                 {
                     Item item = extendedItem.Item;
-                    if (stringWithRarity.Name.ContainsSanitized(item.itemName, bothWays: true))
+                    if (stringWithRarity.Name.EqualsSanitized(item.itemName))
                     {
                         // DebugHelper.Log("Vanilla Item Name: " + SanitizeString(item.itemName) + " , Parsed Item Name: " + SanitizeString(stringWithRarity.Name), DebugType.Developer);
                         returnList.Add(new SpawnableItemWithRarity(item, stringWithRarity.Rarity));

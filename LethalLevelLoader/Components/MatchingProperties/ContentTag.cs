@@ -17,14 +17,8 @@ namespace LethalLevelLoader
             return (contentTag);
         }
 
-        public static ContentTag Create(string tag)
-        {
-            return (Create(tag, Color.white));
-        }
+        public static ContentTag Create(string tag) => (Create(tag, Color.white));
 
-        public override string ToString()
-        {
-            return contentTagName.Sanitized(toLower: false).RemoveWhitespace();
-        }
+        public override string ToString() => contentTagName;
     }
 }

@@ -229,8 +229,9 @@ namespace LethalLevelLoader
 
             if (ContentType is ContentType.Custom or ContentType.External)
             {
-                name = NumberlessPlanetName.StripSpecialCharacters() + "ExtendedLevel";
-                SelectableLevel.name = NumberlessPlanetName.StripSpecialCharacters() + "Level";
+                name = NumberlessPlanetName.StripSpecialCharacters().RemoveWhitespace();
+                SelectableLevel.name = name + "Level";
+                name += "ExtendedLevel";
                 if (generateTerminalAssets == true) //Needs to be after levelID setting above.
                 {
                     //DebugHelper.Log("Generating Terminal Assets For: " + NumberlessPlanetName);

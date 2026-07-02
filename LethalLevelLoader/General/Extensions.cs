@@ -10,9 +10,8 @@ namespace LethalLevelLoader
 {
     public static class Extensions
     {
-        private static readonly Regex sanitizeRegex = new Regex(@"(\s*[^\p{L}])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        private static readonly Regex skipToLetterRegex = new Regex(@"(^[^\p{L}]+)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
-        private static readonly Regex stripSpecialCharactersRegex = new Regex(@"([^\p{L}\d\s])", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex skipToLetterRegex = new Regex(@"^[^\p{L}]+", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex stripSpecialCharactersRegex = new Regex(@"[^\p{L}\d\s]+", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         public static IEnumerable<Tile> GetTiles(this DungeonFlow dungeonFlow)
         {
@@ -135,22 +134,28 @@ namespace LethalLevelLoader
 
         public static bool ContainsSanitized(this string input, string[] comparisons, bool bothWays = false)
         {
-            foreach (string comparison in comparisons)
-                if (!string.IsNullOrEmpty(comparison) && input.ContainsSanitized(comparison, bothWays))
+            for (int i = 0; i < comparisons.Length; i++)
+                if (input.ContainsSanitized(comparisons[i], bothWays))
                     return true;
             return false;
         }
 
         public static bool ContainsSanitized(this string input, string comparison, bool bothWays = false)
         {
+            if (string.IsNullOrEmpty(input)) return false;
             (string, string) sanitized = (input.Sanitized(), comparison.Sanitized());
             return sanitized.Item1.Contains(sanitized.Item2, StringComparison.Ordinal) || (bothWays && sanitized.Item2.Contains(sanitized.Item1, StringComparison.Ordinal));
         }
 
-        public static string Sanitized(this string input, bool toLower = true)
+        public static bool EqualsSanitized(this string input, string comparison) => string.Equals(input.Sanitized(), comparison.Sanitized(), StringComparison.Ordinal);
+
+        public static string Sanitized(this string input, bool toLower = true, bool removeWhitespace = false)
         {
-            string sanitizedInput = sanitizeRegex.Replace(input, string.Empty);
-            return toLower ? sanitizedInput.ToLowerInvariant() : sanitizedInput;
+            string sanitizedInput = input.StripSpecialCharacters();
+            sanitizedInput = (removeWhitespace) ? sanitizedInput.RemoveWhitespace() : sanitizedInput.Trim();
+            if (toLower)
+                sanitizedInput = sanitizedInput.ToLowerInvariant();
+            return (sanitizedInput);
         }
 
         public static string RemoveWhitespace(this string input)
@@ -165,7 +170,7 @@ namespace LethalLevelLoader
 
         public static string StripSpecialCharacters(this string input)
         {
-            return stripSpecialCharactersRegex.Replace(input, string.Empty).Trim();
+            return stripSpecialCharactersRegex.Replace(input, string.Empty);
         }
 
         public static string Truncate(this string input, int length)

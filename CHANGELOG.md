@@ -7,6 +7,7 @@
 
 * Fixed DungeonMatchingProperties not actually using the `dungeonTags` field
 * Fixed SpawnableMapObjects in SelectableLevel not being converted to IndoorMapHazards under certain circumstances
+* Fixed MatchingProperties (and a couple config fields) being a bit too generous when matching ExtendedContent
 
 </details>
 
@@ -510,7 +511,6 @@
 * Changed ExtendedItem terminal registration to ensure accurate item Ids
 * Fixed an issue with Locked ExtendedLevel's by setting it's accossiated TerminalNode.acceptEverything to false
 
-
 </details>
 
 </details>
@@ -580,7 +580,6 @@
 
 * Overhauled AssetBundleLoading system
 * Added Scene AssetBundle hot-reloading
-
 
 </details>
 
@@ -671,7 +670,6 @@
 
 </details>
 
-
 **<details><summary>Version 1.3.0</summary>**
 
 **<details><summary>Features</summary>**
@@ -737,7 +735,6 @@
 </details>
 
 </details>
-
 
 **<details><summary>Version 1.2.0</summary>**
 
@@ -827,8 +824,7 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 <details><summary>ContentTags & MatchingProperties</summary>
 
 * Created integrated ContentTag system that allows developers to put relevant string tags on all types of custom content (with an optional correlating colour). Developers can access groups of content based on a specific content tag as well as match their content with other pieces of content dynamically using the built in LevelMatchingProperties and DungeonMatchingProperties.
-* All Vanilla content has been manually assigned Content Tags to allow developers to reference vanilla content via tags the same way they would custom content, You can find those tags here: https://docs.google.com/spreadsheets/d/1WO77KGJplIEC64qmBClOgfEEoFxrhMurCEqe9FKod8I/edit?usp=sharing
-
+* All Vanilla content has been manually assigned Content Tags to allow developers to reference vanilla content via tags the same way they would custom content, You can find those tags here: <https://docs.google.com/spreadsheets/d/1WO77KGJplIEC64qmBClOgfEEoFxrhMurCEqe9FKod8I/edit?usp=sharing>
 
 </details>
 
@@ -856,7 +852,6 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 
 </details>
 
-
 **<details><summary>Version 1.1.0</summary>**
 
 **<details><summary>Features</summary>**
@@ -870,8 +865,8 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 * * `preview all`
 * * `preview none`
 * * `preview vanilla`
-</details>
 
+</details>
 
 <details><summary>Terminal >sort Keyword</summary>
 * *LethalLevelLoader now has a new feature added to the Terminal which allows users to decide how Moons are sorted when listed in the `MoonsCatalogue`. This can be toggled via the `sort` verb keyword followed by one of the following options. (LethalLevelLoader also includes a configuration option to set which sorting type is used by default.)*
@@ -882,6 +877,7 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 * * `sort quota`
 * * `sort run`
 * * `sort none`
+
 </details>
 
 <details><summary>Terminal >filter Keyword</summary>
@@ -892,6 +888,7 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 * * `filter tag`
 * * `filter last travelled`
 * * `filter none`
+
 </details>
 
 <details><summary>Terminal >simulate Keyword</summary>
@@ -945,11 +942,11 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 * * `onPlayerEnterDungeon(EntranceTeleport, PlayerControllerB)`
 * * `onPlayerExitDungeon(EntranceTeleport, PlayerControllerB)`
 * * `onPowerSwitchToggle(bool)`
+
 </details>
 
 <details><summary>ExtendedDungeonFlow Events</summary>
 * *ExtendedLevel's now contain gameplay specific `ExtendedEvent`'s that will Invoke when these events happen while playing the relevant ExtendedLevel.*
-
 
 * * `onBeforeDungeonGenerate(RoundManager)`
 * * `onSpawnedSyncedObjects(List<GameObject>)`
@@ -960,22 +957,23 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 * * `onPlayerEnterDungeon(EntranceTeleport, PlayerControllerB)`
 * * `onPlayerExitDungeon(EntranceTeleport, PlayerControllerB)`
 * * `onPowerSwitchToggle(bool)`
+
 </details>
 
 <details><summary>Default Configuration Options</summary>
 * *LethalLevelLoader now provides five new global configuration options.*
 
-
 * `Default PreviewInfo Toggle`
-* * *Controls which Preview Info setting is used when previewing moons via the Terminal `MoonCatalogue`.*
+* * _Controls which Preview Info setting is used when previewing moons via the Terminal `MoonCatalogue`._
 * `Default SortInfo Toggle`
-* * *Controls which Sort Info setting is used when previewing moons via the Terminal `MoonCatalogue`.*
+* * _Controls which Sort Info setting is used when previewing moons via the Terminal `MoonCatalogue`._
 * `Default FilterInfo Toggle`
-* * *Controls which Filter Info setting is used when previewing moons via the Terminal `MoonCatalogue`.*
+* * _Controls which Filter Info setting is used when previewing moons via the Terminal `MoonCatalogue`._
 * `Default SimulateInfo Toggle`
-* * *Controls whether rarity is displayed as it's raw value or a calculated percentage while using the >simulate Terminal keyword.*
+* * _Controls whether rarity is displayed as it's raw value or a calculated percentage while using the >simulate Terminal keyword._
 * `All DungeonFlows Require Matching`
-* * *Experimental setting that forces `DungeonFlow`'s requested by a `SelectableLevel` to have a valid dynamic match. false by default.*
+* * _Experimental setting that forces `DungeonFlow`'s requested by a `SelectableLevel` to have a valid dynamic match. false by default._
+
 </details>
 
 <details><summary>ExtendedLevel Automatic Configuration Options</summary>
@@ -996,11 +994,12 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 * * `insideEnemiesList`
 * * `outsideDaytimeEnemiesList`
 * * `outsideNighttimeEnemiesList`
+
 </details>
 
 <details><summary>ExtendedDungeonFlow Automatic Configuration Options</summary>
 * *LethalLevelLoader now provides automatically generated configuration options for all `ExtendedDungeonFlow`'s. This can be disabled by the author of the `ExtendedDungeonFlow` if they wish to provide these options themselves.*
-* 
+*
 * * `EnableContentConfiguration`
 * * `manualContentSourceNameReferenceList`
 * * `manualPlanetNameReferenceList`
@@ -1022,6 +1021,7 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 * * `(string, string) SplitStringByIndexSeperator(string inputString)`
 * * `(string, string) SplitStringByKeyPairSeperator(string inputString)`
 * * `(string, string) SplitStringByVectorSeperator(string inputString)`
+
 </details>
 
 <details><summary>Extensions</summary>
@@ -1034,8 +1034,8 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 * * `CompatibleNoun` `AddReferences(TerminalKeyword, TerminalNode)`
 * * `TerminalKeyword` `AddCompatibleNoun(TerminalKeyword, TerminalNode)`
 * * `TerminalNode` `AddCompatibleNoun(TerminalKeyword, TerminalNoun)`
-</details>
 
+</details>
 
 <details><summary>Async AssetBundle Loading</summary>
 * *LethalLevelLoader now loads `.lethalbundle`s asynchronously to improve load times while starting Lethal Company. The progress of the AssetBundle loading can be viewed on the initial game launch options screen.*
@@ -1045,111 +1045,109 @@ By default SelectableLevel.riskLevel is now automatically assigned using calcula
 
 **<details><summary>Fixes</summary>**
 
-* *The entire codebase has been refactored to streamline functionality, improve stability and reduce errors.*
-* *As a safety fallback, LethalLevelLoader will now select the Facility DungeonFlow if there are no DungeonFlow's for the game to select from.*
-* *Fixed a Lethal Company bug where game breaks for all clients if a client doesn't finish generating Dungen in one frame*
-* *LethalLevelLoader now correctly restores references to base game ItemGroup's found in Custom DungeonFlow's*
-* *LethalLevelLoader now correctly restores references to base game ReverbPresets's found in Custom SelectableLevel's and DungeonFlow's*
-* *LethalLevelLoader now correctly restores references to base game AudioMixers's found in Custom SelectableLevel's and DungeonFlow's*
-* *LethalLevelLoader now correctly restores references to base game AudioMixerController's found in Custom SelectableLevel's and DungeonFlow's*
-* *LethalLevelLoader now correctly restores references to base game AudioMixerSnapshots's found in Custom SelectableLevel's and DungeonFlow's*
-* *LethalLevelLoader now injects it's random DungeonFlow selection into Lethal Company's random DungeonFlow selection function to improve natural compatibility with other mods. (Thank you BananaPatcher714)*
-* *LethalLevelLoader now injects custom DungeonFlow's into Lethal Company's DungeonFlowTypes array to improve natural compatibility with other mods. (Thank you BananaPatcher714)*
-* *LethalLevelLoader now injects custom firstTimeDungeonAudio's into Lethal Company's DungeonAudios array to improve natural compatibility with other mods. (Thank you BananaPatcher714)*
-* *LethalLevelLoader's dynamic dungeon rarity matching system was overhauled to ensure the highest matching rarity is used, rather than the first matching rarity.*
-* *ExtendedLevel's `routePrice` value is now automatically synced with it's associated TerminalNode to ensure dynamic updates to route price are correctly set and reflected on the Terminal.*
-* *After references to base game content are restored by LethalLevelLoader, they are now destroyed to avoid issues with other mods obtaining assets via `Resources.FindObjectsOfType()`*
-* *Fixed an issue where Custom ExtendedLevel's failed to integrate into the game due to lacking `"FAUNA"` and `"CONDITIONS"` in their `SelectableLevel.LevelDescription`*
-* *Modified how LethalLevelLoader accesses the Terminal in order to improve safety and stability in larger modpacks.*
-* *Modified how LethalLevelLoader accesses TerminalNode's to avoid errors when playing Lethal Company in different languages. (Thanks Paradox75831004)*
+* _The entire codebase has been refactored to streamline functionality, improve stability and reduce errors._
+* _As a safety fallback, LethalLevelLoader will now select the Facility DungeonFlow if there are no DungeonFlow's for the game to select from._
+* _Fixed a Lethal Company bug where game breaks for all clients if a client doesn't finish generating Dungen in one frame_
+* _LethalLevelLoader now correctly restores references to base game ItemGroup's found in Custom DungeonFlow's_
+* _LethalLevelLoader now correctly restores references to base game ReverbPresets's found in Custom SelectableLevel's and DungeonFlow's_
+* _LethalLevelLoader now correctly restores references to base game AudioMixers's found in Custom SelectableLevel's and DungeonFlow's_
+* _LethalLevelLoader now correctly restores references to base game AudioMixerController's found in Custom SelectableLevel's and DungeonFlow's_
+* _LethalLevelLoader now correctly restores references to base game AudioMixerSnapshots's found in Custom SelectableLevel's and DungeonFlow's_
+* _LethalLevelLoader now injects it's random DungeonFlow selection into Lethal Company's random DungeonFlow selection function to improve natural compatibility with other mods. (Thank you BananaPatcher714)_
+* _LethalLevelLoader now injects custom DungeonFlow's into Lethal Company's DungeonFlowTypes array to improve natural compatibility with other mods. (Thank you BananaPatcher714)_
+* _LethalLevelLoader now injects custom firstTimeDungeonAudio's into Lethal Company's DungeonAudios array to improve natural compatibility with other mods. (Thank you BananaPatcher714)_
+* _LethalLevelLoader's dynamic dungeon rarity matching system was overhauled to ensure the highest matching rarity is used, rather than the first matching rarity._
+* _ExtendedLevel's `routePrice` value is now automatically synced with it's associated TerminalNode to ensure dynamic updates to route price are correctly set and reflected on the Terminal._
+* _After references to base game content are restored by LethalLevelLoader, they are now destroyed to avoid issues with other mods obtaining assets via `Resources.FindObjectsOfType()`_
+* _Fixed an issue where Custom ExtendedLevel's failed to integrate into the game due to lacking `"FAUNA"` and `"CONDITIONS"` in their `SelectableLevel.LevelDescription`_
+* _Modified how LethalLevelLoader accesses the Terminal in order to improve safety and stability in larger modpacks._
+* _Modified how LethalLevelLoader accesses TerminalNode's to avoid errors when playing Lethal Company in different languages. (Thanks Paradox75831004)_
 * *Fixed a Lethal Company bug where AudioSource's unintentionally log harmless AudioSpatializer related warnings in the console.
-* *Fixed an issue where LethalLevelLoader's dynamic dungeon size clamping was unintentionally being applied.*
-* *Fixed an oversight where LethalLevelLoader was logging via Unity rather than Bepinex.*
-* *Fixed an issue where `GetTiles()` could potentially trigger null reference exception errors.*
-* *Fixed major oversight where Game-Icons.net was not correctly attributed for LethalLevelLoader's logo*
+* _Fixed an issue where LethalLevelLoader's dynamic dungeon size clamping was unintentionally being applied._
+* _Fixed an oversight where LethalLevelLoader was logging via Unity rather than Bepinex._
+* _Fixed an issue where `GetTiles()` could potentially trigger null reference exception errors._
+* _Fixed major oversight where Game-Icons.net was not correctly attributed for LethalLevelLoader's logo_
 
 </details>
 
 </details>
-
-
 
 **<details><summary>Version 1.0.7</summary>**
 
-* *Overhauled Custom Level system to use dynamically injected scenes rather than dynamically injected prefabs (Thanks onionymous!)*
+* _Overhauled Custom Level system to use dynamically injected scenes rather than dynamically injected prefabs (Thanks onionymous!)_
 
 </details>
 
 **<details><summary>Version 1.0.6</summary>**
 
-* *Moved all logs from Unity.Debug() to BepInEx.ManualLogSauce.LogInfo()*
-* *Modified Custom ExtendedLevel loading to initially disable all MeshColliders then reenable them asynchronously to vastly improve load times*
-* *Slightly improved manualPlanetNameReferenceList comparison to improve suggested edgecases*
-* *Fixed oversight were Terminal moonsListCatalogue was being displayed inaccurately compared to base game implementation*
-* *Fixed issue were the NavMesh was incorrectly attempting to bake the Player Ship*
+* _Moved all logs from Unity.Debug() to BepInEx.ManualLogSauce.LogInfo()_
+* _Modified Custom ExtendedLevel loading to initially disable all MeshColliders then reenable them asynchronously to vastly improve load times_
+* _Slightly improved manualPlanetNameReferenceList comparison to improve suggested edgecases_
+* _Fixed oversight were Terminal moonsListCatalogue was being displayed inaccurately compared to base game implementation_
+* _Fixed issue were the NavMesh was incorrectly attempting to bake the Player Ship_
 
 </details>
 
 **<details><summary>Version 1.0.5</summary>**
 
-* *Fixed issue related to SelectableLevel: March not being correctly loaded with it's intended DungeonFlow on additional visits*
-* *Revamped manualPlanetNameReferenceList comparison to increase the likelyhood of user inputs working as intended*
+* _Fixed issue related to SelectableLevel: March not being correctly loaded with it's intended DungeonFlow on additional visits_
+* _Revamped manualPlanetNameReferenceList comparison to increase the likelyhood of user inputs working as intended_
 
 </details>
 
 **<details><summary>Version 1.0.4</summary>**
 
-* *Updated LethalLib dependancy from 0.10.1 to 0.11.0*
-* *Fixed issues related to SelectableLevel: March not being correctly loaded with it's intended DungeonFlow*
-* *Fixed oversight were Custom DungeonFlow's were not having all SpawnSyncedObject's correctly restored*
-* *Modified DungeonFlow_Patch levelTags check to increase odds of correctly matching user input*
-* *Removed deprecated debug logs*
+* _Updated LethalLib dependancy from 0.10.1 to 0.11.0_
+* _Fixed issues related to SelectableLevel: March not being correctly loaded with it's intended DungeonFlow_
+* _Fixed oversight were Custom DungeonFlow's were not having all SpawnSyncedObject's correctly restored_
+* _Modified DungeonFlow_Patch levelTags check to increase odds of correctly matching user input_
+* _Removed deprecated debug logs_
 
 </details>
 
 **<details><summary>Version 1.0.3</summary>**
 
-* *Fixed issues caused by the v47 and v48 updates, specific changes will be listed below*
-* *Fixed an oversight were ExtendedDungeonFlow dungeonID's were not being assigned correctly*
-* *Changed ExtendedDungeonFlow.dungeonRarity variable name to ExtendedDungeonFlow.dungeonDefaultRarity for improved clarity*
-* *Moved Prefix Patch Targets From RoundManager to StartOfRound to account for the order of execution changes made in v47*
-* *Improved the EntranceTeleport patch to re-organise entranceID settings to avoid user error*
-* *Fixed an oversight were PatchDungeonSize() incorrectly checked if the compared values were identical*
-* *Moved a majority of public access modifiers to internal to prevent unintential use of internal classes*
-* *Fixed an issue were DungeonFlow SpawnSyncObject's were failing to restore their Vanilla reference*
-* *Changed ExtendedDungeonFlow.dungeonSizeMin and ExtendedDungeonFlow.dungeonSizeMaz to floats to improve usability*
-* *Changed the way the basegame's internal variables are patched to resolve an issue where leaving the game would corrupt saves*
-* *Improved debug logs for clarity*
+* _Fixed issues caused by the v47 and v48 updates, specific changes will be listed below_
+* _Fixed an oversight were ExtendedDungeonFlow dungeonID's were not being assigned correctly_
+* _Changed ExtendedDungeonFlow.dungeonRarity variable name to ExtendedDungeonFlow.dungeonDefaultRarity for improved clarity_
+* _Moved Prefix Patch Targets From RoundManager to StartOfRound to account for the order of execution changes made in v47_
+* _Improved the EntranceTeleport patch to re-organise entranceID settings to avoid user error_
+* _Fixed an oversight were PatchDungeonSize() incorrectly checked if the compared values were identical_
+* _Moved a majority of public access modifiers to internal to prevent unintential use of internal classes_
+* _Fixed an issue were DungeonFlow SpawnSyncObject's were failing to restore their Vanilla reference_
+* _Changed ExtendedDungeonFlow.dungeonSizeMin and ExtendedDungeonFlow.dungeonSizeMaz to floats to improve usability_
+* _Changed the way the basegame's internal variables are patched to resolve an issue where leaving the game would corrupt saves_
+* _Improved debug logs for clarity_
 
 </details>
 
 **<details><summary>Version 1.0.2</summary>**
 
-* *All Registering of Custom Content has been moved from the GameNetworkManager.Awake() Prefix to the GameNetworkManager.Start() Prefix to give developers safe access to Awake() if needed.*
-* *AssetBundleLoader.specifiedFileExtension has now been changed to a public const to allow for improved referencing.*
-* *ExtendedDungeonFlow's are now automatically registered with the Network when added using AssetBundleLoader.RegisterExtendedDungeonFlow()*
-* *sourceName in ExtendedLevel and ExtendedDungeonFlow have been changed to contentSourceName, to improve clarity.*
-* *Fixed an oversight where dungeonSizeMin was not being considered.*
-* *Removed deprecated variables from ExtendedDungeonPreferences.*
-* *Vector2WithRarity now correctly uses a Vector2, Allowing for improved usability in the Unity inspector.*
-* *Variables in ExtendedDungeonPreferences have now been protected with properties, to allow for future validation options.*
-* *Removed ExtendedDungeonPreferences, This has now been combined into ExtendedDungeonFlow for better usability and more streamlined referencing.*
-* *Refactored ExtendedDungeonFlow to improve on visual organisation when viewed in the Unity inspector.*
-* *Refactored ExtendedLevel to improve on visual organisation when viewed in the Unity inspector.*
-* *Introduced ConfigHelper.ConvertToStringWithRarity() To assist with developers configeration creation.*
-* *Cached Terminal.allTerminalKeywords for improved reference safetey.*
-* *Adjusted Harmony Patch Priority Orders from 0 to 350.*
+* _All Registering of Custom Content has been moved from the GameNetworkManager.Awake() Prefix to the GameNetworkManager.Start() Prefix to give developers safe access to Awake() if needed._
+* _AssetBundleLoader.specifiedFileExtension has now been changed to a public const to allow for improved referencing._
+* _ExtendedDungeonFlow's are now automatically registered with the Network when added using AssetBundleLoader.RegisterExtendedDungeonFlow()_
+* _sourceName in ExtendedLevel and ExtendedDungeonFlow have been changed to contentSourceName, to improve clarity._
+* _Fixed an oversight where dungeonSizeMin was not being considered._
+* _Removed deprecated variables from ExtendedDungeonPreferences._
+* _Vector2WithRarity now correctly uses a Vector2, Allowing for improved usability in the Unity inspector._
+* _Variables in ExtendedDungeonPreferences have now been protected with properties, to allow for future validation options._
+* _Removed ExtendedDungeonPreferences, This has now been combined into ExtendedDungeonFlow for better usability and more streamlined referencing._
+* _Refactored ExtendedDungeonFlow to improve on visual organisation when viewed in the Unity inspector._
+* _Refactored ExtendedLevel to improve on visual organisation when viewed in the Unity inspector._
+* _Introduced ConfigHelper.ConvertToStringWithRarity() To assist with developers configeration creation._
+* _Cached Terminal.allTerminalKeywords for improved reference safetey._
+* _Adjusted Harmony Patch Priority Orders from 0 to 350._
 
 </details>
 
 **<details><summary>Version 1.0.1</summary>**
 
-* *Updated README*
+* _Updated README_
 
 </details>
 
 **<details><summary>Version 1.0.0</summary>**
 
-* *Initial Release*
+* _Initial Release_
 
 </details>

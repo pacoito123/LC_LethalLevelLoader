@@ -16,13 +16,13 @@ namespace LethalLevelLoader.Tools
         {
             foreach (ExtendedDungeonFlow extendedDungeonFlow in PatchedContent.VanillaExtendedDungeonFlows)
             {
-                ExtendedDungeonConfig newConfig = new ExtendedDungeonConfig(configFile, "Vanilla Dungeon:  " + extendedDungeonFlow.DungeonName.StripSpecialCharacters() + " (" + extendedDungeonFlow.DungeonFlow.name + ")", 7);
+                ExtendedDungeonConfig newConfig = new ExtendedDungeonConfig(configFile, "Vanilla Dungeon:  " + extendedDungeonFlow.DungeonName.StripSpecialCharacters().Trim() + " (" + extendedDungeonFlow.DungeonFlow.name + ")", 7);
                 newConfig.BindConfigs(extendedDungeonFlow);
             }
 
             foreach (ExtendedDungeonFlow extendedDungeonFlow in PatchedContent.CustomExtendedDungeonFlows)
             {
-                ExtendedDungeonConfig newConfig = new ExtendedDungeonConfig(configFile, "Custom Dungeon:  " + extendedDungeonFlow.DungeonName.StripSpecialCharacters(), 9);
+                ExtendedDungeonConfig newConfig = new ExtendedDungeonConfig(configFile, "Custom Dungeon:  " + extendedDungeonFlow.DungeonName.StripSpecialCharacters().Trim(), 9);
                 newConfig.BindConfigs(extendedDungeonFlow);
                 if (extendedDungeonFlow.dynamicLevelTagsList.Count > 0 || extendedDungeonFlow.dynamicRoutePricesList.Count > 0 || extendedDungeonFlow.dynamicCurrentWeatherList.Count > 0 || extendedDungeonFlow.manualPlanetNameReferenceList.Count > 0 || extendedDungeonFlow.manualContentSourceNameReferenceList.Count > 0)
                 {
@@ -33,13 +33,13 @@ namespace LethalLevelLoader.Tools
 
             foreach (ExtendedLevel extendedLevel in PatchedContent.VanillaExtendedLevels)
             {
-                ExtendedLevelConfig newConfig = new ExtendedLevelConfig(configFile, "Vanilla Level:  " + extendedLevel.SelectableLevel.PlanetName.StripSpecialCharacters(), 6);
+                ExtendedLevelConfig newConfig = new ExtendedLevelConfig(configFile, "Vanilla Level:  " + extendedLevel.SelectableLevel.PlanetName.StripSpecialCharacters().Trim(), 6);
                 newConfig.BindConfigs(extendedLevel);
             }
 
             foreach (ExtendedLevel extendedLevel in PatchedContent.CustomExtendedLevels)
             {
-                ExtendedLevelConfig newConfig = new ExtendedLevelConfig(configFile, "Custom Level:  " + extendedLevel.SelectableLevel.PlanetName.StripSpecialCharacters(), 8);
+                ExtendedLevelConfig newConfig = new ExtendedLevelConfig(configFile, "Custom Level:  " + extendedLevel.SelectableLevel.PlanetName.StripSpecialCharacters().Trim(), 8);
                 newConfig.BindConfigs(extendedLevel);
             }
 
