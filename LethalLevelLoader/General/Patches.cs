@@ -549,6 +549,7 @@ namespace LethalLevelLoader
                 LevelLoader.ApplyCameraDistanceOverride(player: GameNetworkManager.Instance.localPlayerController, outside: true);
 
                 LevelLoader.ValidateMapPropsContainer();
+                LevelLoader.ValidateItemShipContainer();
                 if (currentLevel.SelectableLevel != null && currentLevel.SelectableLevel.spawnEnemiesAndScrap)
                     LevelLoader.RestoreRuntimeDungeon(); // Why wasn't I doing this here to begin with...?
             }

@@ -372,6 +372,34 @@ namespace LethalLevelLoader
             Patches.RoundManager.mapPropsContainer = mapPropsContainer;
         }
 
+        internal static void ValidateItemShipContainer()
+        {
+            GameObject itemShipLandingNode = GameObject.FindGameObjectWithTag("ItemShipLandingNode");
+            if (itemShipLandingNode == null)
+            {
+                DebugHelper.LogWarning("Could not find a GameObject with an ItemShipLandingNode tag in the current moon! Searching for an ItemDropship...", DebugType.User);
+                foreach (GameObject rootObject in currentLevelScene.GetRootGameObjects())
+                {
+                    ItemDropship itemDropship = rootObject.GetComponentInChildren<ItemDropship>(includeInactive: true);
+                    if (itemDropship != null && !itemDropship.isActiveAndEnabled)
+                    {
+                        DebugHelper.LogWarning("ItemDropship GameObject is disabled! Enabling to avoid issues...", DebugType.User);
+                        itemDropship.gameObject.SetActive(true);
+                        itemDropship.transform.parent.gameObject.SetActive(true);
+                        break;
+                    }
+                }
+                itemShipLandingNode = GameObject.FindGameObjectWithTag("ItemShipLandingNode");
+                if (itemShipLandingNode == null)
+                {
+                    DebugHelper.LogWarning("Could not find a GameObject with an ItemShipLandingNode tag in the current moon (still)! Creating one to allow landing, but there will be other issues!", DebugType.User);
+                    itemShipLandingNode = new GameObject("ItemShipLandingPosition");
+                    SceneManager.MoveGameObjectToScene(itemShipLandingNode, currentLevelScene);
+                    itemShipLandingNode.tag = "ItemShipLandingNode";
+                }
+            }
+        }
+
         internal static void RestoreRuntimeDungeon()
         {
             GameObject dungeonGenerator = GameObject.FindGameObjectWithTag("DungeonGenerator");
