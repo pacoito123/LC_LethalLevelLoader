@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using HarmonyLib;
 using LethalPerformance.Patches.ReferenceHolder;
+using UnityEngine.SceneManagement;
 
 namespace LethalLevelLoader.Compatibility
 {
@@ -20,18 +21,25 @@ namespace LethalLevelLoader.Compatibility
         private static bool? _enabled;
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        [HarmonyPatch(typeof(MoonCachingPatch.Patch_NavMeshSurface), nameof(MoonCachingPatch.Patch_NavMeshSurface.FindDungeon)), HarmonyPostfix, HarmonyPriority(Patches.priority)]
-        internal static void MoonCachingPatchFindDungeon_Postfix(ref bool __result)
+        [HarmonyPatch(typeof(MoonCachingPatch.Patch_NavMeshSurface), nameof(MoonCachingPatch.Patch_NavMeshSurface.FindDropship)), HarmonyPrefix, HarmonyPriority(Patches.priority)]
+        internal static void MoonCachingPatchFindDropship_Prefix(Scene scene)
         {
-            if (__result) return;
+            ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
+            if (currentLevel == null || currentLevel.ContentType is ContentType.External || currentLevel.SelectableLevel == null) return;
 
+            LevelLoader.currentLevelScene = scene;
+            LevelLoader.ValidateItemShipContainer();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        [HarmonyPatch(typeof(MoonCachingPatch.Patch_NavMeshSurface), nameof(MoonCachingPatch.Patch_NavMeshSurface.FindDungeon)), HarmonyPrefix, HarmonyPriority(Patches.priority)]
+        internal static void MoonCachingPatchFindDungeon_Prefix(Scene scene)
+        {
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel == null || currentLevel.ContentType is ContentType.External || currentLevel.SelectableLevel == null || currentLevel.SelectableLevel.spawnEnemiesAndScrap == false) return;
 
+            LevelLoader.currentLevelScene = scene;
             LevelLoader.RestoreRuntimeDungeon();
-            if (Patches.RoundManager != null)
-                MoonCachingPatch.s_RuntimeDungeon.SetInstance(Patches.RoundManager.dungeonGenerator);
-            __result = (MoonCachingPatch.s_RuntimeDungeon.Instance != null);
         }
     }
 }

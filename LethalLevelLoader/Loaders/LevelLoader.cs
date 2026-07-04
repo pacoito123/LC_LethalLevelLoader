@@ -383,7 +383,7 @@ namespace LethalLevelLoader
                     ItemDropship itemDropship = rootObject.GetComponentInChildren<ItemDropship>(includeInactive: true);
                     if (itemDropship != null && !itemDropship.isActiveAndEnabled)
                     {
-                        DebugHelper.LogWarning("ItemDropship GameObject is disabled! Enabling to avoid issues...", DebugType.User);
+                        DebugHelper.LogWarning("ItemDropship GameObject is disabled! Enabling it to avoid issues...", DebugType.User);
                         itemDropship.gameObject.SetActive(true);
                         itemDropship.transform.parent.gameObject.SetActive(true);
                         break;
@@ -392,7 +392,7 @@ namespace LethalLevelLoader
                 itemShipLandingNode = GameObject.FindGameObjectWithTag("ItemShipLandingNode");
                 if (itemShipLandingNode == null)
                 {
-                    DebugHelper.LogWarning("Could not find a GameObject with an ItemShipLandingNode tag in the current moon (still)! Creating one to allow landing, but there will be other issues!", DebugType.User);
+                    DebugHelper.LogError("Could not find a GameObject with an ItemShipLandingNode tag in the current moon (still)! Creating one to allow landing, but there will be issues!", DebugType.User);
                     itemShipLandingNode = new GameObject("ItemShipLandingPosition");
                     SceneManager.MoveGameObjectToScene(itemShipLandingNode, currentLevelScene);
                     itemShipLandingNode.tag = "ItemShipLandingNode";
