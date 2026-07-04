@@ -50,7 +50,6 @@ namespace LethalLevelLoader.AssetBundles
                                 sceneNames.Add(sceneSelection.Name);
                     }
 
-
                 foreach (ExtendedLevel level in assetBundle.LoadAllAssets<ExtendedLevel>())
                 {
                     foreach (StringWithRarity sceneSelection in level.SceneSelections)

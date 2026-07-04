@@ -83,6 +83,8 @@ namespace LethalLevelLoader
 
         [HideInInspector] public string Name { get => (_name); set => _name = value; }
         [HideInInspector] public int Rarity { get => (_rarity); set => _rarity = value; }
+
+        public override string ToString() => $"\"{Name}\" ({Rarity})";
     }
 
     [Serializable]
@@ -96,6 +98,8 @@ namespace LethalLevelLoader
         [HideInInspector] public int Rarity { get => (_rarity); set => _rarity = value; }
 
         public Vector2WithRarity(Vector2 vector2, int newRarity) : this(vector2.x, vector2.y, newRarity) { }
+
+        public override string ToString() => $"[{Min}..{Max}] ({Rarity})";
     }
 
     [Serializable]
@@ -110,5 +114,7 @@ namespace LethalLevelLoader
 
         [HideInInspector] public AnimationClip Clip { readonly get => (_clip); set => _clip = value; }
         [HideInInspector] public int Rarity { readonly get => (_rarity); set => _rarity = value; }
+
+        public override readonly string ToString() => $"\"{((Clip != null) ? Clip.name : "<null>")}\" ({Rarity})";
     }
 }
