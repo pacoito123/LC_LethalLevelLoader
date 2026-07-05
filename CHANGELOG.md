@@ -9,6 +9,7 @@
 * Fixed SpawnableMapObjects in SelectableLevel not being converted to IndoorMapHazards under certain circumstances
 * Fixed MatchingProperties (and a couple config fields) being a bit too generous when matching ExtendedContent
 * Fixed (harmless) error with footstep tags
+* Fixed OverrideStormyRainPrefab not moving along with the player
 
 </details>
 

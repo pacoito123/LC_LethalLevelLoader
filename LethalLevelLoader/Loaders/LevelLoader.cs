@@ -159,7 +159,7 @@ namespace LethalLevelLoader
 
                 if (extendedLevel.OverrideStormyRainPrefab != null && stormyRainParticles != null)
                 {
-                    stormyRainPrefabOverrideInstance = Object.Instantiate(extendedLevel.OverrideStormyRainPrefab, stormyWeather.transform);
+                    stormyRainPrefabOverrideInstance = Object.Instantiate(extendedLevel.OverrideStormyRainPrefab, stormyRainParticles.transform.parent);
 
                     if (stormyRainParticles != null)
                         stormyRainParticles.gameObject.SetActive(false);
