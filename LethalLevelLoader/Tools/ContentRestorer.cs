@@ -61,6 +61,16 @@ namespace LethalLevelLoader.Tools
             {
                 Item spawnableItem = itemWithRarity?.spawnableItem;
                 if (spawnableItem == null) continue;
+
+                Item vanillaItem = OriginalContent.Items.Find(item => string.Equals(item.name, spawnableItem.name, StringComparison.Ordinal)
+                    || (itemWithRarity.spawnableItem.spawnPrefab != null && item.spawnPrefab != null && string.Equals(itemWithRarity.spawnableItem.spawnPrefab.name, item.spawnPrefab.name, StringComparison.Ordinal)));
+                if (vanillaItem != null)
+                {
+                    itemWithRarity.spawnableItem.spawnPrefab = RestoreAsset(spawnableItem.spawnPrefab, vanillaItem.spawnPrefab);
+                    itemWithRarity.spawnableItem = RestoreAsset(spawnableItem, vanillaItem);
+                    continue;
+                }
+
                 if (spawnableItem.spawnPrefab != null)
                 {
                     for (int i = 0; i < itemWithRarity.spawnableItem.spawnPositionTypes?.Count; i++)
@@ -73,26 +83,25 @@ namespace LethalLevelLoader.Tools
                                 spawnableItem.spawnPositionTypes[i] = RestoreAsset(targetItemGroup, vanillaItemGroup);
                         }
                     }
-                    continue;
                 }
-                Item vanillaItem = OriginalContent.Items.Find(item => string.Equals(item.name, spawnableItem.name, StringComparison.Ordinal));
-                if (vanillaItem != null)
-                    itemWithRarity.spawnableItem = RestoreAsset(spawnableItem, vanillaItem);
             }
-            int removedScrap = extendedLevel.SelectableLevel.spawnableScrap.RemoveAll(item => item == null || item.spawnableItem == null || item.spawnableItem.spawnPrefab == null);
+            int removedScrap = extendedLevel.SelectableLevel.spawnableScrap.RemoveAll(item => item == null || item.spawnableItem == null || item.spawnableItem.spawnPrefab == null || !item.spawnableItem.spawnPrefab.TryGetComponent(out NetworkObject _));
             if (removedScrap > 0)
                 DebugHelper.LogWarning($"Removed '{removedScrap}' missing or empty scrap spawns in SelectableLevel: {extendedLevel.SelectableLevel.name}", DebugType.User);
 
             static bool ShouldRemoveEnemyRarity(SpawnableEnemyWithRarity enemyRarity)
             {
-                if (enemyRarity == null || enemyRarity.enemyType == null) return true;
-                if (enemyRarity.enemyType.enemyPrefab != null) return false;
+                if (enemyRarity == null || enemyRarity.enemyType == null) return (true);
 
-                EnemyType vanillaEnemy = OriginalContent.Enemies.Find(enemy => string.Equals(enemy.name, enemyRarity.enemyType.name, StringComparison.Ordinal));
-                if (vanillaEnemy == null) return true;
+                EnemyType vanillaEnemy = OriginalContent.Enemies.Find(enemy => string.Equals(enemy.name, enemyRarity.enemyType.name, StringComparison.Ordinal)
+                    || (enemyRarity.enemyType.enemyPrefab != null && enemy.enemyPrefab != null && string.Equals(enemyRarity.enemyType.enemyPrefab.name, enemy.enemyPrefab.name, StringComparison.Ordinal)));
+                if (vanillaEnemy != null)
+                {
+                    enemyRarity.enemyType.enemyPrefab = RestoreAsset(enemyRarity.enemyType.enemyPrefab, vanillaEnemy.enemyPrefab);
+                    enemyRarity.enemyType = RestoreAsset(enemyRarity.enemyType, vanillaEnemy);
+                }
 
-                enemyRarity.enemyType = RestoreAsset(enemyRarity.enemyType, vanillaEnemy);
-                return false;
+                return (enemyRarity.enemyType.enemyPrefab == null || !enemyRarity.enemyType.enemyPrefab.TryGetComponent(out NetworkObject _));
             }
             int removedEnemies = extendedLevel.SelectableLevel.Enemies.RemoveAll(ShouldRemoveEnemyRarity);
             removedEnemies += extendedLevel.SelectableLevel.OutsideEnemies.RemoveAll(ShouldRemoveEnemyRarity);
@@ -101,16 +110,21 @@ namespace LethalLevelLoader.Tools
                 DebugHelper.LogWarning($"Removed '{removedEnemies}' missing or empty enemy spawns in SelectableLevel: {extendedLevel.SelectableLevel.name}", DebugType.User);
 
             OverrideEnemyRarity specialEnemy = extendedLevel.SelectableLevel.specialEnemyRarity;
-            if (specialEnemy != null && specialEnemy.overrideEnemy != null && specialEnemy.overrideEnemy.enemyPrefab == null)
+            if (specialEnemy != null && specialEnemy.overrideEnemy != null)
             {
-                EnemyType vanillaEnemy = OriginalContent.Enemies.Find(enemy => string.Equals(enemy.name, specialEnemy.overrideEnemy.name, StringComparison.Ordinal));
-                if (vanillaEnemy == null)
+                EnemyType vanillaEnemy = OriginalContent.Enemies.Find(enemy => string.Equals(enemy.name, specialEnemy.overrideEnemy.name, StringComparison.Ordinal)
+                    || (specialEnemy.overrideEnemy.enemyPrefab != null && enemy.enemyPrefab != null && string.Equals(enemy.enemyPrefab.name, specialEnemy.overrideEnemy.enemyPrefab.name, StringComparison.Ordinal)));
+                if (vanillaEnemy != null)
+                {
+                    specialEnemy.overrideEnemy.enemyPrefab = RestoreAsset(specialEnemy.overrideEnemy.enemyPrefab, vanillaEnemy.enemyPrefab);
+                    specialEnemy.overrideEnemy = RestoreAsset(specialEnemy.overrideEnemy, vanillaEnemy);
+                }
+
+                if (specialEnemy.overrideEnemy.enemyPrefab == null)
                 {
                     extendedLevel.SelectableLevel.specialEnemyRarity = null;
                     DebugHelper.LogWarning($"Removed missing or empty OverrideEnemyRarity in SelectableLevel: {extendedLevel.SelectableLevel.name}", DebugType.User);
                 }
-                else
-                    specialEnemy.overrideEnemy = RestoreAsset(specialEnemy.overrideEnemy, vanillaEnemy);
             }
 
             if ((extendedLevel.SelectableLevel.indoorMapHazards == null || extendedLevel.SelectableLevel.indoorMapHazards.Length == 0)
@@ -123,6 +137,7 @@ namespace LethalLevelLoader.Tools
                     IndoorMapHazardType vanillaHazard = OriginalContent.IndoorMapHazards.Find(mapHazard => mapHazard.prefabToSpawn != null && string.Equals(mapHazard.prefabToSpawn.name, spawnableMapObject.prefabToSpawn.name, StringComparison.Ordinal));
                     if (vanillaHazard != null)
                     {
+                        spawnableMapObject.prefabToSpawn = RestoreAsset(spawnableMapObject.prefabToSpawn, vanillaHazard.prefabToSpawn);
                         IndoorMapHazard indoorMapHazard = new()
                         {
                             hazardType = vanillaHazard,
@@ -131,9 +146,9 @@ namespace LethalLevelLoader.Tools
                         indoorMapHazards.Add(indoorMapHazard);
                     }
                 }
-                extendedLevel.SelectableLevel.indoorMapHazards = [.. indoorMapHazards];
                 if (indoorMapHazards.Count > 0)
                     DebugHelper.Log($"Converted '{indoorMapHazards.Count}' SpawnableMapObjects to IndoorMapHazard spawns in SelectableLevel: {extendedLevel.SelectableLevel.name}", DebugType.Developer);
+                extendedLevel.SelectableLevel.indoorMapHazards = [.. indoorMapHazards];
             }
             else if (extendedLevel.SelectableLevel.indoorMapHazards?.Length > 0)
             {
@@ -144,30 +159,33 @@ namespace LethalLevelLoader.Tools
                     IndoorMapHazardType vanillaHazard = OriginalContent.IndoorMapHazards.Find(mapHazard => string.Equals(mapHazard.name, indoorMapHazard.hazardType.name, StringComparison.Ordinal)
                         || (indoorMapHazard.hazardType.prefabToSpawn != null && mapHazard.prefabToSpawn != null && string.Equals(mapHazard.prefabToSpawn.name, indoorMapHazard.hazardType.prefabToSpawn.name, StringComparison.Ordinal)));
                     if (vanillaHazard != null)
+                    {
+                        indoorMapHazard.hazardType.prefabToSpawn = RestoreAsset(indoorMapHazard.hazardType.prefabToSpawn, vanillaHazard.prefabToSpawn);
                         indoorMapHazard.hazardType = RestoreAsset(indoorMapHazard.hazardType, vanillaHazard);
+                    }
                 }
                 int removedMapHazards = indoorMapHazards.RemoveAll(mapHazard => mapHazard == null || mapHazard.hazardType == null || mapHazard.hazardType.prefabToSpawn == null || !mapHazard.hazardType.prefabToSpawn.TryGetComponent(out NetworkObject _));
                 if (removedMapHazards > 0)
-                {
-                    extendedLevel.SelectableLevel.indoorMapHazards = [.. indoorMapHazards];
                     DebugHelper.LogWarning($"Removed '{removedMapHazards}' missing or empty IndoorMapHazard spawns in SelectableLevel: {extendedLevel.SelectableLevel.name}", DebugType.User);
-                }
+                extendedLevel.SelectableLevel.indoorMapHazards = [.. indoorMapHazards];
             }
 
             List<SpawnableOutsideObjectWithRarity> spawnableOutsideObjects = [.. extendedLevel.SelectableLevel.spawnableOutsideObjects];
             foreach (SpawnableOutsideObjectWithRarity spawnableOutsideObject in spawnableOutsideObjects)
             {
-                if (spawnableOutsideObject == null || spawnableOutsideObject.spawnableObject == null || spawnableOutsideObject.spawnableObject.prefabToSpawn != null) continue;
-                SpawnableOutsideObject vanillaOutsideObject = OriginalContent.SpawnableOutsideObjects.Find(outsideObject => string.Equals(outsideObject.name, spawnableOutsideObject.spawnableObject.name, StringComparison.Ordinal));
+                if (spawnableOutsideObject == null || spawnableOutsideObject.spawnableObject == null) continue;
+                SpawnableOutsideObject vanillaOutsideObject = OriginalContent.SpawnableOutsideObjects.Find(outsideObject => string.Equals(outsideObject.name, spawnableOutsideObject.spawnableObject.name, StringComparison.Ordinal)
+                    || (spawnableOutsideObject.spawnableObject.prefabToSpawn != null && outsideObject.prefabToSpawn != null && string.Equals(spawnableOutsideObject.spawnableObject.prefabToSpawn.name, outsideObject.prefabToSpawn.name, StringComparison.Ordinal)));
                 if (vanillaOutsideObject != null)
+                {
+                    spawnableOutsideObject.spawnableObject.prefabToSpawn = RestoreAsset(spawnableOutsideObject.spawnableObject.prefabToSpawn, vanillaOutsideObject.prefabToSpawn);
                     spawnableOutsideObject.spawnableObject = RestoreAsset(spawnableOutsideObject.spawnableObject, vanillaOutsideObject);
+                }
             }
             int removedOutsideObjects = spawnableOutsideObjects.RemoveAll(outsideObject => outsideObject == null || outsideObject.spawnableObject == null || outsideObject.spawnableObject.prefabToSpawn == null);
             if (removedOutsideObjects > 0)
-            {
-                extendedLevel.SelectableLevel.spawnableOutsideObjects = [.. spawnableOutsideObjects];
                 DebugHelper.LogWarning($"Removed '{removedOutsideObjects}' missing or empty SpawnableOutsideObject spawns in SelectableLevel: {extendedLevel.SelectableLevel.name}", DebugType.User);
-            }
+            extendedLevel.SelectableLevel.spawnableOutsideObjects = [.. spawnableOutsideObjects];
 
             if (extendedLevel.SelectableLevel.levelAmbienceClips != null)
             {
