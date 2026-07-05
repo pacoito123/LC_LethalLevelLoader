@@ -31,7 +31,7 @@ namespace LethalLevelLoader
         internal ExtendedLevel currentRouteRequestor;
 
         private readonly NetworkVariable<bool> allowedToLoadLevel = new NetworkVariable<bool>();
-        internal static bool AllowedToLoadLevel => Instance == null ? false : Instance.allowedToLoadLevel.Value;
+        internal static bool AllowedToLoadLevel => Instance != null && Instance.allowedToLoadLevel.Value;
 
         //private Dictionary<ulong, bool> playersReadyDict = new Dictionary<ulong, bool>();
 

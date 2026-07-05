@@ -62,15 +62,6 @@ namespace LethalLevelLoader.Tools
                 Item spawnableItem = itemWithRarity?.spawnableItem;
                 if (spawnableItem == null) continue;
 
-                Item vanillaItem = OriginalContent.Items.Find(item => string.Equals(item.name, spawnableItem.name, StringComparison.Ordinal)
-                    || (itemWithRarity.spawnableItem.spawnPrefab != null && item.spawnPrefab != null && string.Equals(itemWithRarity.spawnableItem.spawnPrefab.name, item.spawnPrefab.name, StringComparison.Ordinal)));
-                if (vanillaItem != null)
-                {
-                    itemWithRarity.spawnableItem.spawnPrefab = RestoreAsset(spawnableItem.spawnPrefab, vanillaItem.spawnPrefab);
-                    itemWithRarity.spawnableItem = RestoreAsset(spawnableItem, vanillaItem);
-                    continue;
-                }
-
                 if (spawnableItem.spawnPrefab != null)
                 {
                     for (int i = 0; i < itemWithRarity.spawnableItem.spawnPositionTypes?.Count; i++)
@@ -83,6 +74,14 @@ namespace LethalLevelLoader.Tools
                                 spawnableItem.spawnPositionTypes[i] = RestoreAsset(targetItemGroup, vanillaItemGroup);
                         }
                     }
+                }
+
+                Item vanillaItem = OriginalContent.Items.Find(item => string.Equals(item.name, spawnableItem.name, StringComparison.Ordinal)
+                    || (itemWithRarity.spawnableItem.spawnPrefab != null && item.spawnPrefab != null && string.Equals(itemWithRarity.spawnableItem.spawnPrefab.name, item.spawnPrefab.name, StringComparison.Ordinal)));
+                if (vanillaItem != null)
+                {
+                    itemWithRarity.spawnableItem.spawnPrefab = RestoreAsset(spawnableItem.spawnPrefab, vanillaItem.spawnPrefab);
+                    itemWithRarity.spawnableItem = RestoreAsset(spawnableItem, vanillaItem);
                 }
             }
             int removedScrap = extendedLevel.SelectableLevel.spawnableScrap.RemoveAll(item => item == null || item.spawnableItem == null || item.spawnableItem.spawnPrefab == null || !item.spawnableItem.spawnPrefab.TryGetComponent(out NetworkObject _));

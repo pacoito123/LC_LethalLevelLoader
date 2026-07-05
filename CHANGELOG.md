@@ -5,11 +5,14 @@
 
 **<details><summary>Fixes</summary>**
 
+* Fixed MatchingProperties (and a few config fields) being a bit too generous when matching ExtendedContent
+* Fixed SpawnableMapObjects in SelectableLevel not being converted to IndoorMapHazards for a few certain moons
+* Fixed not being able to land the ship on certain moons, under specific circumstances:
+  * Improved asset restoration for moons a bit (again), particularly for ones that (unintentionally) bundle vanilla assets
+  * Added some validation for ItemShipContainer and its ItemShipLandingNode GameObject, both of which are required to start enabled
+* Fixed `OverrideStormyRainPrefab` in ExtendedLevel not moving along with the player
 * Fixed DungeonMatchingProperties not actually using the `dungeonTags` field
-* Fixed SpawnableMapObjects in SelectableLevel not being converted to IndoorMapHazards under certain circumstances
-* Fixed MatchingProperties (and a couple config fields) being a bit too generous when matching ExtendedContent
-* Fixed (harmless) error with footstep tags
-* Fixed OverrideStormyRainPrefab not moving along with the player
+* Fixed (harmless) error with custom ExtendedFootstepSurface tags
 
 </details>
 
