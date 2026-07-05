@@ -246,7 +246,7 @@ namespace LethalLevelLoader
 
                 DebugStopwatch.StartStopWatch("Restore Additional Content");
                 ContentRestorer.RestoreVanillaItemAssetReferences(); // LungProp, HauntedMaskItem
-                // ContentRestorer.RestoreVanillaEnemyAssetReferences(); // ButlerEnemyAI, CadaverGrowthAI, GiantKiwiAI
+                // ContentRestorer.RestoreVanillaEnemyAssetReferences(); // BaboonBirdAI, ButlerEnemyAI, CadaverGrowthAI, GiantKiwiAI
 
                 //Destroy Placeholder Custom Content References That Have Now Been Restored
                 ContentRestorer.DestroyRestoredAssets();
@@ -973,17 +973,23 @@ namespace LethalLevelLoader
             LocalBuilder terrainLocal = generator.DeclareLocal(typeof(Terrain)); // Create local variable for the Terrain obtained from the Raycast.
             LocalBuilder terrainLayerLocal = generator.DeclareLocal(typeof(int)); // Create local variable for storing the Terrain layer.
 
+            FieldInfo currentFootstepSurfaceIndexInfo = typeof(MaskedPlayerEnemy).GetField(nameof(MaskedPlayerEnemy.currentFootstepSurfaceIndex), BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo switchToUntaggedIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.SwitchToUntaggedIndex), BindingFlags.Static | BindingFlags.NonPublic);
+            codeMatcher.Insert(
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldflda, currentFootstepSurfaceIndexInfo),
+                new(OpCodes.Call, switchToUntaggedIndexInfo), // Insert call to 'FootstepSurfaceManager.SwitchToUntaggedIndex()'.
+                new(OpCodes.Ldarg_0),
+                new(OpCodes.Ldflda, enemyRayHitInfo),
+                new(OpCodes.Call, raycastHitColliderGetter))
+            .CreateLabel(out Label vanillaFootstepTarget);
+
             Type genericType = Type.MakeGenericMethodParameter(0).MakeByRefType();
             MethodInfo terrainTryGetComponentInfo = typeof(Component).GetMethod(nameof(Component.TryGetComponent), 1, [genericType]).MakeGenericMethod(typeof(Terrain));
             MethodInfo raycastHitPointGetter = typeof(RaycastHit).GetProperty(nameof(RaycastHit.point), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
             MethodInfo tryObtainTerrainLayerAtPointInfo = typeof(TerrainManager).GetMethod(nameof(TerrainManager.TryObtainTerrainLayerAtPoint), BindingFlags.Static | BindingFlags.Public);
             MethodInfo tryGetAndSetFootstepSurfaceIndexInfo = typeof(FootstepSurfaceManager).GetMethod(nameof(FootstepSurfaceManager.TryGetAndSetFootstepSurfaceIndex), [typeof(Terrain), typeof(int), typeof(MaskedPlayerEnemy)]);
             return codeMatcher.Insert(
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldflda, enemyRayHitInfo),
-                new(OpCodes.Call, raycastHitColliderGetter))
-            .CreateLabel(out Label vanillaFootstepTarget)
-            .InsertAndAdvance(
                 new(OpCodes.Ldloca_S, terrainLocal),
                 new(OpCodes.Callvirt, terrainTryGetComponentInfo), // Insert TryGetComponent<Terrain>() call.
                 new(OpCodes.Brfalse_S, vanillaFootstepTarget), // Return to vanilla behaviour if no Terrain is obtained.

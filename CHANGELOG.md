@@ -8,6 +8,7 @@
 * Fixed DungeonMatchingProperties not actually using the `dungeonTags` field
 * Fixed SpawnableMapObjects in SelectableLevel not being converted to IndoorMapHazards under certain circumstances
 * Fixed MatchingProperties (and a couple config fields) being a bit too generous when matching ExtendedContent
+* Fixed (harmless) error with footstep tags
 
 </details>
 
