@@ -288,8 +288,9 @@ namespace LethalLevelLoader
         internal static void RestoreShaders()
         {
             foreach (Terrain terrain in Terrain.activeTerrains)
-                foreach (DetailPrototype detailPrototype in terrain.terrainData.detailPrototypes)
-                    RestoreShaders(detailPrototype.prototype);
+                if (terrain.terrainData != null && terrain.terrainData.detailPrototypes?.Length > 0)
+                    foreach (DetailPrototype detailPrototype in terrain.terrainData.detailPrototypes)
+                        RestoreShaders(detailPrototype.prototype);
 
             foreach (GameObject rootObject in currentLevelScene.GetRootGameObjects())
                 RestoreShaders(rootObject);

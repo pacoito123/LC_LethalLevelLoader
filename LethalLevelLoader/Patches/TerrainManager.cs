@@ -17,6 +17,7 @@ namespace LethalLevelLoader
             foreach (Terrain terrain in Terrain.activeTerrains)
             {
                 TerrainData terrainData = terrain.terrainData;
+                if (terrainData == null) continue;
                 float[,,] alphaMaps = terrainData.GetAlphamaps(0, 0, terrainData.alphamapWidth, terrainData.alphamapHeight);
                 TerrainAlphaMaps[terrain] = alphaMaps;
 

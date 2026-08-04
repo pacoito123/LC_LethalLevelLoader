@@ -80,6 +80,7 @@ namespace LethalLevelLoader.Tools
                     || (itemWithRarity.spawnableItem.spawnPrefab != null && item.spawnPrefab != null && string.Equals(itemWithRarity.spawnableItem.spawnPrefab.name, item.spawnPrefab.name, StringComparison.Ordinal)));
                 if (vanillaItem != null)
                 {
+if (itemWithRarity.spawnableItem.spawnPrefab != null)
                     itemWithRarity.spawnableItem.spawnPrefab = RestoreAsset(spawnableItem.spawnPrefab, vanillaItem.spawnPrefab);
                     itemWithRarity.spawnableItem = RestoreAsset(spawnableItem, vanillaItem);
                 }
@@ -96,6 +97,7 @@ namespace LethalLevelLoader.Tools
                     || (enemyRarity.enemyType.enemyPrefab != null && enemy.enemyPrefab != null && string.Equals(enemyRarity.enemyType.enemyPrefab.name, enemy.enemyPrefab.name, StringComparison.Ordinal)));
                 if (vanillaEnemy != null)
                 {
+if (enemyRarity.enemyType.enemyPrefab != null)
                     enemyRarity.enemyType.enemyPrefab = RestoreAsset(enemyRarity.enemyType.enemyPrefab, vanillaEnemy.enemyPrefab);
                     enemyRarity.enemyType = RestoreAsset(enemyRarity.enemyType, vanillaEnemy);
                 }
@@ -115,6 +117,7 @@ namespace LethalLevelLoader.Tools
                     || (specialEnemy.overrideEnemy.enemyPrefab != null && enemy.enemyPrefab != null && string.Equals(enemy.enemyPrefab.name, specialEnemy.overrideEnemy.enemyPrefab.name, StringComparison.Ordinal)));
                 if (vanillaEnemy != null)
                 {
+if (specialEnemy.overrideEnemy.enemyPrefab != null)
                     specialEnemy.overrideEnemy.enemyPrefab = RestoreAsset(specialEnemy.overrideEnemy.enemyPrefab, vanillaEnemy.enemyPrefab);
                     specialEnemy.overrideEnemy = RestoreAsset(specialEnemy.overrideEnemy, vanillaEnemy);
                 }
@@ -159,6 +162,7 @@ namespace LethalLevelLoader.Tools
                         || (indoorMapHazard.hazardType.prefabToSpawn != null && mapHazard.prefabToSpawn != null && string.Equals(mapHazard.prefabToSpawn.name, indoorMapHazard.hazardType.prefabToSpawn.name, StringComparison.Ordinal)));
                     if (vanillaHazard != null)
                     {
+if (indoorMapHazard.hazardType.prefabToSpawn != null)
                         indoorMapHazard.hazardType.prefabToSpawn = RestoreAsset(indoorMapHazard.hazardType.prefabToSpawn, vanillaHazard.prefabToSpawn);
                         indoorMapHazard.hazardType = RestoreAsset(indoorMapHazard.hazardType, vanillaHazard);
                     }
@@ -177,6 +181,7 @@ namespace LethalLevelLoader.Tools
                     || (spawnableOutsideObject.spawnableObject.prefabToSpawn != null && outsideObject.prefabToSpawn != null && string.Equals(spawnableOutsideObject.spawnableObject.prefabToSpawn.name, outsideObject.prefabToSpawn.name, StringComparison.Ordinal)));
                 if (vanillaOutsideObject != null)
                 {
+if (spawnableOutsideObject.spawnableObject.prefabToSpawn != null)
                     spawnableOutsideObject.spawnableObject.prefabToSpawn = RestoreAsset(spawnableOutsideObject.spawnableObject.prefabToSpawn, vanillaOutsideObject.prefabToSpawn);
                     spawnableOutsideObject.spawnableObject = RestoreAsset(spawnableOutsideObject.spawnableObject, vanillaOutsideObject);
                 }

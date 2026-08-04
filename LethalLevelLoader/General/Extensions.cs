@@ -106,6 +106,44 @@ namespace LethalLevelLoader
             return (returnList);
         }
 
+        public static IEnumerable<GameObject> GetBlockerPrefabs(this DungeonFlow dungeonFlow)
+        {
+            if (dungeonFlow == null) return [];
+            return dungeonFlow.GetBlockerPrefabs(dungeonFlow.GetTiles());
+        }
+
+        public static IEnumerable<GameObject> GetBlockerPrefabs(this DungeonFlow dungeonFlow, IEnumerable<Tile> allTiles)
+        {
+            if (dungeonFlow == null) return [];
+            HashSet<GameObject> returnList = new HashSet<GameObject>();
+
+            foreach (Tile dungeonTile in allTiles)
+                foreach (Doorway dungeonDoorway in dungeonTile.gameObject.GetComponentsInChildren<Doorway>())
+                    foreach (GameObjectWeight doorwayTileWeight in dungeonDoorway.BlockerPrefabWeights)
+                        returnList.Add(doorwayTileWeight.GameObject);
+
+            return (returnList);
+        }
+
+        public static IEnumerable<GameObject> GetConnectorPrefabs(this DungeonFlow dungeonFlow)
+        {
+            if (dungeonFlow == null) return [];
+            return dungeonFlow.GetConnectorPrefabs(dungeonFlow.GetTiles());
+        }
+
+        public static IEnumerable<GameObject> GetConnectorPrefabs(this DungeonFlow dungeonFlow, IEnumerable<Tile> allTiles)
+        {
+            if (dungeonFlow == null) return [];
+            HashSet<GameObject> returnList = new HashSet<GameObject>();
+
+            foreach (Tile dungeonTile in allTiles)
+                foreach (Doorway dungeonDoorway in dungeonTile.gameObject.GetComponentsInChildren<Doorway>())
+                    foreach (GameObjectWeight doorwayTileWeight in dungeonDoorway.ConnectorPrefabWeights)
+                        returnList.Add(doorwayTileWeight.GameObject);
+
+            return (returnList);
+        }
+
         public static void AddReferences(this CompatibleNoun compatibleNoun, TerminalKeyword firstNoun, TerminalNode firstResult)
         {
             compatibleNoun.noun = firstNoun;
