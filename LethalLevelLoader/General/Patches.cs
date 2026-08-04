@@ -130,15 +130,6 @@ namespace LethalLevelLoader
             }
         }
 
-        [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.SaveGameValues)), HarmonyPostfix, HarmonyPriority(priority)]
-        internal static void GameNetworkManagerSaveGameValues_Postfix(GameNetworkManager __instance)
-        {
-            // Vanilla checks
-            if (!__instance.isHostingGame || !StartOfRound.inShipPhase || StartOfRound.isChallengeFile)
-                return;
-            SaveManager.SaveGameValues();
-        }
-
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Awake)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static void StartOfRoundAwake_Prefix(StartOfRound __instance)
         {
@@ -443,12 +434,6 @@ namespace LethalLevelLoader
                 DebugHelper.Log("Saving Current SelectableLevel: " + RoundManager.currentLevel.PlanetName, DebugType.User);
                 SaveManager.currentSaveFile.CurrentLevelName = RoundManager.currentLevel.name;
             }
-        }
-
-        [HarmonyPatch(typeof(StartOfRound), "LoadShipGrabbableItems"), HarmonyPrefix, HarmonyPriority(priority)]
-        internal static void StartOfRoundLoadShipGrabbableItems_Prefix()
-        {
-            SaveManager.LoadShipGrabbableItems();
         }
 
         [HarmonyPatch(typeof(Terminal), "ParseWord"), HarmonyPostfix, HarmonyPriority(priority)]
@@ -1250,32 +1235,5 @@ namespace LethalLevelLoader
             .SetOpcodeAndAdvance(OpCodes.Ldc_I4_8)
             .InstructionEnumeration();
         } */
-
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.LoadPlanetsMoldSpreadData))]
-        [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.ResetSavedGameValues))]
-        [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.SaveGameValues))]
-        [HarmonyPatch(typeof(MoldSpreadManager), nameof(MoldSpreadManager.Start)), HarmonyTranspiler, HarmonyPriority(priority)]
-        internal static IEnumerable<CodeInstruction> MoldSaveData_Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            MethodInfo gameObjectGetter = typeof(GameObject).GetProperty(nameof(GameObject.gameObject), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
-            MethodInfo objectNameGetter = typeof(UnityEngine.Object).GetProperty(nameof(UnityEngine.Object.name), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
-            FieldInfo levelIDInfo = typeof(SelectableLevel).GetField(nameof(SelectableLevel.levelID), BindingFlags.Instance | BindingFlags.Public);
-
-            return new CodeMatcher(instructions).MatchForward(useEnd: true,
-                new CodeMatch(OpCodes.Ldstr))
-            .Repeat(matcher =>
-                {
-                    string saveKey = $"{matcher.Operand}";
-                    if (saveKey.StartsWith("Level{0}", StringComparison.Ordinal))
-                    {
-                        matcher.SearchForward(ci => ci.Is(OpCodes.Ldfld, levelIDInfo)) // Skip to `SelectableLevel.levelID`.
-                            .SetAndAdvance(OpCodes.Callvirt, gameObjectGetter)
-                            .SetAndAdvance(OpCodes.Callvirt, objectNameGetter);
-                        return;
-                    }
-                    matcher.Advance(1);
-                })
-            .InstructionEnumeration();
-        }
     }
 }

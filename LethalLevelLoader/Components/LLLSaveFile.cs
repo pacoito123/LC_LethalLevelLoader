@@ -1,20 +1,32 @@
-﻿using LethalModDataLib.Base;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Unity.Netcode;
 
 namespace LethalLevelLoader
 {
-    public class LLLSaveFile : ModDataContainer
+    public class LLLSaveFile(string currentSaveFileName)
     {
+        public string SaveLocation => currentSaveFileName + ".moddata";
+
         public string CurrentLevelName { get; internal set; } = string.Empty;
 
         public int parityStepsTaken;
         public Dictionary<int, AllItemsListItemData> itemSaveData = new Dictionary<int, AllItemsListItemData>();
         public List<ExtendedLevelData> extendedLevelSaveData = new List<ExtendedLevelData>();
 
-        public LLLSaveFile()
+        public void Save()
         {
-            //OptionalPrefixSuffix = name;
+            string prefix = Plugin.ModName + '.' + nameof(LLLSaveFile) + '.';
+            ES3.Save(nameof(parityStepsTaken), prefix + nameof(parityStepsTaken), SaveLocation);
+            ES3.Save(nameof(itemSaveData), prefix + nameof(itemSaveData), SaveLocation);
+            ES3.Save(nameof(extendedLevelSaveData), prefix + nameof(extendedLevelSaveData), SaveLocation);
+        }
+
+        public void Load()
+        {
+            string prefix = Plugin.ModName + '.' + nameof(LLLSaveFile) + '.';
+            parityStepsTaken = ES3.Load(prefix + nameof(parityStepsTaken), SaveLocation, 0);
+            itemSaveData = ES3.Load(prefix + nameof(itemSaveData), SaveLocation, new Dictionary<int, AllItemsListItemData>());
+            extendedLevelSaveData = ES3.Load(prefix + nameof(extendedLevelSaveData), SaveLocation, new List<ExtendedLevelData>());
         }
 
         public void Reset()

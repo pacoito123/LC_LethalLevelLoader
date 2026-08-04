@@ -11,7 +11,6 @@ using Application = UnityEngine.Application;
 namespace LethalLevelLoader
 {
     [BepInPlugin(ModGUID, ModName, ModVersion)]
-    [BepInDependency(LethalModDataLib.PluginInfo.PLUGIN_GUID)]
     public class Plugin : BaseUnityPlugin
     {
         public const string ModGUID = "imabatby.lethallevelloader";
@@ -42,6 +41,7 @@ namespace LethalLevelLoader
             Harmony.PatchAll(typeof(Patches));
             Harmony.PatchAll(typeof(EventPatches));
             Harmony.PatchAll(typeof(SafetyPatches));
+            Harmony.PatchAll(typeof(SavePatches));
 
             LethalLevelLoaderPatcher.onChainloaderFinish += HandleAdditionalCompatibilities;
 

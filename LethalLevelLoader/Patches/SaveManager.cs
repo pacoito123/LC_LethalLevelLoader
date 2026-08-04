@@ -14,7 +14,7 @@ namespace LethalLevelLoader
             if (LethalLevelLoaderNetworkManager.networkManager.IsServer == false)
                 return;
 
-            currentSaveFile = new LLLSaveFile();
+            currentSaveFile = new LLLSaveFile(GameNetworkManager.Instance.currentSaveFileName);
             currentSaveFile.Load();
 
             if (currentSaveFile.CurrentLevelName != null)
@@ -64,16 +64,6 @@ namespace LethalLevelLoader
                 currentSaveFile.extendedLevelSaveData.Add(new ExtendedLevelData(extendedLevel));
         }
 
-        internal static void SaveCurrentSelectableLevel(SelectableLevel selectableLevel)
-        {
-            /*
-            if (LethalLevelLoaderNetworkManager.networkManager.IsServer == false)
-                return;
-            currentSaveFile.CurrentLevelName = selectableLevel.name;
-            currentSaveFile.Save();
-            */
-        }
-
         internal static void LoadShipGrabbableItems()
         {
             if (!parityCheck)
@@ -115,13 +105,13 @@ namespace LethalLevelLoader
                 ES3.DeleteKey("shipItemSaveData", currentSaveFileName);
 
             if (shipGrabbableItemIDs.Count > 0)
-                ES3.Save<int[]>("shipGrabbableItemIDs", shipGrabbableItemIDs.ToArray(), currentSaveFileName);
+                ES3.Save<int[]>("shipGrabbableItemIDs", [.. shipGrabbableItemIDs], currentSaveFileName);
             if (shipGrabbableItemPos.Count > 0)
-                ES3.Save<Vector3[]>("shipGrabbableItemPos", shipGrabbableItemPos.ToArray(), currentSaveFileName);
+                ES3.Save<Vector3[]>("shipGrabbableItemPos", [.. shipGrabbableItemPos], currentSaveFileName);
             if (shipScrapValues.Count > 0)
-                ES3.Save<int[]>("shipScrapValues", shipScrapValues.ToArray(), currentSaveFileName);
+                ES3.Save<int[]>("shipScrapValues", [.. shipScrapValues], currentSaveFileName);
             if (shipItemSaveData.Count > 0)
-                ES3.Save<int[]>("shipItemSaveData", shipItemSaveData.ToArray(), currentSaveFileName);
+                ES3.Save<int[]>("shipItemSaveData", [.. shipItemSaveData], currentSaveFileName);
         }
 
         internal static void FixMismatchedSavedItemData(List<SavedShipItemData> savedShipItemDatas)
@@ -339,7 +329,7 @@ namespace LethalLevelLoader
 
         internal static int GetItemNameDuplicateIndex(Item item, string modName)
         {
-            if (modName != "")
+            if (!string.IsNullOrEmpty(modName))
             {
                 foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods)
                     if (CompareModNames(extendedMod.ModName, modName))
@@ -444,21 +434,13 @@ namespace LethalLevelLoader
 
                 if (newGrabbableItemData.isScrap)
                 {
-                    if (shipScrapValues.Count > scrapValueIndex)
-                        newShipScrapValue = shipScrapValues[scrapValueIndex];
-                    else
-                        newShipScrapValue = 0;
-
+                    newShipScrapValue = shipScrapValues.Count > scrapValueIndex ? shipScrapValues[scrapValueIndex] : 0;
                     scrapValueIndex++;
                 }
 
                 if (newGrabbableItemData.saveItemVariable)
                 {
-                    if (shipItemSaveData.Count > saveDataIndex)
-                        newShipItemSaveData = shipItemSaveData[saveDataIndex];
-                    else
-                        newShipItemSaveData = 0;
-
+                    newShipItemSaveData = shipItemSaveData.Count > saveDataIndex ? shipItemSaveData[saveDataIndex] : 0;
                     saveDataIndex++;
                 }
 
