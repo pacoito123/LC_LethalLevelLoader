@@ -1,5 +1,4 @@
 ﻿using DunGen.Graph;
-using System;
 using System.Collections.Generic;
 using UnityEngine.Audio;
 
@@ -7,22 +6,30 @@ namespace LethalLevelLoader
 {
     public static class PatchedContent
     {
-        public static ExtendedMod VanillaMod { get; internal set; }
+        public static ExtendedMod VanillaMod
+        {
+            get
+            {
+                if (field == null)
+                    field = ExtendedMod.Create("LethalCompany", "Zeekerss");
+                return (field);
+            }
+        }
 
-        public static List<string> AllLevelSceneNames { get; internal set; } = new List<string>();
+        public static List<string> AllLevelSceneNames { get; } = new List<string>();
 
-        public static List<ExtendedMod> ExtendedMods { get; internal set; } = new List<ExtendedMod>();
-        internal static Dictionary<string, ExtendedContent> UniqueIdentifiersDictionary = new Dictionary<string, ExtendedContent>();
-        internal static Dictionary<SelectableLevel, ExtendedLevel> ExtendedLevelDictionary = new Dictionary<SelectableLevel, ExtendedLevel>();
-        internal static Dictionary<DungeonFlow, ExtendedDungeonFlow> ExtendedDungeonFlowDictionary = new Dictionary<DungeonFlow, ExtendedDungeonFlow>();
-        internal static Dictionary<Item, ExtendedItem> ExtendedItemDictionary = new Dictionary<Item, ExtendedItem>();
-        internal static Dictionary<EnemyType, ExtendedEnemyType> ExtendedEnemyTypeDictionary = new Dictionary<EnemyType, ExtendedEnemyType>();
-        internal static Dictionary<BuyableVehicle, ExtendedBuyableVehicle> ExtendedBuyableVehicleDictionary = new Dictionary<BuyableVehicle, ExtendedBuyableVehicle>();
-        internal static Dictionary<UnlockableItem, ExtendedUnlockableItem> ExtendedUnlockableItemDictionary = new Dictionary<UnlockableItem, ExtendedUnlockableItem>();
-        internal static Dictionary<FootstepSurface, ExtendedFootstepSurface> ExtendedFootstepSurfaceDictionary = new Dictionary<FootstepSurface, ExtendedFootstepSurface>();
+        public static List<ExtendedMod> ExtendedMods { get; } = new List<ExtendedMod>();
+        private static Dictionary<string, ExtendedContent> UniqueIdentifiersDictionary { get; } = new Dictionary<string, ExtendedContent>();
+        private static Dictionary<SelectableLevel, ExtendedLevel> ExtendedLevelDictionary { get; } = new Dictionary<SelectableLevel, ExtendedLevel>();
+        private static Dictionary<DungeonFlow, ExtendedDungeonFlow> ExtendedDungeonFlowDictionary { get; } = new Dictionary<DungeonFlow, ExtendedDungeonFlow>();
+        private static Dictionary<Item, ExtendedItem> ExtendedItemDictionary { get; } = new Dictionary<Item, ExtendedItem>();
+        private static Dictionary<EnemyType, ExtendedEnemyType> ExtendedEnemyTypeDictionary { get; } = new Dictionary<EnemyType, ExtendedEnemyType>();
+        private static Dictionary<BuyableVehicle, ExtendedBuyableVehicle> ExtendedBuyableVehicleDictionary { get; } = new Dictionary<BuyableVehicle, ExtendedBuyableVehicle>();
+        private static Dictionary<UnlockableItem, ExtendedUnlockableItem> ExtendedUnlockableItemDictionary { get; } = new Dictionary<UnlockableItem, ExtendedUnlockableItem>();
+        private static Dictionary<FootstepSurface, ExtendedFootstepSurface> ExtendedFootstepSurfaceDictionary { get; } = new Dictionary<FootstepSurface, ExtendedFootstepSurface>();
 
 
-        public static List<ExtendedLevel> ExtendedLevels { get; internal set; } = new List<ExtendedLevel>();
+        public static List<ExtendedLevel> ExtendedLevels { get; } = new List<ExtendedLevel>();
 
         public static List<ExtendedLevel> VanillaExtendedLevels
         {
@@ -30,7 +37,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedLevel> list = new List<ExtendedLevel>();
                 foreach (ExtendedLevel level in ExtendedLevels)
-                    if (level.ContentType == ContentType.Vanilla)
+                    if (level.ContentType is ContentType.Vanilla)
                         list.Add(level);
                 return (list);
             }
@@ -46,12 +53,6 @@ namespace LethalLevelLoader
                         list.Add(level);
                 return (list);
             }
-        }
-
-        [Obsolete("Use PatchedContent.SelectableLevels instead.")] // probably used by no mod, but this is public so we should be careful
-        public static List<SelectableLevel> SeletectableLevels
-        {
-            get { return (SelectableLevels); }
         }
 
 
@@ -71,9 +72,7 @@ namespace LethalLevelLoader
         {
             get
             {
-                List<SelectableLevel> list = new List<SelectableLevel>();
-                foreach (SelectableLevel selectableLevel in OriginalContent.MoonsCatalogue)
-                    list.Add(selectableLevel);
+                List<SelectableLevel> list = [.. OriginalContent.MoonsCatalogue];
                 foreach (ExtendedLevel level in ExtendedLevels)
                     if (level.ContentType is ContentType.Custom or ContentType.External)
                         list.Add(level.SelectableLevel);
@@ -91,7 +90,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedDungeonFlow> list = new List<ExtendedDungeonFlow>();
                 foreach (ExtendedDungeonFlow dungeon in ExtendedDungeonFlows)
-                    if (dungeon.ContentType == ContentType.Vanilla)
+                    if (dungeon.ContentType is ContentType.Vanilla)
                         list.Add(dungeon);
                 return (list);
             }
@@ -103,7 +102,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedDungeonFlow> list = new List<ExtendedDungeonFlow>();
                 foreach (ExtendedDungeonFlow dungeon in ExtendedDungeonFlows)
-                    if (dungeon.ContentType == ContentType.Custom)
+                    if (dungeon.ContentType is ContentType.Custom or ContentType.External)
                         list.Add(dungeon);
                 return (list);
             }
@@ -111,15 +110,15 @@ namespace LethalLevelLoader
 
 
 
-        public static List<ExtendedWeatherEffect> ExtendedWeatherEffects { get; internal set; } = new List<ExtendedWeatherEffect>();
+        public static List<ExtendedWeatherEffect> ExtendedWeatherEffects { get; } = new List<ExtendedWeatherEffect>();
 
         public static List<ExtendedWeatherEffect> VanillaExtendedWeatherEffects
         {
             get
             {
-                List<ExtendedWeatherEffect> list = new List<ExtendedWeatherEffect>();
+                List<ExtendedWeatherEffect> list = [];
                 foreach (ExtendedWeatherEffect effect in ExtendedWeatherEffects)
-                    if (effect.contentType == ContentType.Vanilla)
+                    if (effect.contentType is ContentType.Vanilla)
                         list.Add(effect);
                 return (list);
             }
@@ -129,9 +128,9 @@ namespace LethalLevelLoader
         {
             get
             {
-                List<ExtendedWeatherEffect> list = new List<ExtendedWeatherEffect>();
+                List<ExtendedWeatherEffect> list = [];
                 foreach (ExtendedWeatherEffect effect in ExtendedWeatherEffects)
-                    if (effect.contentType == ContentType.Custom)
+                    if (effect.contentType is ContentType.Custom or ContentType.External)
                         list.Add(effect);
                 return (list);
             }
@@ -147,7 +146,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedItem> returnList = new List<ExtendedItem>();
                 foreach (ExtendedItem item in ExtendedItems)
-                    if (item.ContentType == ContentType.Custom)
+                    if (item.ContentType is ContentType.Custom or ContentType.External)
                         returnList.Add(item);
                 return (returnList);
             }
@@ -163,7 +162,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedEnemyType> returnList = new List<ExtendedEnemyType>();
                 foreach (ExtendedEnemyType extendedEnemyType in ExtendedEnemyTypes)
-                    if (extendedEnemyType.ContentType == ContentType.Custom)
+                    if (extendedEnemyType.ContentType is ContentType.Custom or ContentType.External)
                         returnList.Add(extendedEnemyType);
                 return (returnList);
             }
@@ -175,7 +174,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedEnemyType> returnList = new List<ExtendedEnemyType>();
                 foreach (ExtendedEnemyType extendedEnemyType in ExtendedEnemyTypes)
-                    if (extendedEnemyType.ContentType == ContentType.Vanilla)
+                    if (extendedEnemyType.ContentType is ContentType.Vanilla)
                         returnList.Add(extendedEnemyType);
                 return (returnList);
             }
@@ -189,7 +188,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedBuyableVehicle> returnList = new List<ExtendedBuyableVehicle>();
                 foreach (ExtendedBuyableVehicle extendedBuyableVehicle in ExtendedBuyableVehicles)
-                    if (extendedBuyableVehicle.ContentType == ContentType.Custom)
+                    if (extendedBuyableVehicle.ContentType is ContentType.Custom or ContentType.External)
                         returnList.Add(extendedBuyableVehicle);
                 return (returnList);
             }
@@ -201,7 +200,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedBuyableVehicle> returnList = new List<ExtendedBuyableVehicle>();
                 foreach (ExtendedBuyableVehicle extendedBuyableVehicle in ExtendedBuyableVehicles)
-                    if (extendedBuyableVehicle.ContentType == ContentType.Vanilla)
+                    if (extendedBuyableVehicle.ContentType is ContentType.Vanilla)
                         returnList.Add(extendedBuyableVehicle);
                 return (returnList);
             }
@@ -217,7 +216,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedUnlockableItem> returnList = new List<ExtendedUnlockableItem>();
                 foreach (ExtendedUnlockableItem extendedUnlockableItem in ExtendedUnlockableItems)
-                    if (extendedUnlockableItem.ContentType == ContentType.Custom)
+                    if (extendedUnlockableItem.ContentType is ContentType.Custom or ContentType.External)
                         returnList.Add(extendedUnlockableItem);
                 return (returnList);
             }
@@ -229,7 +228,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedUnlockableItem> returnList = new List<ExtendedUnlockableItem>();
                 foreach (ExtendedUnlockableItem extendedUnlockableItem in ExtendedUnlockableItems)
-                    if (extendedUnlockableItem.ContentType == ContentType.Vanilla)
+                    if (extendedUnlockableItem.ContentType is ContentType.Vanilla)
                         returnList.Add(extendedUnlockableItem);
                 return (returnList);
             }
@@ -245,7 +244,7 @@ namespace LethalLevelLoader
             {
                 List<ExtendedFootstepSurface> returnList = new List<ExtendedFootstepSurface>();
                 foreach (ExtendedFootstepSurface extendedFootstepSurface in ExtendedFootstepSurfaces)
-                    if (extendedFootstepSurface.ContentType == ContentType.Custom)
+                    if (extendedFootstepSurface.ContentType is ContentType.Custom or ContentType.External)
                         returnList.Add(extendedFootstepSurface);
                 return (returnList);
             }
@@ -257,20 +256,11 @@ namespace LethalLevelLoader
             {
                 List<ExtendedFootstepSurface> returnList = new List<ExtendedFootstepSurface>();
                 foreach (ExtendedFootstepSurface extendedFootstepSurface in ExtendedFootstepSurfaces)
-                    if (extendedFootstepSurface.ContentType == ContentType.Vanilla)
+                    if (extendedFootstepSurface.ContentType is ContentType.Vanilla)
                         returnList.Add(extendedFootstepSurface);
                 return (returnList);
             }
         }
-
-
-        //Items
-
-        public static List<Item> Items { get; internal set; } = new List<Item>();
-
-        //Enemies
-
-        public static List<EnemyType> Enemies { get; internal set; } = new List<EnemyType>();
 
 
         public static void RegisterExtendedDungeonFlow(ExtendedDungeonFlow extendedDungeonFlow)
@@ -344,23 +334,15 @@ namespace LethalLevelLoader
             }
         }
 
-        internal static void TryAddUUID(ExtendedContent extendedContent)
-        {
-            TryAdd(UniqueIdentifiersDictionary, extendedContent.UniqueIdentificationName, extendedContent);
-        }
+        internal static void TryAddUUID(ExtendedContent extendedContent) => TryAdd(UniqueIdentifiersDictionary, extendedContent.UniqueIdentificationName, extendedContent);
 
         internal static bool TryAdd<T1, T2>(Dictionary<T1, T2> dict, T1 key, T2 value) where T2 : ExtendedContent
         {
             if (dict.TryAdd(key, value))
-            {
                 return (true);
-            }
-            else
-            {
-                if (value.ExtendedMod != VanillaMod)
-                    DebugHelper.LogError("Could not add " + key.ToString() + " to dictionary.", DebugType.Developer);
-                return (false);
-            }
+            if (value.ExtendedMod != VanillaMod)
+                DebugHelper.LogError($"Could not add {key} to dictionary.", DebugType.Developer);
+            return (false);
         }
 
         public static bool TryGetExtendedContent(SelectableLevel selectableLevel, out ExtendedLevel extendedLevel)
@@ -401,69 +383,64 @@ namespace LethalLevelLoader
         public static bool TryGetExtendedContent<T>(string uniqueIdentifierName, out T extendedContent) where T : ExtendedContent
         {
             extendedContent = null;
-            if (UniqueIdentifiersDictionary.TryGetValue(uniqueIdentifierName, out ExtendedContent result))
-                extendedContent = result as T;
+            if (UniqueIdentifiersDictionary.TryGetValue(uniqueIdentifierName, out ExtendedContent content) && content is T result)
+                extendedContent = result;
             return (extendedContent != null);
         }
     }
 
     public static class OriginalContent
     {
-        public static StartOfRound StartOfRound => Patches.StartOfRound;
-        public static RoundManager RoundManager => Patches.RoundManager;
-        public static Terminal Terminal => Patches.Terminal;
-        public static TimeOfDay TimeOfDay => Patches.TimeOfDay;
-
         //Levels
 
-        public static List<SelectableLevel> SelectableLevels { get; internal set; } = new List<SelectableLevel>();
+        public static List<SelectableLevel> SelectableLevels { get; } = new List<SelectableLevel>();
 
-        public static List<SelectableLevel> MoonsCatalogue { get; internal set; } = new List<SelectableLevel>();
+        public static List<SelectableLevel> MoonsCatalogue { get; } = new List<SelectableLevel>();
 
         //Dungeons
 
-        public static List<DungeonFlow> DungeonFlows { get; internal set; } = new List<DungeonFlow>();
+        public static List<DungeonFlow> DungeonFlows { get; } = new List<DungeonFlow>();
 
         //Items
 
-        public static List<Item> Items { get; internal set; } = new List<Item>();
+        public static List<Item> Items { get; } = new List<Item>();
 
-        public static List<ItemGroup> ItemGroups { get; internal set; } = new List<ItemGroup>();
+        public static List<ItemGroup> ItemGroups { get; } = new List<ItemGroup>();
 
         //Unlockable Items
 
-        public static List<UnlockableItem> UnlockableItems { get; internal set; } = new List<UnlockableItem>();
+        public static List<UnlockableItem> UnlockableItems { get; } = new List<UnlockableItem>();
 
         //Footstep Surfaces
 
-        public static List<FootstepSurface> FootstepSurfaces { get; internal set; } = new List<FootstepSurface>();
+        public static List<FootstepSurface> FootstepSurfaces { get; } = new List<FootstepSurface>();
 
         //Enemies
 
-        public static List<EnemyType> Enemies { get; internal set; } = new List<EnemyType>();
+        public static List<EnemyType> Enemies { get; } = new List<EnemyType>();
 
         //Spawnable Objects
 
-        public static List<SpawnableOutsideObject> SpawnableOutsideObjects { get; internal set; } = new List<SpawnableOutsideObject>();
+        public static List<SpawnableOutsideObject> SpawnableOutsideObjects { get; } = new List<SpawnableOutsideObject>();
 
-        public static List<IndoorMapHazardType> IndoorMapHazards { get; internal set; } = new List<IndoorMapHazardType>();
+        public static List<IndoorMapHazardType> IndoorMapHazards { get; } = new List<IndoorMapHazardType>();
 
         //Audio
 
-        public static List<AudioMixer> AudioMixers { get; internal set; } = new List<AudioMixer>();
+        public static List<AudioMixer> AudioMixers { get; } = new List<AudioMixer>();
 
-        public static List<AudioMixerGroup> AudioMixerGroups { get; internal set; } = new List<AudioMixerGroup>();
+        public static List<AudioMixerGroup> AudioMixerGroups { get; } = new List<AudioMixerGroup>();
 
-        public static List<AudioMixerSnapshot> AudioMixerSnapshots { get; internal set; } = new List<AudioMixerSnapshot>();
+        public static List<AudioMixerSnapshot> AudioMixerSnapshots { get; } = new List<AudioMixerSnapshot>();
 
-        public static List<LevelAmbienceLibrary> LevelAmbienceLibraries { get; internal set; } = new List<LevelAmbienceLibrary>();
+        public static List<LevelAmbienceLibrary> LevelAmbienceLibraries { get; } = new List<LevelAmbienceLibrary>();
 
-        public static List<ReverbPreset> ReverbPresets { get; internal set; } = new List<ReverbPreset>();
+        public static List<ReverbPreset> ReverbPresets { get; } = new List<ReverbPreset>();
 
         //Terminal
 
-        public static List<TerminalKeyword> TerminalKeywords { get; internal set; } = new List<TerminalKeyword>();
+        public static List<TerminalKeyword> TerminalKeywords { get; } = new List<TerminalKeyword>();
 
-        public static List<TerminalNode> TerminalNodes { get; internal set; } = new List<TerminalNode>();
+        public static List<TerminalNode> TerminalNodes { get; } = new List<TerminalNode>();
     }
 }

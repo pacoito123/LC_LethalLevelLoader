@@ -9,25 +9,23 @@ namespace LethalLevelLoader
 {
     public static class LethalBundleManager
     {
-        public enum ModProcessingStatus { Inactive, Loading, Complete };
+        public enum ModProcessingStatus : byte { Inactive, Loading, Complete };
         public static ModProcessingStatus CurrentStatus { get; internal set; } = ModProcessingStatus.Inactive;
 
         private static readonly Dictionary<AssetBundleGroup, List<ExtendedMod>> obtainedExtendedModsDict = new Dictionary<AssetBundleGroup, List<ExtendedMod>>();
         private static readonly List<ExtendedMod> obtainedExtendedModsList = new List<ExtendedMod>();
 
-        public static ExtendedEvent OnFinishedProcessing { get; private set; } = new ExtendedEvent();
+        public static ExtendedEvent OnFinishedProcessing { get; } = new ExtendedEvent();
 
         public static bool HasFinalisedFoundContent { get; internal set; }
 
         //Semi legacy
-        internal static Dictionary<string, List<Action<ExtendedMod>>> onExtendedModLoadedRequestDict = new Dictionary<string, List<Action<ExtendedMod>>>();
+        internal static readonly Dictionary<string, List<Action<ExtendedMod>>> onExtendedModLoadedRequestDict = new Dictionary<string, List<Action<ExtendedMod>>>();
 
         internal static void Start()
         {
             if (Plugin.IsSetupComplete) return;
             DebugHelper.Log("LethalBundleManager: Starting!", DebugType.User);
-
-            PatchedContent.VanillaMod = ExtendedMod.Create("LethalCompany", "Zeekerss");
 
             ReadKnownSceneBundles();
             TryLoadLethalBundles();
@@ -63,7 +61,6 @@ namespace LethalLevelLoader
                 knownEntries.Add($"{manifest}");
 
             File.WriteAllLines(AssetBundles.AssetBundleLoader.KnownSceneBundlesPath, knownEntries, Encoding.UTF8);
-            AssetBundles.AssetBundleLoader.knownSceneBundles = null; // Don't need dictionary after scene bundles have been written to file.
         }
 
         private static bool TryLoadLethalBundles()

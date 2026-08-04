@@ -10,9 +10,9 @@ namespace LethalLevelLoader
         private StringContainer m_levelScenePath;
 
 
-        public string LevelScenePath => m_levelScenePath.SomeText;
-        public int LevelSceneIndex => (int)m_levelSceneIndex;
-        public int SceneIndex
+        public readonly string LevelScenePath => m_levelScenePath.SomeText;
+        public readonly int LevelSceneIndex => (int)m_levelSceneIndex;
+        public readonly int SceneIndex
         {
             get
             {
@@ -21,11 +21,11 @@ namespace LethalLevelLoader
             }
         }
 
-        public bool IsLoaded
+        public readonly bool IsLoaded
         {
             get
             {
-                if (Origin == SceneOrigin.Build)
+                if (Origin is SceneOrigin.Build)
                     return (true);
                 if (AssetBundleLoader.TryGetAssetBundleInfo(LevelScenePath, out AssetBundleInfo info))
                     return (info.IsLoaded);
@@ -34,8 +34,8 @@ namespace LethalLevelLoader
             }
         }
 
-        public enum SceneOrigin { Build, Bundle }
-        public SceneOrigin Origin
+        public enum SceneOrigin : byte { Build, Bundle }
+        public readonly SceneOrigin Origin
         {
             get
             {
@@ -48,8 +48,10 @@ namespace LethalLevelLoader
 
         public NetworkSceneInfo(int levelSceneIndex, string levelScenePath)
         {
-            m_levelScenePath = new StringContainer();
-            m_levelScenePath.SomeText = levelScenePath;
+            m_levelScenePath = new StringContainer
+            {
+                SomeText = levelScenePath
+            };
             m_levelSceneIndex = (uint)levelSceneIndex;
         }
 

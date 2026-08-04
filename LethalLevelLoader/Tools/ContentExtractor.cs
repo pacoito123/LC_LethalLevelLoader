@@ -17,18 +17,19 @@ namespace LethalLevelLoader
                     foundItemGroups.UnionWith(item.spawnPositionTypes);
                 }
             }
-            OriginalContent.ItemGroups = [.. foundItemGroups];
+            OriginalContent.ItemGroups.AddRange(foundItemGroups);
         }
 
         internal static void TryScrapeVanillaUnlockableItems(StartOfRound startOfRound)
         {
-            OriginalContent.UnlockableItems = [.. startOfRound.unlockablesList.unlockables];
+            if (OriginalContent.FootstepSurfaces.Count == 0)
+                OriginalContent.UnlockableItems.AddRange(startOfRound.unlockablesList.unlockables);
         }
 
         internal static void TryScrapeVanillaFootstepSurfaces(StartOfRound startOfRound)
         {
             if (OriginalContent.FootstepSurfaces.Count == 0)
-                OriginalContent.FootstepSurfaces = [.. startOfRound.footstepSurfaces];
+                OriginalContent.FootstepSurfaces.AddRange(startOfRound.footstepSurfaces);
         }
 
         internal static void TryScrapeVanillaContent(StartOfRound startOfRound, RoundManager roundManager)
@@ -85,8 +86,8 @@ namespace LethalLevelLoader
                 ExtractMemoryLoadedAudioMixerGroups();
                 ExtractMemoryLoadedReverbPresets();
 
-                OriginalContent.SelectableLevels = [.. startOfRound.levels];
-                OriginalContent.MoonsCatalogue = [.. TerminalManager.Terminal.moonsCatalogueList];
+                OriginalContent.SelectableLevels.AddRange(startOfRound.levels);
+                OriginalContent.MoonsCatalogue.AddRange(TerminalManager.Terminal.moonsCatalogueList);
             }
         }
 
@@ -159,7 +160,7 @@ namespace LethalLevelLoader
                 if (mixerGroup != null && !string.IsNullOrEmpty(mixerGroup.name))
                     extractedMixerGroups.TryAdd(mixerGroup.name, mixerGroup);
             }
-            OriginalContent.AudioMixerGroups = [.. extractedMixerGroups.Values];
+            OriginalContent.AudioMixerGroups.AddRange(extractedMixerGroups.Values);
 
             for (int i = 0; i < allMixerSnapshots.Length; i++)
             {
@@ -167,7 +168,7 @@ namespace LethalLevelLoader
                 if (mixerSnapshot != null && !string.IsNullOrEmpty(mixerSnapshot.name))
                     extractedMixerSnapshots.TryAdd(mixerSnapshot.name, mixerSnapshot);
             }
-            OriginalContent.AudioMixerSnapshots = [.. extractedMixerSnapshots.Values];
+            OriginalContent.AudioMixerSnapshots.AddRange(extractedMixerSnapshots.Values);
         }
 
         internal static void ExtractMemoryLoadedReverbPresets()
@@ -182,7 +183,7 @@ namespace LethalLevelLoader
                 if (reverbPreset != null && reverbPreset.name != null)
                     extractedPresets.TryAdd(reverbPreset.name, reverbPreset);
             }
-            OriginalContent.ReverbPresets = [.. extractedPresets.Values];
+            OriginalContent.ReverbPresets.AddRange(extractedPresets.Values);
         }
 
         internal static void ExtractSelectableLevelReferences(SelectableLevel selectableLevel)

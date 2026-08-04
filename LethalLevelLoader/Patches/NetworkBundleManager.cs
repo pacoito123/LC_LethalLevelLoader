@@ -1,12 +1,13 @@
 ﻿using LethalLevelLoader.AssetBundles;
 using LethalLevelLoader.Compatibility;
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace LethalLevelLoader
 {
-    internal sealed class NetworkBundleManager : NetworkBehaviour
+    internal sealed class NetworkBundleManager : NetworkBehaviour, IDisposable
     {
         public static GameObject networkingManagerPrefab;
         private static NetworkBundleManager _instance;
@@ -35,7 +36,7 @@ namespace LethalLevelLoader
 
         //private Dictionary<ulong, bool> playersReadyDict = new Dictionary<ulong, bool>();
 
-        private NetworkList<bool> playersLoadStatus = new NetworkList<bool>();
+        private readonly NetworkList<bool> playersLoadStatus = new NetworkList<bool>();
 
         public override void OnNetworkSpawn()
         {
@@ -215,6 +216,12 @@ namespace LethalLevelLoader
                     else if (!bundleList.Contains(group))
                         bundleList.Add(group);
                 }
+        }
+
+        public void Dispose()
+        {
+            allowedToLoadLevel.Dispose();
+            playersLoadStatus.Dispose();
         }
 
         /*
