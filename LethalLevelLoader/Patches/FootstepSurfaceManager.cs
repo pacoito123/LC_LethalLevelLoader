@@ -27,14 +27,21 @@ namespace LethalLevelLoader
             int mergedSurfaces = 0;
             foreach (ExtendedFootstepSurface customExtendedFootstepSurface in PatchedContent.ExtendedFootstepSurfaces)
             {
-                if (surfaceTagExtendedFootstepDict.TryGetValue(customExtendedFootstepSurface.FootstepSurface.surfaceTag, out ExtendedFootstepSurface _))
+                if (customExtendedFootstepSurface == null || customExtendedFootstepSurface.ContentType is ContentType.External)
+                    continue;
+
+                string surfaceTag = customExtendedFootstepSurface.FootstepSurface?.surfaceTag;
+                if (string.IsNullOrEmpty(surfaceTag))
+                    continue;
+
+                if (surfaceTagExtendedFootstepDict.TryGetValue(surfaceTag, out ExtendedFootstepSurface _))
                 {
                     Object.Destroy(customExtendedFootstepSurface); // TODO: Add to a List to destroy later perhaps.
                     mergedSurfaces++;
                     continue;
                 }
-                if (!surfaceTagExtendedFootstepDict.TryAdd(customExtendedFootstepSurface.FootstepSurface.surfaceTag, customExtendedFootstepSurface))
-                    DebugHelper.LogWarning($"Could not add custom tag '{customExtendedFootstepSurface.FootstepSurface.surfaceTag}' to surface tag dictionary.", DebugType.Developer);
+                if (!surfaceTagExtendedFootstepDict.TryAdd(surfaceTag, customExtendedFootstepSurface))
+                    DebugHelper.LogWarning($"Could not add custom tag '{surfaceTag}' to surface tag dictionary.", DebugType.Developer);
             }
             if (mergedSurfaces > 0)
                 DebugHelper.Log($"Merged '{mergedSurfaces}' ExtendedFootstepSurface assets!", DebugType.Developer);

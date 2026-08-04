@@ -215,6 +215,9 @@ namespace LethalLevelLoader
 
                 PatchedContent.PopulateContentDictionaries();
 
+                if (DawnLibCompatibility.Enabled)
+                    DawnLibCompatibility.ConvertDawnExtendedFootstepSurfaces();
+
                 string debugString = "LethalLevelLoader Loaded The Following ExtendedLevels:" + '\n';
                 for (int i = 0; i < PatchedContent.ExtendedLevels.Count; i++)
                 {

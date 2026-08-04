@@ -19,6 +19,7 @@ namespace LethalLevelLoader
         internal static Dictionary<EnemyType, ExtendedEnemyType> ExtendedEnemyTypeDictionary = new Dictionary<EnemyType, ExtendedEnemyType>();
         internal static Dictionary<BuyableVehicle, ExtendedBuyableVehicle> ExtendedBuyableVehicleDictionary = new Dictionary<BuyableVehicle, ExtendedBuyableVehicle>();
         internal static Dictionary<UnlockableItem, ExtendedUnlockableItem> ExtendedUnlockableItemDictionary = new Dictionary<UnlockableItem, ExtendedUnlockableItem>();
+        internal static Dictionary<FootstepSurface, ExtendedFootstepSurface> ExtendedFootstepSurfaceDictionary = new Dictionary<FootstepSurface, ExtendedFootstepSurface>();
 
 
         public static List<ExtendedLevel> ExtendedLevels { get; internal set; } = new List<ExtendedLevel>();
@@ -336,6 +337,11 @@ namespace LethalLevelLoader
                 TryAdd(ExtendedUnlockableItemDictionary, extendedUnlockableItem.UnlockableItem, extendedUnlockableItem);
                 TryAddUUID(extendedUnlockableItem);
             }
+            foreach (ExtendedFootstepSurface extendedFootstepSurface in ExtendedFootstepSurfaces)
+            {
+                TryAdd(ExtendedFootstepSurfaceDictionary, extendedFootstepSurface.FootstepSurface, extendedFootstepSurface);
+                TryAddUUID(extendedFootstepSurface);
+            }
         }
 
         internal static void TryAddUUID(ExtendedContent extendedContent)
@@ -385,6 +391,11 @@ namespace LethalLevelLoader
         public static bool TryGetExtendedContent(UnlockableItem unlockableItem, out ExtendedUnlockableItem extendedUnlockableItem)
         {
             return (ExtendedUnlockableItemDictionary.TryGetValue(unlockableItem, out extendedUnlockableItem));
+        }
+
+        public static bool TryGetExtendedContent(FootstepSurface footstepSurface, out ExtendedFootstepSurface extendedFootstepSurface)
+        {
+            return (ExtendedFootstepSurfaceDictionary.TryGetValue(footstepSurface, out extendedFootstepSurface));
         }
 
         public static bool TryGetExtendedContent<T>(string uniqueIdentifierName, out T extendedContent) where T : ExtendedContent

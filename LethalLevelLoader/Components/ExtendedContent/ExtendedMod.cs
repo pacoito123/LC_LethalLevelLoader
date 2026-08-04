@@ -203,6 +203,16 @@ namespace LethalLevelLoader
                 ExtendedDungeonFlows.Remove(extendedDungeonFlow);
             else if (currentExtendedContent is ExtendedItem extendedItem)
                 ExtendedItems.Remove(extendedItem);
+            else if (currentExtendedContent is ExtendedEnemyType extendedEnemy)
+                ExtendedEnemyTypes.Remove(extendedEnemy);
+            else if (currentExtendedContent is ExtendedWeatherEffect extendedWeatherEffect)
+                ExtendedWeatherEffects.Remove(extendedWeatherEffect);
+            else if (currentExtendedContent is ExtendedFootstepSurface extendedFootstepSurface)
+                ExtendedFootstepSurfaces.Remove(extendedFootstepSurface);
+            else if (currentExtendedContent is ExtendedStoryLog extendedStoryLog)
+                ExtendedStoryLogs.Remove(extendedStoryLog);
+            else if (currentExtendedContent is ExtendedBuyableVehicle extendedBuyableVehicle)
+                ExtendedBuyableVehicles.Remove(extendedBuyableVehicle);
             else if (currentExtendedContent is ExtendedUnlockableItem extendedUnlockableItem)
                 ExtendedUnlockableItems.Remove(extendedUnlockableItem);
 

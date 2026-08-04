@@ -46,17 +46,7 @@ namespace LethalLevelLoader.Compatibility
                 dawnExtendedLevel.Initialize(string.Empty, generateTerminalAssets: true);
                 dawnExtendedLevel.name = dawnExtendedLevel.NumberlessPlanetName + "ExtendedLevel";
 
-                // Copy all moon tags into the ExtendedLevel, in 'LLL format'.
-                foreach (NamespacedKey namespacedTag in dawnMoonInfo.AllTags())
-                {
-                    string tag = ConvertToLLLFormat(namespacedTag.Key);
-
-                    if (dawnExtendedLevel.TryAddTag(tag))
-                    {
-                        DebugHelper.Log("Added tag: " + tag, DebugType.Developer);
-                    }
-                }
-                // ...
+                CopyContentTags(dawnMoonInfo, dawnExtendedLevel);
 
                 // Let DawnLib handle moon configuration.
                 dawnExtendedLevel.GenerateAutomaticConfigurationOptions = false;
@@ -64,6 +54,44 @@ namespace LethalLevelLoader.Compatibility
 
                 PatchedContent.ExtendedLevels.Add(dawnExtendedLevel);
                 dawnExtendedMod.RegisterExtendedContent(dawnExtendedLevel);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal static void ConvertDawnExtendedFootstepSurfaces() // TODO: This but for every ExtendedContent type.
+        {
+            foreach (DawnSurfaceInfo dawnSurfaceInfo in LethalContent.Surfaces.Values)
+            {
+                // Skip any vanilla or non-DawnLib FootstepSurfaces.
+                if (dawnSurfaceInfo == null || dawnSurfaceInfo.Key.IsVanilla() || dawnSurfaceInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
+                {
+                    continue;
+                }
+
+                if (PatchedContent.TryGetExtendedContent(dawnSurfaceInfo.Surface, out ExtendedFootstepSurface dawnExtendedFootstepSurface))
+                {
+                    if (dawnExtendedFootstepSurface.ContentType is ContentType.Vanilla)
+                    {
+                        OriginalContent.FootstepSurfaces.Remove(dawnExtendedFootstepSurface.FootstepSurface);
+                        PatchedContent.VanillaMod.UnregisterExtendedContent(dawnExtendedFootstepSurface);
+                    }
+
+                    ExtendedMod dawnExtendedMod = ExtendedMod.Create(ConvertToLLLFormat(dawnSurfaceInfo.Key.Namespace));
+                    dawnExtendedFootstepSurface.ContentType = ContentType.External;
+
+                    string dawnKey = ConvertToLLLFormat(dawnSurfaceInfo.Key.Key);
+                    dawnExtendedFootstepSurface.name = dawnKey + "ExtendedFootstepSurface";
+                    dawnExtendedFootstepSurface.ContentTags[0] = ExtendedMod.CustomContentTag;
+
+                    FootstepSurfaceManager.surfaceTagExtendedFootstepDict[$"{dawnSurfaceInfo.Key}"] = dawnExtendedFootstepSurface;
+                    CopyContentTags(dawnSurfaceInfo, dawnExtendedFootstepSurface);
+
+                    dawnExtendedFootstepSurface.SurfaceIndex = dawnSurfaceInfo.SurfaceIndex;
+                    dawnExtendedFootstepSurface.AllowEarthLeviathanEmerge = dawnSurfaceInfo.IsNatural;
+                    dawnExtendedFootstepSurface.AllowSinking = dawnSurfaceInfo.QuicksandCompatible;
+
+                    dawnExtendedMod.RegisterExtendedContent(dawnExtendedFootstepSurface);
+                }
             }
         }
 
@@ -77,25 +105,19 @@ namespace LethalLevelLoader.Compatibility
                 DawnMoonNetworker.Instance.PlayerSetBundleStateRpc(player, (DawnMoonNetworker.BundleState)state);
         }
 
-        /* // TODO: Extension method makes soft compat angry?
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        internal static int CopyLLLFormatTags<T>(this DawnBaseInfo<T> dawnInfo, ExtendedContent content) where T : DawnBaseInfo<T>
+        internal static void CopyContentTags(ITaggable taggable, ExtendedContent extendedContent)
         {
-            int addedTags = 0;
-
-            foreach (NamespacedKey namespacedTag in dawnInfo.AllTags())
+            foreach (NamespacedKey namespacedTag in taggable.AllTags())
             {
                 string tag = ConvertToLLLFormat(namespacedTag.Key);
 
-                if (content.TryAddTag(tag))
+                if (extendedContent.TryAddTag(tag))
                 {
-                    DebugHelper.Log("Added tag: " + tag, DebugType.Developer);
-                    addedTags++;
+                    DebugHelper.Log($"Added tag: {tag} to {extendedContent.name}", DebugType.Developer);
                 }
             }
-
-            return addedTags;
-        } */
+        }
 
         internal static string ConvertToLLLFormat(string dawnFormatString)
         {
@@ -103,7 +125,7 @@ namespace LethalLevelLoader.Compatibility
 
             foreach (string word in dawnFormatString.Split('_', StringSplitOptions.RemoveEmptyEntries))
             {
-                LLLFormatString += char.ToUpperInvariant(word[0]) + word.Substring(1);
+                LLLFormatString += char.ToUpperInvariant(word[0]) + word[1..];
             }
 
             return LLLFormatString;
