@@ -143,7 +143,7 @@ namespace LethalLevelLoader
             }
         }
 
-        public string TerminalNoun => string.IsNullOrEmpty(OverrideRouteNoun) ? NumberlessPlanetName.StripSpecialCharacters().RemoveWhitespace().ToLowerInvariant() : OverrideRouteNoun.StripSpecialCharacters().RemoveWhitespace().ToLowerInvariant();
+        public string TerminalNoun => string.IsNullOrEmpty(OverrideRouteNoun) ? NumberlessPlanetName.Sanitized(removeWhitespace: true) : OverrideRouteNoun.Sanitized(removeWhitespace: true);
 
         public string NumberlessPlanetName
         {

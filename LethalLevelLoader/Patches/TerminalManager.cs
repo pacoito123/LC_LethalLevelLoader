@@ -545,7 +545,7 @@ namespace LethalLevelLoader
             //Terminal Route Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
             terminalKeyword.name = $"{sanitizedName}Keyword";
-            terminalKeyword.word = sanitizedName.ToLowerInvariant();
+            terminalKeyword.word = extendedLevel.TerminalNoun;
             terminalKeyword.defaultVerb = routeKeyword;
 
             //Terminal Route Node
