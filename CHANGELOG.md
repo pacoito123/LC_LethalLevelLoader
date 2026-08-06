@@ -1,6 +1,29 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.9</summary>**
+
+**<details><summary>General</summary>**
+
+* Removed LethalModDataLib as a dependency
+  * Should remain compatible with existing saves created on a prior version
+
+</details>
+
+**<details><summary>Fixes</summary>**
+
+* Fixed MatchingProperties (and a few config fields) not ignoring spaces when matching ExtendedContent
+* Fixed ExtendedLevel route word overrides not being applied when TerminalKeywords are created
+* Fixed a couple errors when a Terrain with missing TerrainData is loaded by a scene
+* Fixed (harmless) error with custom ExtendedFootstepSurface tags (actually this time)
+  * Neither players nor Masked should be causing it, at least
+* Fixed (harmless) errors with a soft compatibility when loading into a lobby
+* Fixed a few missing null checks when restoring assets
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.8</summary>**
 
 **<details><summary>Fixes</summary>**
