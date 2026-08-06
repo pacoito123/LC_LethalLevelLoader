@@ -40,13 +40,11 @@ namespace LethalLevelLoader
                 ContentRestorer.RestoreAudioAssetReferencesInParent(UnlockableItem.prefabObject);
         }
 
-        internal static ExtendedUnlockableItem Create(UnlockableItem newUnlockableItem, ExtendedMod extendedMod, ContentType contentType)
+        internal static ExtendedUnlockableItem Create(UnlockableItem newUnlockableItem)
         {
             ExtendedUnlockableItem extendedUnlockableItem = CreateInstance<ExtendedUnlockableItem>();
             extendedUnlockableItem.UnlockableItem = newUnlockableItem;
-            extendedUnlockableItem.name = newUnlockableItem.unlockableName.Sanitized(toLower: false) + "ExtendedUnlockableItem";
-            extendedUnlockableItem.ContentType = contentType;
-            extendedMod.RegisterExtendedContent(extendedUnlockableItem);
+            extendedUnlockableItem.name = newUnlockableItem.unlockableName.Sanitized(toLower: false, removeWhitespace: true) + "ExtendedUnlockableItem";
 
             return (extendedUnlockableItem);
         }

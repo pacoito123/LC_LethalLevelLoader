@@ -35,13 +35,11 @@ namespace LethalLevelLoader
         public int EnemyID { get; internal set; }
         public TerminalNode EnemyInfoNode { get; internal set; }
 
-        public static ExtendedEnemyType Create(EnemyType enemyType, ExtendedMod extendedMod, ContentType contentType)
+        public static ExtendedEnemyType Create(EnemyType enemyType)
         {
             ExtendedEnemyType extendedEnemyType = CreateInstance<ExtendedEnemyType>();
             extendedEnemyType.EnemyType = enemyType;
-            extendedEnemyType.name = enemyType.enemyName.Sanitized(toLower: false) + "ExtendedEnemyType";
-            extendedEnemyType.ContentType = contentType;
-            extendedMod.RegisterExtendedContent(extendedEnemyType);
+            extendedEnemyType.name = enemyType.enemyName.Sanitized(toLower: false, removeWhitespace: true) + "ExtendedEnemyType";
 
             extendedEnemyType.TryCreateMatchingProperties();
 

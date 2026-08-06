@@ -82,7 +82,7 @@ namespace LethalLevelLoader
 
 
 
-        public static List<ExtendedDungeonFlow> ExtendedDungeonFlows { get; internal set; } = new List<ExtendedDungeonFlow>();
+        public static List<ExtendedDungeonFlow> ExtendedDungeonFlows { get; } = new List<ExtendedDungeonFlow>();
 
         public static List<ExtendedDungeonFlow> VanillaExtendedDungeonFlows
         {
@@ -138,7 +138,7 @@ namespace LethalLevelLoader
 
 
 
-        public static List<ExtendedItem> ExtendedItems { get; internal set; } = new List<ExtendedItem>();
+        public static List<ExtendedItem> ExtendedItems { get; } = new List<ExtendedItem>();
 
         public static List<ExtendedItem> CustomExtendedItems
         {
@@ -154,7 +154,7 @@ namespace LethalLevelLoader
 
 
 
-        public static List<ExtendedEnemyType> ExtendedEnemyTypes { get; internal set; } = new List<ExtendedEnemyType>();
+        public static List<ExtendedEnemyType> ExtendedEnemyTypes { get; } = new List<ExtendedEnemyType>();
 
         public static List<ExtendedEnemyType> CustomExtendedEnemyTypes
         {
@@ -180,7 +180,7 @@ namespace LethalLevelLoader
             }
         }
 
-        public static List<ExtendedBuyableVehicle> ExtendedBuyableVehicles { get; internal set; } = new List<ExtendedBuyableVehicle>();
+        public static List<ExtendedBuyableVehicle> ExtendedBuyableVehicles { get; } = new List<ExtendedBuyableVehicle>();
 
         public static List<ExtendedBuyableVehicle> CustomExtendedBuyableVehicles
         {
@@ -208,7 +208,7 @@ namespace LethalLevelLoader
 
 
 
-        public static List<ExtendedUnlockableItem> ExtendedUnlockableItems { get; internal set; } = new List<ExtendedUnlockableItem>();
+        public static List<ExtendedUnlockableItem> ExtendedUnlockableItems { get; } = new List<ExtendedUnlockableItem>();
 
         public static List<ExtendedUnlockableItem> CustomExtendedUnlockableItems
         {
@@ -236,7 +236,7 @@ namespace LethalLevelLoader
 
 
 
-        public static List<ExtendedFootstepSurface> ExtendedFootstepSurfaces { get; internal set; } = new List<ExtendedFootstepSurface>();
+        public static List<ExtendedFootstepSurface> ExtendedFootstepSurfaces { get; } = new List<ExtendedFootstepSurface>();
 
         public static List<ExtendedFootstepSurface> CustomExtendedFootstepSurfaces
         {
@@ -297,51 +297,24 @@ namespace LethalLevelLoader
 
         internal static void PopulateContentDictionaries()
         {
-            foreach (ExtendedLevel extendedLevel in ExtendedLevels)
-            {
-                TryAdd(ExtendedLevelDictionary, extendedLevel.SelectableLevel, extendedLevel);
-                TryAddUUID(extendedLevel);
-            }
-            foreach (ExtendedDungeonFlow extendedDungeonFlow in ExtendedDungeonFlows)
-            {
-                TryAdd(ExtendedDungeonFlowDictionary, extendedDungeonFlow.DungeonFlow, extendedDungeonFlow);
-                TryAddUUID(extendedDungeonFlow);
-            }
-            foreach (ExtendedItem extendedItem in ExtendedItems)
-            {
-                TryAdd(ExtendedItemDictionary, extendedItem.Item, extendedItem);
-                TryAddUUID(extendedItem);
-            }
-            foreach (ExtendedEnemyType extendedEnemyType in ExtendedEnemyTypes)
-            {
-                TryAdd(ExtendedEnemyTypeDictionary, extendedEnemyType.EnemyType, extendedEnemyType);
-                TryAddUUID(extendedEnemyType);
-            }
-            foreach (ExtendedBuyableVehicle extendedBuyableVehicle in ExtendedBuyableVehicles)
-            {
-                TryAdd(ExtendedBuyableVehicleDictionary, extendedBuyableVehicle.BuyableVehicle, extendedBuyableVehicle);
-                TryAddUUID(extendedBuyableVehicle);
-            }
-            foreach (ExtendedUnlockableItem extendedUnlockableItem in ExtendedUnlockableItems)
-            {
-                TryAdd(ExtendedUnlockableItemDictionary, extendedUnlockableItem.UnlockableItem, extendedUnlockableItem);
-                TryAddUUID(extendedUnlockableItem);
-            }
-            foreach (ExtendedFootstepSurface extendedFootstepSurface in ExtendedFootstepSurfaces)
-            {
-                TryAdd(ExtendedFootstepSurfaceDictionary, extendedFootstepSurface.FootstepSurface, extendedFootstepSurface);
-                TryAddUUID(extendedFootstepSurface);
-            }
+            // Remove duplicate/invalid UUIDs from lists while adding them to content dictionaries.
+            ExtendedLevels.RemoveAll(static extendedLevel => !TryAddUUID(extendedLevel) || !TryAdd(ExtendedLevelDictionary, extendedLevel.SelectableLevel, extendedLevel));
+            ExtendedDungeonFlows.RemoveAll(static extendedDungeonFlow => !TryAddUUID(extendedDungeonFlow) || !TryAdd(ExtendedDungeonFlowDictionary, extendedDungeonFlow.DungeonFlow, extendedDungeonFlow));
+            ExtendedItems.RemoveAll(static extendedItem => !TryAddUUID(extendedItem) || !TryAdd(ExtendedItemDictionary, extendedItem.Item, extendedItem));
+            ExtendedEnemyTypes.RemoveAll(static extendedEnemyType => !TryAddUUID(extendedEnemyType) || !TryAdd(ExtendedEnemyTypeDictionary, extendedEnemyType.EnemyType, extendedEnemyType));
+            ExtendedBuyableVehicles.RemoveAll(static extendedBuyableVehicle => !TryAddUUID(extendedBuyableVehicle) || !TryAdd(ExtendedBuyableVehicleDictionary, extendedBuyableVehicle.BuyableVehicle, extendedBuyableVehicle));
+            ExtendedUnlockableItems.RemoveAll(static extendedUnlockableItem => !TryAddUUID(extendedUnlockableItem) || !TryAdd(ExtendedUnlockableItemDictionary, extendedUnlockableItem.UnlockableItem, extendedUnlockableItem));
+            ExtendedFootstepSurfaces.RemoveAll(static extendedFootstepSurface => !TryAddUUID(extendedFootstepSurface) || !TryAdd(ExtendedFootstepSurfaceDictionary, extendedFootstepSurface.FootstepSurface, extendedFootstepSurface));
         }
 
-        internal static void TryAddUUID(ExtendedContent extendedContent) => TryAdd(UniqueIdentifiersDictionary, extendedContent.UniqueIdentificationName, extendedContent);
+        internal static bool TryAddUUID(ExtendedContent extendedContent) => TryAdd(UniqueIdentifiersDictionary, extendedContent.UniqueIdentificationName, extendedContent);
 
         internal static bool TryAdd<T1, T2>(Dictionary<T1, T2> dict, T1 key, T2 value) where T2 : ExtendedContent
         {
             if (dict.TryAdd(key, value))
                 return (true);
             if (value.ExtendedMod != VanillaMod)
-                DebugHelper.LogError($"Could not add {key} to dictionary.", DebugType.Developer);
+                DebugHelper.LogError($"Could not add key '{key}' to {typeof(T2).Name} dictionary.", DebugType.Developer);
             return (false);
         }
 

@@ -59,13 +59,11 @@ namespace LethalLevelLoader
             }
         }
 
-        public static ExtendedItem Create(Item newItem, ExtendedMod extendedMod, ContentType contentType)
+        public static ExtendedItem Create(Item newItem)
         {
             ExtendedItem extendedItem = CreateInstance<ExtendedItem>();
             extendedItem.Item = newItem;
-            extendedItem.name = newItem.itemName.Sanitized(toLower: false) + "ExtendedItem";
-            extendedItem.ContentType = contentType;
-            extendedMod.RegisterExtendedContent(extendedItem);
+            extendedItem.name = newItem.itemName.Sanitized(toLower: false, removeWhitespace: true) + "ExtendedItem";
 
             extendedItem.TryCreateMatchingProperties();
 

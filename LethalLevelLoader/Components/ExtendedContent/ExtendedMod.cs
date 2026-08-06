@@ -124,46 +124,46 @@ namespace LethalLevelLoader
         {
             if (newExtendedContent != null)
             {
-                if (!ExtendedContents.Contains(newExtendedContent))
-                {
-                    if (newExtendedContent is ExtendedLevel extendedLevel)
-                        RegisterExtendedContent(extendedLevel);
-                    else if (newExtendedContent is ExtendedDungeonFlow extendedDungeonFlow)
-                        RegisterExtendedContent(extendedDungeonFlow);
-                    else if (newExtendedContent is ExtendedItem extendedItem)
-                        RegisterExtendedContent(extendedItem);
-                    else if (newExtendedContent is ExtendedEnemyType extendedEnemyType)
-                        RegisterExtendedContent(extendedEnemyType);
-                    else if (newExtendedContent is ExtendedWeatherEffect extendedWeatherEffect)
-                        RegisterExtendedContent(extendedWeatherEffect);
-                    else if (newExtendedContent is ExtendedFootstepSurface extendedFootstepSurface)
-                        RegisterExtendedContent(extendedFootstepSurface);
-                    else if (newExtendedContent is ExtendedStoryLog extendedStoryLog)
-                        RegisterExtendedContent(extendedStoryLog);
-                    else if (newExtendedContent is ExtendedBuyableVehicle extendedBuyableVehicle)
-                        RegisterExtendedContent(extendedBuyableVehicle);
-                    else if (newExtendedContent is ExtendedUnlockableItem extendedUnlockableItem)
-                        RegisterExtendedContent(extendedUnlockableItem);
-                    else
-                        throw new ArgumentException(newExtendedContent.name + " (" + newExtendedContent.GetType().Name + ") " + " Could Not Be Registered To ExtendedMod: " + ModName + " Due To Unimplemented Registration Check!", nameof(newExtendedContent));
-                }
+                if (newExtendedContent is ExtendedLevel extendedLevel)
+                    RegisterExtendedContent(extendedLevel);
+                else if (newExtendedContent is ExtendedDungeonFlow extendedDungeonFlow)
+                    RegisterExtendedContent(extendedDungeonFlow);
+                else if (newExtendedContent is ExtendedItem extendedItem)
+                    RegisterExtendedContent(extendedItem);
+                else if (newExtendedContent is ExtendedEnemyType extendedEnemyType)
+                    RegisterExtendedContent(extendedEnemyType);
+                else if (newExtendedContent is ExtendedWeatherEffect extendedWeatherEffect)
+                    RegisterExtendedContent(extendedWeatherEffect);
+                else if (newExtendedContent is ExtendedFootstepSurface extendedFootstepSurface)
+                    RegisterExtendedContent(extendedFootstepSurface);
+                else if (newExtendedContent is ExtendedStoryLog extendedStoryLog)
+                    RegisterExtendedContent(extendedStoryLog);
+                else if (newExtendedContent is ExtendedBuyableVehicle extendedBuyableVehicle)
+                    RegisterExtendedContent(extendedBuyableVehicle);
+                else if (newExtendedContent is ExtendedUnlockableItem extendedUnlockableItem)
+                    RegisterExtendedContent(extendedUnlockableItem);
                 else
-                    throw new ArgumentException(newExtendedContent.name + " (" + newExtendedContent.GetType().Name + ") " + " Could Not Be Registered To ExtendedMod: " + ModName + " Due To Already Being Registered To This Mod!", nameof(newExtendedContent));
+                    throw new ArgumentException($"{newExtendedContent.name} ({newExtendedContent.GetType().Name}) Could Not Be Registered To ExtendedMod: {ModName} Due To Unimplemented Registration Check!", nameof(newExtendedContent));
             }
             else
-                throw new ArgumentNullException(nameof(newExtendedContent), "Null ExtendedContent Could Not Be Registered To ExtendedMod: " + ModName + " Due To Failed Validation Check!");
+                throw new ArgumentNullException(nameof(newExtendedContent), $"Null ExtendedContent Could Not Be Registered To ExtendedMod: {ModName} Due To Failed Validation Check!");
         }
 
         internal void RegisterExtendedContent<T>(T extendedContent, List<T> extendedContentList) where T : ExtendedContent
         {
             if (extendedContent == null)
             {
-                DebugHelper.LogError($"{extendedContent.GetType()} Was Null", DebugType.User);
+                DebugHelper.LogError($"{typeof(T).Name} Was Null", DebugType.User);
                 return;
             }
             if (extendedContentList == null)
             {
                 DebugHelper.LogError($"{extendedContent.GetType()} Content List Was Null", DebugType.User);
+                return;
+            }
+            if (extendedContentList.Contains(extendedContent))
+            {
+                DebugHelper.LogError($"{extendedContent.name} ({extendedContent.GetType()}) Could Not Be Registered To ExtendedMod {ModName} Due To Already Being Registered To This Mod!", DebugType.User);
                 return;
             }
 

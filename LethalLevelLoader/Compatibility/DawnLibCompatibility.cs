@@ -42,7 +42,7 @@ namespace LethalLevelLoader.Compatibility
                 PatchedContent.AllLevelSceneNames.AddRange(dawnMoonInfo.Scenes.ConvertAll(static sceneInfo => sceneInfo.SceneName));
 
                 dawnExtendedLevel.ContentType = ContentType.External;
-                dawnExtendedLevel.Initialize(string.Empty, generateTerminalAssets: true);
+                dawnExtendedLevel.Initialize(generateTerminalAssets: true);
                 dawnExtendedLevel.name = dawnExtendedLevel.NumberlessPlanetName + "ExtendedLevel";
 
                 CopyContentTags(dawnMoonInfo, dawnExtendedLevel);

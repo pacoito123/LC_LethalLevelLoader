@@ -451,7 +451,7 @@ namespace LethalLevelLoader
                 foreach (ExtendedLevel extendedLevel in extendedMod.ExtendedLevels) // TODO: Null checks?
                 {
                     extendedLevel.ContentType = ContentType.Custom;
-                    extendedLevel.Initialize(extendedLevel.name, generateTerminalAssets: true);
+                    extendedLevel.Initialize(generateTerminalAssets: true);
                     PatchedContent.ExtendedLevels.Add(extendedLevel);
                 }
                 foreach (ExtendedDungeonFlow extendedDungeonFlow in extendedMod.ExtendedDungeonFlows)
@@ -502,18 +502,6 @@ namespace LethalLevelLoader
             //DebugHelper.DebugAllLevels();
         }
 
-        public static void RegisterExtendedDungeonFlow(ExtendedDungeonFlow extendedDungeonFlow)
-        {
-            DebugHelper.LogWarning("AssetBundleLoader.RegisterExtendedDungeonFlow() is deprecated. Please move to PatchedContent.RegisterExtendedDungeonFlow() to prevent issues in following updates.", DebugType.Developer);
-            PatchedContent.RegisterExtendedDungeonFlow(extendedDungeonFlow);
-        }
-
-        public static void RegisterExtendedLevel(ExtendedLevel extendedLevel)
-        {
-            DebugHelper.LogWarning("AssetBundleLoader.RegisterExtendedLevel() is deprecated. Please move to PatchedContent.RegisterExtendedLevel() to prevent issues in following updates.", DebugType.Developer);
-            PatchedContent.RegisterExtendedLevel(extendedLevel);
-        }
-
         internal static void CreateVanillaExtendedLevels(StartOfRound startOfRound)
         {
             DebugHelper.Log("Creating ExtendedLevels For Vanilla SelectableLevels", DebugType.Developer);
@@ -526,7 +514,7 @@ namespace LethalLevelLoader
                     || selectableLevel.name.StartsWith("Adamance", StringComparison.Ordinal);
 
                 foreach (CompatibleNoun compatibleRouteNoun in TerminalManager.routeKeyword.compatibleNouns)
-                    if (compatibleRouteNoun.noun.name.Contains(ExtendedLevel.GetNumberlessPlanetName(selectableLevel)))
+                    if (compatibleRouteNoun.noun.name.Contains(ExtendedLevel.GetNumberlessPlanetName(selectableLevel), StringComparison.Ordinal))
                     {
                         extendedLevel.RouteNode = compatibleRouteNoun.result;
                         extendedLevel.RouteConfirmNode = compatibleRouteNoun.result.terminalOptions[1].result;
@@ -534,12 +522,11 @@ namespace LethalLevelLoader
                         break;
                     }
                 PatchedContent.AllLevelSceneNames.Add(extendedLevel.SelectableLevel.sceneName);
-
-                extendedLevel.Initialize("Lethal Company", generateTerminalAssets: false);
+                extendedLevel.Initialize(generateTerminalAssets: false);
                 extendedLevel.name = extendedLevel.NumberlessPlanetName + "ExtendedLevel";
-
-                PatchedContent.ExtendedLevels.Add(extendedLevel);
+                extendedLevel.ContentTags.Add(ExtendedMod.VanillaContentTag);
                 PatchedContent.VanillaMod.RegisterExtendedContent(extendedLevel);
+                PatchedContent.ExtendedLevels.Add(extendedLevel);
             }
         }
 
@@ -558,29 +545,30 @@ namespace LethalLevelLoader
         {
             foreach (Item scrapItem in OriginalContent.Items)
             {
-                ExtendedItem extendedVanillaItem = ExtendedItem.Create(scrapItem, PatchedContent.VanillaMod, ContentType.Vanilla);
-                extendedVanillaItem.IsBuyableItem = false;
-                PatchedContent.ExtendedItems.Add(extendedVanillaItem);
+                ExtendedItem newExtendedVanillaItem = ExtendedItem.Create(scrapItem);
+                newExtendedVanillaItem.IsBuyableItem = false;
+                newExtendedVanillaItem.ContentTags.Add(ExtendedMod.VanillaContentTag);
+                PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedVanillaItem);
+                PatchedContent.ExtendedItems.Add(newExtendedVanillaItem);
             }
 
-            Terminal terminal = TerminalManager.Terminal;
-            int counter = 0;
-            foreach (Item item in terminal.buyableItemsList)
+            Terminal terminal = Patches.Terminal;
+            for (int i = 0; i < terminal.buyableItemsList.Length; i++)
             {
-                ExtendedItem extendedVanillaItem = ExtendedItem.Create(item, PatchedContent.VanillaMod, ContentType.Vanilla);
-                extendedVanillaItem.IsBuyableItem = true;
-
+                ExtendedItem newExtendedVanillaItem = ExtendedItem.Create(terminal.buyableItemsList[i]);
+                newExtendedVanillaItem.IsBuyableItem = true;
                 foreach (CompatibleNoun compatibleNoun in TerminalManager.buyKeyword.compatibleNouns)
-                    if (compatibleNoun.result.buyItemIndex == counter)
+                    if (compatibleNoun.result.buyItemIndex == i)
                     {
-                        extendedVanillaItem.BuyNode = compatibleNoun.result;
-                        extendedVanillaItem.BuyConfirmNode = compatibleNoun.result.terminalOptions[0].result;
+                        newExtendedVanillaItem.BuyNode = compatibleNoun.result;
+                        newExtendedVanillaItem.BuyConfirmNode = compatibleNoun.result.terminalOptions[0].result;
                         foreach (CompatibleNoun infoCompatibleNoun in TerminalManager.routeInfoKeyword.compatibleNouns)
-                            if (infoCompatibleNoun.noun.word == compatibleNoun.noun.word)
-                                extendedVanillaItem.BuyInfoNode = infoCompatibleNoun.result;
+                            if (string.Equals(infoCompatibleNoun.noun.word, compatibleNoun.noun.word, StringComparison.Ordinal))
+                                newExtendedVanillaItem.BuyInfoNode = infoCompatibleNoun.result;
                     }
-                PatchedContent.ExtendedItems.Add(extendedVanillaItem);
-                counter++;
+                newExtendedVanillaItem.ContentTags.Add(ExtendedMod.VanillaContentTag);
+                PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedVanillaItem);
+                PatchedContent.ExtendedItems.Add(newExtendedVanillaItem);
             }
         }
 
@@ -588,8 +576,8 @@ namespace LethalLevelLoader
         {
             foreach (EnemyType enemyType in OriginalContent.Enemies)
             {
-                ExtendedEnemyType newExtendedEnemyType = ExtendedEnemyType.Create(enemyType, extendedMod: PatchedContent.VanillaMod, ContentType.Vanilla);
-                PatchedContent.ExtendedEnemyTypes.Add(newExtendedEnemyType);
+                ExtendedEnemyType newExtendedEnemyType = ExtendedEnemyType.Create(enemyType);
+                newExtendedEnemyType.ContentTags.Add(ExtendedMod.VanillaContentTag);
 
                 ScanNodeProperties[] allEnemyScanNodes = newExtendedEnemyType.EnemyType.enemyPrefab.GetComponentsInChildren<ScanNodeProperties>(includeInactive: true);
                 ScanNodeProperties enemyScanNode = Array.Find(allEnemyScanNodes, scanNode => (scanNode.creatureScanID >= 0) && (scanNode.creatureScanID < Patches.Terminal.enemyFiles.Count));
@@ -604,6 +592,8 @@ namespace LethalLevelLoader
                 }
                 if (string.IsNullOrEmpty(newExtendedEnemyType.EnemyDisplayName))
                     newExtendedEnemyType.EnemyDisplayName = enemyType.enemyName;
+                PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedEnemyType);
+                PatchedContent.ExtendedEnemyTypes.Add(newExtendedEnemyType);
             }
         }
 
@@ -614,9 +604,10 @@ namespace LethalLevelLoader
                 LevelWeatherType weatherType = (LevelWeatherType)i;
                 WeatherEffect weatherEffect = (i >= 0) ? timeOfDay.effects[i] : null;
 
-                ExtendedWeatherEffect extendedEffect = ExtendedWeatherEffect.Create(weatherType, weatherEffect, $"{weatherType}", ContentType.Vanilla);
-                PatchedContent.ExtendedWeatherEffects.Add(extendedEffect);
+                ExtendedWeatherEffect extendedEffect = ExtendedWeatherEffect.Create(weatherType, weatherEffect, $"{weatherType}");
+                extendedEffect.ContentTags.Add(ExtendedMod.VanillaContentTag);
                 PatchedContent.VanillaMod.ExtendedWeatherEffects.Add(extendedEffect);
+                PatchedContent.ExtendedWeatherEffects.Add(extendedEffect);
             }
         }
 
@@ -667,7 +658,7 @@ namespace LethalLevelLoader
 
         internal static void CreateVanillaExtendedUnlockableItem(UnlockableItem unlockableItem)
         {
-            ExtendedUnlockableItem newExtendedVanillaUnlockableItem = ExtendedUnlockableItem.Create(unlockableItem, PatchedContent.VanillaMod, ContentType.Vanilla);
+            ExtendedUnlockableItem newExtendedVanillaUnlockableItem = ExtendedUnlockableItem.Create(unlockableItem);
             newExtendedVanillaUnlockableItem.ContentTags.Add(ExtendedMod.VanillaContentTag);
             PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedVanillaUnlockableItem);
             PatchedContent.ExtendedUnlockableItems.Add(newExtendedVanillaUnlockableItem);

@@ -185,7 +185,7 @@ namespace LethalLevelLoader
             return (newExtendedLevel);
         }
 
-        internal void Initialize(string _, bool generateTerminalAssets)
+        internal void Initialize(bool generateTerminalAssets)
         {
             if (SceneSelections.Find(scene => string.Equals(scene.Name, SelectableLevel.name, StringComparison.Ordinal)) == null)
             {

@@ -20,14 +20,12 @@ namespace LethalLevelLoader
         //public bool transitioning;
         //public bool effectEnabled;
 
-        internal static ExtendedWeatherEffect Create(LevelWeatherType levelWeatherType, WeatherEffect weatherEffect, string weatherDisplayName, ContentType newContentType) =>
-            Create(levelWeatherType, weatherEffect?.effectObject, weatherEffect?.effectPermanentObject, weatherDisplayName, newContentType);
+        internal static ExtendedWeatherEffect Create(LevelWeatherType levelWeatherType, WeatherEffect weatherEffect, string weatherDisplayName) =>
+            Create(levelWeatherType, weatherEffect?.effectObject, weatherEffect?.effectPermanentObject, weatherDisplayName);
 
-        internal static ExtendedWeatherEffect Create(LevelWeatherType levelWeatherType, GameObject worldObject, GameObject globalObject, string newWeatherDisplayName, ContentType newContentType)
+        internal static ExtendedWeatherEffect Create(LevelWeatherType levelWeatherType, GameObject worldObject, GameObject globalObject, string newWeatherDisplayName)
         {
             ExtendedWeatherEffect newExtendedWeatherEffect = CreateInstance<ExtendedWeatherEffect>();
-            newExtendedWeatherEffect.ContentType = newContentType;
-
             newExtendedWeatherEffect.WeatherDisplayName = newWeatherDisplayName;
 
             newExtendedWeatherEffect.name = newExtendedWeatherEffect.WeatherDisplayName + "ExtendedWeatherEffect";
