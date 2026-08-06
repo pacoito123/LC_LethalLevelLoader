@@ -26,7 +26,7 @@ namespace LethalLevelLoader
             if (modNames.Count > 0)
                 UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings(extendedDungeonFlow.ExtendedMod.ModNameAliases, modNames), extendedDungeonFlow.name, "Mod Name Name");
             if (dungeonNames.Count > 0)
-                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedDungeonFlow.DungeonFlow.name, dungeonNames), extendedDungeonFlow.name, "Dungeon Name");
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings([extendedDungeonFlow.DungeonName, extendedDungeonFlow.name], dungeonNames), extendedDungeonFlow.name, "Dungeon Name");
 
             return (returnRarity);
         }

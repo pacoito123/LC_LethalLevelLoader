@@ -13,6 +13,7 @@
 **<details><summary>Fixes</summary>**
 
 * Fixed MatchingProperties (and a few config fields) not ignoring spaces when matching ExtendedContent
+* Fixed DungeonMatchingProperties not also checking `DungeonName` field in ExtendedDungeonFlow when matching
 * Fixed ExtendedLevel route word overrides not being applied when TerminalKeywords are created
 * Fixed a couple errors when a Terrain with missing TerrainData is loaded by a scene
 * Fixed (harmless) error with custom ExtendedFootstepSurface tags (actually this time)
