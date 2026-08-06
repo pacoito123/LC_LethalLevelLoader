@@ -61,15 +61,15 @@ namespace LethalLevelLoader
             if (SceneManager.GetSceneByName(sceneName) != null)
                 allSceneNamesCalledToLoad.Add(sceneName);
 
-            if (sceneName == "MainMenu" && !allSceneNamesCalledToLoad.Contains("InitSceneLaunchOptions"))
+            if (string.Equals(sceneName, "MainMenu", StringComparison.Ordinal) && !allSceneNamesCalledToLoad.Contains("InitSceneLaunchOptions"))
             {
                 DebugHelper.LogError("SceneManager has been told to load Main Menu without ever loading InitSceneLaunchOptions. This will break LethalLevelLoader. This is likely due to a \"Skip to Main Menu\" mod.", DebugType.User);
                 return (false);
             }
 
-            if (LethalBundleManager.CurrentStatus == LethalBundleManager.ModProcessingStatus.Loading)
+            if (LethalBundleManager.CurrentStatus is LethalBundleManager.ModProcessingStatus.Loading)
             {
-                DebugHelper.LogWarning("SceneManager has attempted to load " + sceneName + " Scene before AssetBundles have finished loading. Pausing request until LethalLevelLoader is ready to proceed.", DebugType.User);
+                DebugHelper.LogWarning($"SceneManager has attempted to load {sceneName} Scene before AssetBundles have finished loading. Pausing request until LethalLevelLoader is ready to proceed.", DebugType.User);
                 delayedSceneLoadingName = sceneName;
                 LethalBundleManager.OnFinishedProcessing.RemoveListener(LoadMainMenu);
                 LethalBundleManager.OnFinishedProcessing.AddListener(LoadMainMenu);
@@ -81,8 +81,8 @@ namespace LethalLevelLoader
 
         internal static void LoadMainMenu()
         {
-            DebugHelper.LogWarning("Proceeding with the loading of " + delayedSceneLoadingName + " Scene as LethalLevelLoader has finished loading AssetBundles.", DebugType.User);
-            if (delayedSceneLoadingName != string.Empty)
+            DebugHelper.LogWarning($"Proceeding with the loading of {delayedSceneLoadingName} Scene as LethalLevelLoader has finished loading AssetBundles.", DebugType.User);
+            if (!string.IsNullOrEmpty(delayedSceneLoadingName))
                 SceneManager.LoadScene(delayedSceneLoadingName);
             delayedSceneLoadingName = string.Empty;
         }
@@ -382,7 +382,7 @@ namespace LethalLevelLoader
             Plugin.LobbyInitialized();
         }
 
-        [HarmonyPatch(typeof(StartOfRound), "SetPlanetsWeather"), HarmonyPrefix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SetPlanetsWeather)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static bool StartOfRoundSetPlanetsWeather_Prefix(int connectedPlayersOnServer)
         {
             if (Plugin.IsSetupComplete == false)
@@ -393,7 +393,7 @@ namespace LethalLevelLoader
             return (true);
         }
 
-        [HarmonyPatch(typeof(StartOfRound), "SetPlanetsWeather"), HarmonyPostfix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SetPlanetsWeather)), HarmonyPostfix, HarmonyPriority(priority)]
         internal static void StartOfRoundSetPlanetsWeather_Postfix()
         {
             if (IsServer)
@@ -409,7 +409,7 @@ namespace LethalLevelLoader
             //Because Level ID's can change between modpack adjustments and such, we save the name of the level instead and find and load that up instead of the saved ID the base game uses.
             if (hasInitiallyChangedLevel == false && !string.IsNullOrEmpty(SaveManager.currentSaveFile.CurrentLevelName))
                 foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
-                    if (extendedLevel.SelectableLevel.name == SaveManager.currentSaveFile.CurrentLevelName)
+                    if (string.Equals(extendedLevel.SelectableLevel.name, SaveManager.currentSaveFile.CurrentLevelName, StringComparison.Ordinal))
                     {
                         DebugHelper.Log("Loading Previously Saved SelectableLevel: " + extendedLevel.SelectableLevel.PlanetName, DebugType.User);
                         levelID = Array.FindIndex(StartOfRound.levels, level => level == extendedLevel.SelectableLevel);
@@ -429,14 +429,14 @@ namespace LethalLevelLoader
         public static void StartOfRoundChangeLevel_Postfix(int levelID)
         {
             NetworkBundleManager.Instance.Refresh();
-            if (IsServer && RoundManager.currentLevel != null && SaveManager.currentSaveFile.CurrentLevelName != RoundManager.currentLevel.PlanetName)
+            if (IsServer && RoundManager.currentLevel != null && !string.Equals(RoundManager.currentLevel.PlanetName, SaveManager.currentSaveFile.CurrentLevelName, StringComparison.Ordinal))
             {
                 DebugHelper.Log("Saving Current SelectableLevel: " + RoundManager.currentLevel.PlanetName, DebugType.User);
                 SaveManager.currentSaveFile.CurrentLevelName = RoundManager.currentLevel.name;
             }
         }
 
-        [HarmonyPatch(typeof(Terminal), "ParseWord"), HarmonyPostfix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(Terminal), nameof(Terminal.ParseWord)), HarmonyPostfix, HarmonyPriority(priority)]
         internal static void TerminalParseWord_Postfix(Terminal __instance, ref TerminalKeyword __result, string playerWord)
         {
             if (__result != null)
@@ -447,13 +447,13 @@ namespace LethalLevelLoader
             }
         }
 
-        [HarmonyPatch(typeof(Terminal), "RunTerminalEvents"), HarmonyPrefix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(Terminal), nameof(Terminal.RunTerminalEvents)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static bool TerminalRunTerminalEvents_Prefix(Terminal __instance, TerminalNode node)
         {
             return (TerminalManager.OnBeforeLoadNewNode(ref node));
         }
 
-        [HarmonyPatch(typeof(Terminal), "LoadNewNode"), HarmonyPrefix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(Terminal), nameof(Terminal.LoadNewNode)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static bool TerminalLoadNewNode_Prefix(Terminal __instance, ref TerminalNode node)
         {
             TerminalManager.moonsInCataloguePage = 0;
@@ -461,7 +461,7 @@ namespace LethalLevelLoader
             return (TerminalManager.OnBeforeLoadNewNode(ref node));
         }
 
-        [HarmonyPatch(typeof(Terminal), "LoadNewNode"), HarmonyPostfix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(Terminal), nameof(Terminal.LoadNewNode)), HarmonyPostfix, HarmonyPriority(priority)]
         internal static void TerminalLoadNewNode_Postfix(Terminal __instance, ref TerminalNode node)
         {
             TerminalManager.OnLoadNewNode(ref node);
@@ -710,7 +710,7 @@ namespace LethalLevelLoader
                 LevelLoader.RestoreShaders();
         }
 
-        [HarmonyPatch(typeof(StoryLog), "Start"), HarmonyPrefix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(StoryLog), nameof(StoryLog.Start)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static void StoryLogStart_Prefix(StoryLog __instance)
         {
             foreach (ExtendedStoryLog extendedStoryLog in LevelManager.CurrentExtendedLevel.ExtendedMod.ExtendedStoryLogs)
@@ -740,7 +740,7 @@ namespace LethalLevelLoader
             temporaryIndoorMapHazards.Clear();
         }
 
-        [HarmonyPatch(typeof(RoundManager), "GeneratedFloorPostProcessing"), HarmonyPrefix, HarmonyPriority(priority)]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GeneratedFloorPostProcessing)), HarmonyPrefix, HarmonyPriority(priority)]
         internal static void RoundManagerGeneratedFloorPostProcessing_Prefix()
         {
             if (Settings.injectDynamicMatchingWeights)

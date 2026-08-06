@@ -24,6 +24,8 @@ namespace LethalLevelLoader.Compatibility
         [HarmonyPatch(typeof(MoonCachingPatch.Patch_NavMeshSurface), nameof(MoonCachingPatch.Patch_NavMeshSurface.FindDropship)), HarmonyPrefix, HarmonyPriority(Patches.priority)]
         internal static void MoonCachingPatchFindDropship_Prefix(Scene scene)
         {
+            if (SceneManager.loadedSceneCount < 2) return;
+
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel == null || currentLevel.ContentType is ContentType.External || currentLevel.SelectableLevel == null) return;
 
@@ -35,6 +37,8 @@ namespace LethalLevelLoader.Compatibility
         [HarmonyPatch(typeof(MoonCachingPatch.Patch_NavMeshSurface), nameof(MoonCachingPatch.Patch_NavMeshSurface.FindDungeon)), HarmonyPrefix, HarmonyPriority(Patches.priority)]
         internal static void MoonCachingPatchFindDungeon_Prefix(Scene scene)
         {
+            if (SceneManager.loadedSceneCount < 2) return;
+
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel == null || currentLevel.ContentType is ContentType.External || currentLevel.SelectableLevel == null || currentLevel.SelectableLevel.spawnEnemiesAndScrap == false) return;
 
