@@ -997,6 +997,33 @@ namespace LethalLevelLoader
             .InstructionEnumeration();
         }
 
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.GetCurrentMaterialStandingOn))]
+        [HarmonyPatch(typeof(MaskedPlayerEnemy), nameof(MaskedPlayerEnemy.GetMaterialStandingOn)), HarmonyTranspiler, HarmonyPriority(priority)]
+        internal static IEnumerable<CodeInstruction> FootstepSurfaceArrayLength_Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            MethodInfo startOfRoundGetter = typeof(StartOfRound).GetProperty(nameof(StartOfRound.Instance), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
+            FieldInfo footstepSurfacesInfo = typeof(StartOfRound).GetField(nameof(StartOfRound.footstepSurfaces), BindingFlags.Instance | BindingFlags.Public);
+            CodeMatcher codeMatcher = new CodeMatcher(instructions).End().MatchBack(useEnd: false,
+                new(OpCodes.Call, startOfRoundGetter),
+                new(OpCodes.Ldfld, footstepSurfacesInfo),
+                new(OpCodes.Ldlen),
+                new(OpCodes.Conv_I4));
+
+            if (codeMatcher.IsInvalid)
+            {
+                DebugHelper.LogError("Could not match FootstepSurface array length check when replacing footsteps.", DebugType.User);
+                return instructions;
+            }
+
+            MethodInfo footstepSurfacesGetter = typeof(OriginalContent).GetProperty(nameof(OriginalContent.FootstepSurfaces), BindingFlags.Static | BindingFlags.Public).GetGetMethod();
+            MethodInfo listCountGetter = typeof(List<FootstepSurface>).GetProperty(nameof(List<>.Count), BindingFlags.Instance | BindingFlags.Public).GetGetMethod();
+            return codeMatcher.InsertAndAdvance(
+                new(OpCodes.Call, footstepSurfacesGetter),
+                new(OpCodes.Call, listCountGetter))
+            .RemoveInstructions(4)
+            .InstructionEnumeration();
+        }
+
         [HarmonyPatch(typeof(EntranceTeleport), nameof(EntranceTeleport.PlayCreakSFX)), HarmonyTranspiler, HarmonyPriority(priority)]
         internal static IEnumerable<CodeInstruction> EntranceTeleportPlayCreakSFX_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
