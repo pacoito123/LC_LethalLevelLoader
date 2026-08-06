@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Dawn;
 using Dawn.Internal;
@@ -22,18 +23,16 @@ namespace LethalLevelLoader.Compatibility
         }
         private static bool? _enabled;
 
+        private static readonly Dictionary<string, ExtendedMod> dawnExtendedModsDict = [];
+
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         internal static void RegisterDawnExtendedLevels()
         {
             foreach (DawnMoonInfo dawnMoonInfo in LethalContent.Moons.Values)
             {
                 // Skip any vanilla or non-DawnLib moons.
-                if (dawnMoonInfo.Key.IsVanilla() || dawnMoonInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
-                {
+                if (dawnMoonInfo == null || dawnMoonInfo.Key.IsVanilla() || dawnMoonInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
                     continue;
-                }
-
-                ExtendedMod dawnExtendedMod = ExtendedMod.Create(ConvertToLLLFormat(dawnMoonInfo.Key.Namespace));
                 ExtendedLevel dawnExtendedLevel = ExtendedLevel.Create(dawnMoonInfo.Level);
 
                 dawnExtendedLevel.RouteNode = dawnMoonInfo.RouteNode;
@@ -52,7 +51,12 @@ namespace LethalLevelLoader.Compatibility
                 dawnExtendedLevel.GenerateAutomaticConfigurationOptions = false;
                 dawnExtendedLevel.IsRouteRemoved = true;
 
-                PatchedContent.ExtendedLevels.Add(dawnExtendedLevel);
+                if (!dawnExtendedModsDict.TryGetValue(dawnMoonInfo.Key.Namespace, out ExtendedMod dawnExtendedMod))
+                {
+                    dawnExtendedMod = ExtendedMod.Create(ConvertToLLLFormat(dawnMoonInfo.Key.Namespace));
+                    dawnExtendedModsDict.Add(dawnMoonInfo.Key.Namespace, dawnExtendedMod);
+                    PatchedContent.ExtendedMods.Add(dawnExtendedMod);
+                }
                 dawnExtendedMod.RegisterExtendedContent(dawnExtendedLevel);
             }
         }
@@ -64,34 +68,39 @@ namespace LethalLevelLoader.Compatibility
             {
                 // Skip any vanilla or non-DawnLib FootstepSurfaces.
                 if (dawnSurfaceInfo == null || dawnSurfaceInfo.Key.IsVanilla() || dawnSurfaceInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
-                {
                     continue;
-                }
+                if (dawnSurfaceInfo.SurfaceIndex < 0 || dawnSurfaceInfo.SurfaceIndex >= PatchedContent.ExtendedFootstepSurfaces.Count)
+                    continue;
 
-                if (PatchedContent.TryGetExtendedContent(dawnSurfaceInfo.Surface, out ExtendedFootstepSurface dawnExtendedFootstepSurface))
+                ExtendedFootstepSurface dawnExtendedFootstepSurface = PatchedContent.ExtendedFootstepSurfaces[dawnSurfaceInfo.SurfaceIndex];
+                if (dawnExtendedFootstepSurface == null)
+                    continue;
+
+                if (dawnExtendedFootstepSurface.ContentType is ContentType.Vanilla)
                 {
-                    if (dawnExtendedFootstepSurface.ContentType is ContentType.Vanilla)
-                    {
-                        OriginalContent.FootstepSurfaces.Remove(dawnExtendedFootstepSurface.FootstepSurface);
-                        PatchedContent.VanillaMod.UnregisterExtendedContent(dawnExtendedFootstepSurface);
-                    }
-
-                    ExtendedMod dawnExtendedMod = ExtendedMod.Create(ConvertToLLLFormat(dawnSurfaceInfo.Key.Namespace));
-                    dawnExtendedFootstepSurface.ContentType = ContentType.External;
-
-                    string dawnKey = ConvertToLLLFormat(dawnSurfaceInfo.Key.Key);
-                    dawnExtendedFootstepSurface.name = dawnKey + "ExtendedFootstepSurface";
-                    dawnExtendedFootstepSurface.ContentTags[0] = ExtendedMod.CustomContentTag;
-
-                    FootstepSurfaceManager.surfaceTagExtendedFootstepDict[$"{dawnSurfaceInfo.Key}"] = dawnExtendedFootstepSurface;
-                    CopyContentTags(dawnSurfaceInfo, dawnExtendedFootstepSurface);
-
-                    dawnExtendedFootstepSurface.SurfaceIndex = dawnSurfaceInfo.SurfaceIndex;
-                    dawnExtendedFootstepSurface.AllowEarthLeviathanEmerge = dawnSurfaceInfo.IsNatural;
-                    dawnExtendedFootstepSurface.AllowSinking = dawnSurfaceInfo.QuicksandCompatible;
-
-                    dawnExtendedMod.RegisterExtendedContent(dawnExtendedFootstepSurface);
+                    OriginalContent.FootstepSurfaces.Remove(dawnExtendedFootstepSurface.FootstepSurface);
+                    PatchedContent.VanillaMod.UnregisterExtendedContent(dawnExtendedFootstepSurface);
                 }
+                dawnExtendedFootstepSurface.ContentType = ContentType.External;
+
+                string dawnKey = ConvertToLLLFormat(dawnSurfaceInfo.Key.Key);
+                dawnExtendedFootstepSurface.name = dawnKey + "ExtendedFootstepSurface";
+                dawnExtendedFootstepSurface.ContentTags[0] = ExtendedMod.CustomContentTag;
+
+                FootstepSurfaceManager.surfaceTagExtendedFootstepDict[$"{dawnSurfaceInfo.Key}"] = dawnExtendedFootstepSurface;
+                CopyContentTags(dawnSurfaceInfo, dawnExtendedFootstepSurface);
+
+                dawnExtendedFootstepSurface.SurfaceIndex = dawnSurfaceInfo.SurfaceIndex;
+                dawnExtendedFootstepSurface.AllowEarthLeviathanEmerge = dawnSurfaceInfo.IsNatural;
+                dawnExtendedFootstepSurface.AllowSinking = dawnSurfaceInfo.QuicksandCompatible;
+
+                if (!dawnExtendedModsDict.TryGetValue(dawnSurfaceInfo.Key.Namespace, out ExtendedMod dawnExtendedMod))
+                {
+                    dawnExtendedMod = ExtendedMod.Create(ConvertToLLLFormat(dawnSurfaceInfo.Key.Namespace));
+                    dawnExtendedModsDict.Add(dawnSurfaceInfo.Key.Namespace, dawnExtendedMod);
+                    PatchedContent.ExtendedMods.Add(dawnExtendedMod);
+                }
+                dawnExtendedMod.RegisterExtendedContent(dawnExtendedFootstepSurface);
             }
         }
 
@@ -113,9 +122,7 @@ namespace LethalLevelLoader.Compatibility
                 string tag = ConvertToLLLFormat(namespacedTag.Key);
 
                 if (extendedContent.TryAddTag(tag))
-                {
                     DebugHelper.Log($"Added tag: {tag} to {extendedContent.name}", DebugType.Developer);
-                }
             }
         }
 
@@ -124,11 +131,9 @@ namespace LethalLevelLoader.Compatibility
             string LLLFormatString = string.Empty;
 
             foreach (string word in dawnFormatString.Split('_', StringSplitOptions.RemoveEmptyEntries))
-            {
                 LLLFormatString += char.ToUpperInvariant(word[0]) + word[1..];
-            }
 
-            return LLLFormatString;
+            return (LLLFormatString);
         }
     }
 }
