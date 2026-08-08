@@ -17,22 +17,20 @@ namespace LethalLevelLoader
             currentSaveFile = new LLLSaveFile(GameNetworkManager.Instance.currentSaveFileName);
             currentSaveFile.Load();
 
-            if (currentSaveFile.CurrentLevelName != null)
-                DebugHelper.Log("Initialized LLL Save File, Current Level Was: " + currentSaveFile.CurrentLevelName + ", Current Vanilla Save Is: " + GameNetworkManager.Instance.currentSaveFileName, DebugType.User);
-            else
-                DebugHelper.Log("Initialized LLL Save File, Current Level Was: (Empty) " + ", Current Vanilla Save Is: " + GameNetworkManager.Instance.currentSaveFileName, DebugType.User);
+            DebugHelper.Log($"Initialized LLL Save File, Current Level Was: {(!string.IsNullOrEmpty(currentSaveFile.CurrentLevelName) ? currentSaveFile.CurrentLevelName : "(Empty)")}, Current Vanilla Save Is: {GameNetworkManager.Instance.currentSaveFileName}", DebugType.User);
 
-            if (ES3.KeyExists("CurrentPlanetID", GameNetworkManager.Instance.currentSaveFileName))
-                DebugHelper.Log("Vanilla CurrentSaveFileName Has Saved Current Planet ID: " + ES3.Load<int>("CurrentPlanetID", GameNetworkManager.Instance.currentSaveFileName), DebugType.Developer);
+            int currentPlanetID = ES3.Load("CurrentPlanetID", GameNetworkManager.Instance.currentSaveFileName, -1);
+            if (currentPlanetID != -1)
+                DebugHelper.Log($"Vanilla CurrentSaveFileName Has Saved Current Planet ID: {currentPlanetID}", DebugType.Developer);
 
             // Compare saved "Steps Taken" statistic, to try to check whether the Vanilla and LethalLevelLoader saves are the same
-            int originalStepsTaken = ES3.Load<int>("Stats_StepsTaken", GameNetworkManager.Instance.currentSaveFileName, 0);
+            int originalStepsTaken = ES3.Load("Stats_StepsTaken", GameNetworkManager.Instance.currentSaveFileName, 0);
 
             if (originalStepsTaken == currentSaveFile.parityStepsTaken)
                 parityCheck = true;
             else
             {
-                DebugHelper.Log("Vanilla Save File Mismatch, LLL Steps Taken: " + currentSaveFile.parityStepsTaken + ", Vanilla Steps Taken: " + originalStepsTaken, DebugType.Developer);
+                DebugHelper.Log($"Vanilla Save File Mismatch, LLL Steps Taken: {currentSaveFile.parityStepsTaken}, Vanilla Steps Taken: {originalStepsTaken}", DebugType.Developer);
 
                 currentSaveFile.Reset();
                 currentSaveFile.parityStepsTaken = originalStepsTaken;
@@ -49,6 +47,9 @@ namespace LethalLevelLoader
 
         internal static void SaveGameValues()
         {
+            if (LethalLevelLoaderNetworkManager.networkManager.IsServer == false)
+                return;
+
             currentSaveFile.itemSaveData = GetAllItemsListItemDataDict();
             currentSaveFile.parityStepsTaken = Patches.StartOfRound.gameStats.allStepsTaken;
 

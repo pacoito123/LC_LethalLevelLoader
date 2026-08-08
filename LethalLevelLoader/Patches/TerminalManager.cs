@@ -917,7 +917,8 @@ namespace LethalLevelLoader
             //Simulate Keywords
             List<string> simulateMoonsKeywords = new List<string>();
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
-                simulateMoonsKeywords.Add(extendedLevel.NumberlessPlanetName.Sanitized(toLower: false).RemoveWhitespace());
+                if (extendedLevel.SelectableLevel.spawnEnemiesAndScrap) // Filter out Company moons.
+                    simulateMoonsKeywords.Add(extendedLevel.NumberlessPlanetName.Sanitized(toLower: false).RemoveWhitespace());
 
             int counter = 0;
             foreach (TerminalNode simulateNode in CreateTerminalEventNodes("Simulate", simulateMoonsKeywords))

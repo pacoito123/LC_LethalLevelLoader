@@ -374,7 +374,7 @@ namespace LethalLevelLoader
                 WeatherManager.RefreshVanillaWeatherEffects(TimeOfDay);
                 WeatherManager.PopulateExtendedLevelEnabledExtendedWeatherEffects();
                 Plugin.CompleteSetup();
-                StartOfRound.SetPlanetsWeather();
+                // StartOfRound.SetPlanetsWeather();
             }
             else
                 WeatherManager.RefreshVanillaWeatherEffects(TimeOfDay); // Refresh weather stuff on every lobby reload.
