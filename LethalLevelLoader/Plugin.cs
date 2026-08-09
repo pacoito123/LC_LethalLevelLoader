@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
 using HarmonyLib;
 using LethalLevelLoader.Compatibility;
 using LethalLevelLoader.Patcher;
@@ -17,11 +18,8 @@ namespace LethalLevelLoader
         public const string ModName = "LethalLevelLoader";
         public const string ModVersion = "1.7.9";
 
-        internal static Plugin Instance;
-
         internal static readonly Harmony Harmony = new Harmony(ModGUID);
-
-        internal static BepInEx.Logging.ManualLogSource logger;
+        internal static new readonly ManualLogSource Logger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         public static event Action onBeforeSetup;
         public static event Action onSetupComplete; //Happens on the first lobby in a session
@@ -31,12 +29,7 @@ namespace LethalLevelLoader
 
         private void Awake()
         {
-            if (Instance == null)
-                Instance = this;
-
-            logger = Logger;
-
-            Logger.LogInfo($"LethalLevelLoader loaded!!");
+            ConfigLoader.BindGeneralConfigs();
 
             Harmony.PatchAll(typeof(Patches));
             Harmony.PatchAll(typeof(EventPatches));
@@ -54,7 +47,6 @@ namespace LethalLevelLoader
 
             GameObject assetBundleLoaderObject = new GameObject("LethalLevelLoader AssetBundleLoader");
             AssetBundleLoader assetBundleLoader = assetBundleLoaderObject.AddComponent<AssetBundleLoader>();
-            //assetBundleLoader.LoadBundles();
             if (Application.isEditor)
                 DontDestroyOnLoad(assetBundleLoaderObject);
             else
@@ -67,12 +59,9 @@ namespace LethalLevelLoader
             else
                 newAssetBundleLoaderObject.hideFlags = HideFlags.HideAndDontSave;
 
-            ConfigLoader.BindGeneralConfigs();
-
             LethalBundleManager.Start();
-            //LethalBundleManager.TryLoadLethalBundles();
 
-            //AssetBundleLoader.onBundlesFinishedLoading += AssetBundleLoader.LoadContentInBundles;
+            DebugHelper.Log($"{ModName} loaded!!", DebugType.User);
         }
 
         internal static void OnBeforeSetupInvoke()

@@ -99,8 +99,8 @@ namespace LethalLevelLoader
             newExtendedMod.ModName = modName;
             newExtendedMod.name = modName.Sanitized(toLower: false) + "Mod";
             newExtendedMod.AuthorName = authorName;
-            if (Plugin.Instance != null)
-                DebugHelper.Log("Created New ExtendedMod: " + newExtendedMod.ModName + " by " + authorName, DebugType.Developer);
+            if (!Application.isEditor)
+                DebugHelper.Log($"Created New ExtendedMod: {newExtendedMod.ModName} by {authorName}", DebugType.Developer);
             return (newExtendedMod);
         }
 
@@ -114,8 +114,8 @@ namespace LethalLevelLoader
             foreach (ExtendedContent extendedContent in extendedContents)
                 newExtendedMod.RegisterExtendedContent(extendedContent);
 
-            if (Plugin.Instance != null)
-                DebugHelper.Log("Created New ExtendedMod: " + newExtendedMod.ModName + " by " + authorName, DebugType.Developer);
+            if (!Application.isEditor)
+                DebugHelper.Log($"Created New ExtendedMod: {newExtendedMod.ModName} by {authorName}", DebugType.Developer);
 
             return (newExtendedMod);
         }

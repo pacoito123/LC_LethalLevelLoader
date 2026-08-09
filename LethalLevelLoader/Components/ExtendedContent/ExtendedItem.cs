@@ -113,8 +113,8 @@ namespace LethalLevelLoader
 
         public void SetLevelMatchingProperties(LevelMatchingProperties newLevelMatchingProperties)
         {
-            if (Plugin.Instance != null)
-                Debug.LogError("SetLevelMatchingProperties() Should Only Be Used In Editor!");
+            if (!Application.isEditor)
+                DebugHelper.LogError("SetLevelMatchingProperties() Should Only Be Used In Editor!", DebugType.User);
             LevelMatchingProperties = newLevelMatchingProperties;
         }
     }

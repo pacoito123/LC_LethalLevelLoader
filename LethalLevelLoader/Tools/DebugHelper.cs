@@ -9,11 +9,13 @@ namespace LethalLevelLoader
         {
             if (!string.IsNullOrEmpty(log) && (int)Settings.debugType >= (int)debugType)
             {
-                string logString = log;
-                if (Plugin.logger != null)
-                    Plugin.logger.LogInfo(logString);
+                if (Settings.debugType is DebugType.All)
+                    log = $"[{debugType}] {log}";
+
+                if (Plugin.Logger != null)
+                    Plugin.Logger.LogInfo(log);
                 else
-                    UnityEngine.Debug.Log("LethalLevelLoader Fallback Logger: " + logString);
+                    UnityEngine.Debug.Log($"LethalLevelLoader Fallback Logger: {log}");
             }
         }
 
@@ -21,11 +23,13 @@ namespace LethalLevelLoader
         {
             if (!string.IsNullOrEmpty(log) && (int)Settings.debugType >= (int)debugType)
             {
-                string logString = log;
-                if (Plugin.logger != null)
-                    Plugin.logger.LogWarning(logString);
+                if (Settings.debugType is DebugType.All)
+                    log = $"[{debugType}] {log}";
+
+                if (Plugin.Logger != null)
+                    Plugin.Logger.LogWarning(log);
                 else
-                    UnityEngine.Debug.LogWarning("LethalLevelLoader Fallback Logger: " + logString);
+                    UnityEngine.Debug.LogWarning($"LethalLevelLoader Fallback Logger: {log}");
             }
         }
 
@@ -33,57 +37,43 @@ namespace LethalLevelLoader
         {
             if (!string.IsNullOrEmpty(log) && (int)Settings.debugType >= (int)debugType)
             {
-                string logString = log;
-                if (Plugin.logger != null)
-                    Plugin.logger.LogError(logString);
-                else
-                    UnityEngine.Debug.LogError("LethalLevelLoader Fallback Logger: " + logString);
-            }
-        }
+                if (Settings.debugType is DebugType.All)
+                    log = $"[{debugType}] {log}";
 
-        public static void LogError(Exception exception, DebugType debugType)
-        {
-            if (exception != null && (int)Settings.debugType >= (int)debugType)
-            {
-                if (Plugin.logger != null)
-                    Plugin.logger.LogError(exception);
+                if (Plugin.Logger != null)
+                    Plugin.Logger.LogError(log);
                 else
-                    UnityEngine.Debug.LogError("LethalLevelLoader Fallback Logger: " + exception);
+                    UnityEngine.Debug.LogError($"LethalLevelLoader Fallback Logger: {log}");
             }
         }
+        public static void LogError(Exception exception, DebugType debugType) => LogError($"{exception}", debugType);
 
         public static void LogFatal(string log, DebugType debugType)
         {
             if (!string.IsNullOrEmpty(log) && (int)Settings.debugType >= (int)debugType)
             {
-                string logString = log;
-                if (Plugin.logger != null)
-                    Plugin.logger.LogFatal(logString);
-                else
-                    UnityEngine.Debug.LogError("(FATAL!) LethalLevelLoader Fallback Logger: " + logString);
-            }
-        }
+                if (Settings.debugType is DebugType.All)
+                    log = $"[{debugType}] {log}";
 
-        public static void LogFatal(Exception exception, DebugType debugType)
-        {
-            if (exception != null && (int)Settings.debugType >= (int)debugType)
-            {
-                if (Plugin.logger != null)
-                    Plugin.logger.LogFatal(exception);
+                if (Plugin.Logger != null)
+                    Plugin.Logger.LogFatal(log);
                 else
-                    UnityEngine.Debug.LogError("(FATAL!) LethalLevelLoader Fallback Logger: " + exception);
+                    UnityEngine.Debug.LogError($"(FATAL!) LethalLevelLoader Fallback Logger: {log}");
             }
         }
+        public static void LogFatal(Exception exception, DebugType debugType) => LogFatal($"{exception}", debugType);
 
         public static void LogDebug(string log, DebugType debugType)
         {
             if (!string.IsNullOrEmpty(log) && (int)Settings.debugType >= (int)debugType)
             {
-                string logString = log;
-                if (Plugin.logger != null)
-                    Plugin.logger.LogDebug(logString);
+                if (Settings.debugType is DebugType.All)
+                    log = $"[{debugType}] {log}";
+
+                if (Plugin.Logger != null)
+                    Plugin.Logger.LogDebug(log);
                 else
-                    UnityEngine.Debug.Log("(Debug) LethalLevelLoader Fallback Logger: " + logString);
+                    UnityEngine.Debug.Log($"(Debug) LethalLevelLoader Fallback Logger: {log}");
             }
         }
 

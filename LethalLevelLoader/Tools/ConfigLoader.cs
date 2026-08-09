@@ -14,6 +14,8 @@ namespace LethalLevelLoader.Tools
 
         internal static void BindConfigs()
         {
+            configFile.SaveOnConfigSet = false;
+
             foreach (ExtendedDungeonFlow extendedDungeonFlow in PatchedContent.VanillaExtendedDungeonFlows)
             {
                 ExtendedDungeonConfig newConfig = new ExtendedDungeonConfig(configFile, "Vanilla Dungeon:  " + extendedDungeonFlow.DungeonName.StripSpecialCharacters().Trim() + " (" + extendedDungeonFlow.DungeonFlow.name + ")", 7);
@@ -46,12 +48,6 @@ namespace LethalLevelLoader.Tools
             configFile.SaveOnConfigSet = true;
             configFile.Save();
 
-            /* if (debugLevelsString.Contains(", ") && debugLevelsString.LastIndexOf(", ") == (debugLevelsString.Length - 2))
-                debugLevelsString = debugLevelsString.Remove(debugLevelsString.LastIndexOf(", "), 2);
-
-            if (debugDungeonsString.Contains(", ") && debugDungeonsString.LastIndexOf(", ") == (debugDungeonsString.Length - 2))
-                debugDungeonsString = debugDungeonsString.Remove(debugDungeonsString.LastIndexOf(", "), 2); */
-
             debugLevelsString = string.Empty;
             debugDungeonsString = string.Empty;
         }
@@ -62,12 +58,10 @@ namespace LethalLevelLoader.Tools
 
             GeneralSettingsConfig newGeneralSettingsConfig = new GeneralSettingsConfig(configFile, " - LethalLevelLoader Settings -", 5);
             newGeneralSettingsConfig.BindConfigs();
-            DebugHelper.Log("Config Level Set As: " + Settings.debugType.ToString(), DebugType.User);
-        }
+            DebugHelper.Log($"Config Level Set As: {Settings.debugType}", DebugType.User);
 
-        internal static string GetConfigCategory(string categoryName, string contentName)
-        {
-            return (categoryName + contentName);
+            configFile.SaveOnConfigSet = true;
+            configFile.Save();
         }
     }
 

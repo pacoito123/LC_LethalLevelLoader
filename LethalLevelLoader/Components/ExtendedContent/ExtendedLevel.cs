@@ -376,8 +376,8 @@ namespace LethalLevelLoader
 
         public void ForceSetRoutePrice(int newValue)
         {
-            if (Plugin.Instance != null)
-                Debug.LogWarning("ForceSetRoutePrice Should Only Be Used In Editor! Consider Using RoutePrice Property To Sync TerminalNode's With New Value.");
+            if (!Application.isEditor)
+                DebugHelper.LogWarning("ForceSetRoutePrice Should Only Be Used In Editor! Consider Using RoutePrice Property To Sync TerminalNode's With New Value.", DebugType.User);
             routePrice = newValue;
         }
 
