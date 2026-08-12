@@ -31,9 +31,10 @@ namespace LethalLevelLoader.Compatibility
             foreach (DawnMoonInfo dawnMoonInfo in LethalContent.Moons.Values)
             {
                 // Skip any vanilla or non-DawnLib moons.
-                if (dawnMoonInfo == null || dawnMoonInfo.Key.IsVanilla() || dawnMoonInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
+                if (dawnMoonInfo == null || dawnMoonInfo.Level == null || dawnMoonInfo.Key.IsVanilla() || dawnMoonInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
                     continue;
                 ExtendedLevel dawnExtendedLevel = ExtendedLevel.Create(dawnMoonInfo.Level);
+                dawnExtendedLevel.name = dawnExtendedLevel.NumberlessPlanetName + "ExtendedLevel";
 
                 dawnExtendedLevel.RouteNode = dawnMoonInfo.RouteNode;
                 dawnExtendedLevel.RouteConfirmNode = dawnMoonInfo.ReceiptNode;
@@ -41,28 +42,132 @@ namespace LethalLevelLoader.Compatibility
 
                 PatchedContent.AllLevelSceneNames.AddRange(dawnMoonInfo.Scenes.ConvertAll(static sceneInfo => sceneInfo.SceneName));
 
-                dawnExtendedLevel.ContentType = ContentType.External;
                 dawnExtendedLevel.Initialize(generateTerminalAssets: true);
-                dawnExtendedLevel.name = dawnExtendedLevel.NumberlessPlanetName + "ExtendedLevel";
 
-                CopyContentTags(dawnMoonInfo, dawnExtendedLevel);
-
-                // Let DawnLib handle moon configuration.
+                // Let DawnLib handle moon configuration:
                 dawnExtendedLevel.GenerateAutomaticConfigurationOptions = false;
                 dawnExtendedLevel.IsRouteRemoved = true;
+                dawnExtendedLevel.OverrideDynamicRiskLevelAssignment = true;
+                dawnExtendedLevel.UseTerrainFootsteps = true;
+                // ...
 
-                if (!dawnExtendedModsDict.TryGetValue(dawnMoonInfo.Key.Namespace, out ExtendedMod dawnExtendedMod))
-                {
-                    dawnExtendedMod = ExtendedMod.Create(ConvertToLLLFormat(dawnMoonInfo.Key.Namespace));
-                    dawnExtendedModsDict.Add(dawnMoonInfo.Key.Namespace, dawnExtendedMod);
-                    PatchedContent.ExtendedMods.Add(dawnExtendedMod);
-                }
-                dawnExtendedMod.RegisterExtendedContent(dawnExtendedLevel);
+                RegisterDawnExtendedContent(dawnMoonInfo, dawnExtendedLevel);
+                PatchedContent.ExtendedLevels.Add(dawnExtendedLevel);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        internal static void ConvertDawnExtendedFootstepSurfaces() // TODO: This but for every ExtendedContent type.
+        internal static void RegisterDawnExtendedEnemyTypes()
+        {
+            foreach (DawnEnemyInfo dawnEnemyInfo in LethalContent.Enemies.Values)
+            {
+                // Skip any vanilla or non-DawnLib EnemyTypes.
+                if (dawnEnemyInfo == null || dawnEnemyInfo.EnemyType == null || dawnEnemyInfo.Key.IsVanilla() || dawnEnemyInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
+                    continue;
+                ExtendedEnemyType dawnExtendedEnemyType = ExtendedEnemyType.Create(dawnEnemyInfo.EnemyType);
+                dawnExtendedEnemyType.name = ConvertToLLLFormat(dawnEnemyInfo.Key.Key) + "ExtendedEnemyType";
+
+                if (dawnEnemyInfo.BestiaryNode != null)
+                {
+                    dawnExtendedEnemyType.EnemyID = dawnEnemyInfo.BestiaryNode.creatureFileID;
+                    dawnExtendedEnemyType.EnemyInfoNode = dawnEnemyInfo.BestiaryNode;
+                    dawnExtendedEnemyType.InfoNodeDescription = dawnEnemyInfo.BestiaryNode.displayText;
+                    dawnExtendedEnemyType.InfoNodeVideoClip = dawnEnemyInfo.BestiaryNode.displayVideo;
+
+                    if (dawnExtendedEnemyType.EnemyType.enemyPrefab != null)
+                    {
+                        ScanNodeProperties[] allEnemyScanNodes = dawnExtendedEnemyType.EnemyType.enemyPrefab.GetComponentsInChildren<ScanNodeProperties>(includeInactive: true);
+                        ScanNodeProperties enemyScanNode = Array.Find(allEnemyScanNodes, scanNode => scanNode.creatureScanID == dawnExtendedEnemyType.EnemyID);
+                        if (enemyScanNode != null)
+                        {
+                            dawnExtendedEnemyType.ScanNodeProperties = enemyScanNode;
+                            dawnExtendedEnemyType.EnemyDisplayName = enemyScanNode.headerText;
+                        }
+                    }
+                }
+                if (string.IsNullOrEmpty(dawnExtendedEnemyType.EnemyDisplayName))
+                    dawnExtendedEnemyType.EnemyDisplayName = dawnEnemyInfo.EnemyType.enemyName;
+                dawnExtendedEnemyType.Initialize();
+
+                RegisterDawnExtendedContent(dawnEnemyInfo, dawnExtendedEnemyType);
+                PatchedContent.ExtendedEnemyTypes.Add(dawnExtendedEnemyType);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal static void RegisterDawnExtendedUnlockableItems()
+        {
+            foreach (DawnUnlockableItemInfo dawnUnlockableItemInfo in LethalContent.Unlockables.Values)
+            {
+                // Skip any vanilla or non-DawnLib UnlockableItems.
+                if (dawnUnlockableItemInfo == null || dawnUnlockableItemInfo.UnlockableItem == null || dawnUnlockableItemInfo.Key.IsVanilla() || dawnUnlockableItemInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
+                    continue;
+                ExtendedUnlockableItem dawnExtendedUnlockableItem = ExtendedUnlockableItem.Create(dawnUnlockableItemInfo.UnlockableItem);
+                dawnExtendedUnlockableItem.name = ConvertToLLLFormat(dawnUnlockableItemInfo.Key.Key) + "ExtendedUnlockableItem";
+
+                dawnExtendedUnlockableItem.BuyNode = dawnUnlockableItemInfo.RequestNode;
+                dawnExtendedUnlockableItem.BuyConfirmNode = dawnUnlockableItemInfo.ConfirmNode;
+                dawnExtendedUnlockableItem.BuyInfoNode = dawnUnlockableItemInfo.InfoNode;
+
+                if (dawnUnlockableItemInfo.DawnPurchaseInfo != null && dawnUnlockableItemInfo.DawnPurchaseInfo.Cost != null)
+                    dawnExtendedUnlockableItem.ItemCost = dawnUnlockableItemInfo.DawnPurchaseInfo.Cost.Provide();
+                // dawnExtendedUnlockableItem.Initialize();
+
+                RegisterDawnExtendedContent(dawnUnlockableItemInfo, dawnExtendedUnlockableItem);
+                PatchedContent.ExtendedUnlockableItems.Add(dawnExtendedUnlockableItem);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal static void ConvertDawnExtendedDungeonFlows()
+        {
+            foreach (DawnDungeonInfo dawnDungeonInfo in LethalContent.Dungeons.Values)
+            {
+                // Skip any vanilla or non-DawnLib Items.
+                if (dawnDungeonInfo == null || dawnDungeonInfo.DungeonFlow == null || dawnDungeonInfo.Key.IsVanilla() || dawnDungeonInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
+                    continue;
+
+                ExtendedDungeonFlow dawnExtendedDungeonFlow = PatchedContent.ExtendedDungeonFlows.Find(extendedDungeonFlow => extendedDungeonFlow.DungeonFlow == dawnDungeonInfo.DungeonFlow);
+                if (dawnExtendedDungeonFlow == null)
+                    continue;
+
+                dawnExtendedDungeonFlow.MapTileSize = dawnDungeonInfo.MapTileSize;
+                if (dawnDungeonInfo.StingerDetail != null)
+                    dawnExtendedDungeonFlow.FirstTimeDungeonAudio = dawnDungeonInfo.StingerDetail.FirstTimeAudio;
+                if (dawnDungeonInfo.DungeonClampRange != null)
+                {
+                    dawnExtendedDungeonFlow.IsDynamicDungeonSizeRestrictionEnabled = true;
+                    dawnExtendedDungeonFlow.DynamicDungeonSizeMinMax = new(dawnDungeonInfo.DungeonClampRange.Min, dawnDungeonInfo.DungeonClampRange.Max);
+                }
+                dawnExtendedDungeonFlow.GenerateAutomaticConfigurationOptions = false;
+                // dawnExtendedDungeonFlow.Initialize();
+
+                if (OriginalContent.DungeonFlows.Remove(dawnExtendedDungeonFlow.DungeonFlow))
+                    RegisterDawnExtendedContent(dawnDungeonInfo, dawnExtendedDungeonFlow);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal static void ConvertDawnExtendedItems()
+        {
+            foreach (DawnItemInfo dawnItemInfo in LethalContent.Items.Values)
+            {
+                // Skip any vanilla or non-DawnLib Items.
+                if (dawnItemInfo == null || dawnItemInfo.Item == null || dawnItemInfo.Key.IsVanilla() || dawnItemInfo.HasTag(NamespacedKey.From("dawn_lib", "is_external")))
+                    continue;
+
+                ExtendedItem dawnExtendedItem = PatchedContent.ExtendedItems.Find(extendedItem => extendedItem.Item == dawnItemInfo.Item);
+                if (dawnExtendedItem == null)
+                    continue;
+                dawnExtendedItem.name = ConvertToLLLFormat(dawnItemInfo.Key.Key) + "ExtendedItem";
+
+                if (OriginalContent.Items.Remove(dawnExtendedItem.Item))
+                    RegisterDawnExtendedContent(dawnItemInfo, dawnExtendedItem);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal static void ConvertDawnExtendedFootstepSurfaces()
         {
             foreach (DawnSurfaceInfo dawnSurfaceInfo in LethalContent.Surfaces.Values)
             {
@@ -75,33 +180,40 @@ namespace LethalLevelLoader.Compatibility
                 ExtendedFootstepSurface dawnExtendedFootstepSurface = PatchedContent.ExtendedFootstepSurfaces[dawnSurfaceInfo.SurfaceIndex];
                 if (dawnExtendedFootstepSurface == null)
                     continue;
-
-                if (dawnExtendedFootstepSurface.ContentType is ContentType.Vanilla)
-                {
-                    OriginalContent.FootstepSurfaces.Remove(dawnExtendedFootstepSurface.FootstepSurface);
-                    PatchedContent.VanillaMod.UnregisterExtendedContent(dawnExtendedFootstepSurface);
-                }
-                dawnExtendedFootstepSurface.ContentType = ContentType.External;
-
-                string dawnKey = ConvertToLLLFormat(dawnSurfaceInfo.Key.Key);
-                dawnExtendedFootstepSurface.name = dawnKey + "ExtendedFootstepSurface";
-                dawnExtendedFootstepSurface.ContentTags[0] = ExtendedMod.CustomContentTag;
-
-                FootstepSurfaceManager.surfaceTagExtendedFootstepDict[$"{dawnSurfaceInfo.Key}"] = dawnExtendedFootstepSurface;
-                CopyContentTags(dawnSurfaceInfo, dawnExtendedFootstepSurface);
+                dawnExtendedFootstepSurface.name = ConvertToLLLFormat(dawnSurfaceInfo.Key.Key) + "ExtendedFootstepSurface";
 
                 dawnExtendedFootstepSurface.SurfaceIndex = dawnSurfaceInfo.SurfaceIndex;
                 dawnExtendedFootstepSurface.AllowEarthLeviathanEmerge = dawnSurfaceInfo.IsNatural;
                 dawnExtendedFootstepSurface.AllowSinking = dawnSurfaceInfo.QuicksandCompatible;
 
-                if (!dawnExtendedModsDict.TryGetValue(dawnSurfaceInfo.Key.Namespace, out ExtendedMod dawnExtendedMod))
-                {
-                    dawnExtendedMod = ExtendedMod.Create(ConvertToLLLFormat(dawnSurfaceInfo.Key.Namespace));
-                    dawnExtendedModsDict.Add(dawnSurfaceInfo.Key.Namespace, dawnExtendedMod);
-                    PatchedContent.ExtendedMods.Add(dawnExtendedMod);
-                }
-                dawnExtendedMod.RegisterExtendedContent(dawnExtendedFootstepSurface);
+                FootstepSurfaceManager.surfaceTagExtendedFootstepDict[$"{dawnSurfaceInfo.Key}"] = dawnExtendedFootstepSurface;
+
+                if (OriginalContent.FootstepSurfaces.Remove(dawnExtendedFootstepSurface.FootstepSurface))
+                    RegisterDawnExtendedContent(dawnSurfaceInfo, dawnExtendedFootstepSurface);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static void RegisterDawnExtendedContent<T>(DawnBaseInfo<T> dawnInfo, ExtendedContent extendedContent) where T : DawnBaseInfo<T>
+        {
+            if (extendedContent.ContentType is ContentType.Vanilla)
+                PatchedContent.VanillaMod.UnregisterExtendedContent(extendedContent);
+            extendedContent.ContentType = ContentType.External;
+            extendedContent.ContentTags = [ExtendedMod.CustomContentTag];
+
+            CopyContentTags(dawnInfo, extendedContent);
+
+            string dawnNamespace = dawnInfo.Key.Namespace;
+            if (!dawnExtendedModsDict.TryGetValue(dawnNamespace, out ExtendedMod dawnExtendedMod))
+            {
+                dawnExtendedMod = ExtendedMod.Create(ConvertToLLLFormat(dawnNamespace), dawnNamespace);
+                dawnExtendedMod.ModNameAliases.Add(dawnNamespace);
+                dawnExtendedMod.ModMergeSetting = ModMergeSetting.MatchingModName;
+
+                dawnExtendedModsDict.Add(dawnNamespace, dawnExtendedMod);
+                PatchedContent.ExtendedMods.Add(dawnExtendedMod);
+            }
+            dawnExtendedMod.RegisterExtendedContent(extendedContent);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]

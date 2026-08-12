@@ -12,6 +12,7 @@ namespace LethalLevelLoader
             List<Item> buyableItems = [.. Patches.Terminal.buyableItemsList];
             foreach (ExtendedItem extendedItem in PatchedContent.CustomExtendedItems)
             {
+                if (extendedItem.ContentType is ContentType.External) continue;
                 if (!extendedItem.IsBuyableItem || buyableItems.Contains(extendedItem.Item)) continue;
                 if (extendedItem.BuyNode != null)
                     extendedItem.BuyNode.buyItemIndex = buyableItems.Count;

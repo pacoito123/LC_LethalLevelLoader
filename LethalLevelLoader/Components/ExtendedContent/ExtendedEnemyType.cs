@@ -11,7 +11,7 @@ namespace LethalLevelLoader
         [field: Header("General Settings")]
 
         [field: SerializeField] public EnemyType EnemyType { get; set; }
-        [field: SerializeField] public string EnemyDisplayName { get; set; }
+        [field: SerializeField] public string EnemyDisplayName { get; set; } = string.Empty;
 
         [field: Space(5)]
         [field: Header("Dynamic Injection Matching Settings")]
@@ -32,7 +32,7 @@ namespace LethalLevelLoader
         [field: SerializeField] public VideoClip InfoNodeVideoClip { get; set; }
 
         public ScanNodeProperties ScanNodeProperties { get; internal set; }
-        public int EnemyID { get; internal set; }
+        public int EnemyID { get; internal set; } = -1;
         public TerminalNode EnemyInfoNode { get; internal set; }
 
         public static ExtendedEnemyType Create(EnemyType enemyType)
@@ -46,7 +46,7 @@ namespace LethalLevelLoader
             return (extendedEnemyType);
         }
 
-        public void Initalize()
+        public void Initialize()
         {
             DebugHelper.Log("Initializing Custom Enemy: " + EnemyType.enemyName, DebugType.Developer);
 

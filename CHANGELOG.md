@@ -21,6 +21,8 @@
   * Neither players nor Masked should be causing it, at least
 * Fixed (harmless) errors with a soft compatibility when loading into a lobby
 * Fixed a few missing null checks when restoring assets
+* Fixed some content types registered by [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib) being regarded as vanilla by LLL
+  * Also fixed ExtendedContent ScriptableObjects not being created at all for a couple content types
 
 </details>
 

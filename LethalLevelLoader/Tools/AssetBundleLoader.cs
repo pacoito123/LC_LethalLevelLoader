@@ -469,7 +469,7 @@ namespace LethalLevelLoader
                 foreach (ExtendedEnemyType extendedEnemyType in extendedMod.ExtendedEnemyTypes)
                 {
                     extendedEnemyType.ContentType = ContentType.Custom;
-                    extendedEnemyType.Initalize();
+                    extendedEnemyType.Initialize();
                     PatchedContent.ExtendedEnemyTypes.Add(extendedEnemyType);
                 }
                 foreach (ExtendedWeatherEffect extendedWeatherEffect in extendedMod.ExtendedWeatherEffects)
@@ -577,7 +577,6 @@ namespace LethalLevelLoader
             foreach (EnemyType enemyType in OriginalContent.Enemies)
             {
                 ExtendedEnemyType newExtendedEnemyType = ExtendedEnemyType.Create(enemyType);
-                newExtendedEnemyType.ContentTags.Add(ExtendedMod.VanillaContentTag);
 
                 ScanNodeProperties[] allEnemyScanNodes = newExtendedEnemyType.EnemyType.enemyPrefab.GetComponentsInChildren<ScanNodeProperties>(includeInactive: true);
                 ScanNodeProperties enemyScanNode = Array.Find(allEnemyScanNodes, scanNode => (scanNode.creatureScanID >= 0) && (scanNode.creatureScanID < Patches.Terminal.enemyFiles.Count));
@@ -587,11 +586,16 @@ namespace LethalLevelLoader
                     newExtendedEnemyType.EnemyID = enemyScanNode.creatureScanID;
                     newExtendedEnemyType.EnemyInfoNode = Patches.Terminal.enemyFiles[enemyScanNode.creatureScanID];
                     if (newExtendedEnemyType.EnemyInfoNode != null)
+                    {
                         newExtendedEnemyType.InfoNodeVideoClip = newExtendedEnemyType.EnemyInfoNode.displayVideo;
+                        newExtendedEnemyType.InfoNodeDescription = newExtendedEnemyType.EnemyInfoNode.displayText;
+                    }
                     newExtendedEnemyType.EnemyDisplayName = enemyScanNode.headerText;
                 }
                 if (string.IsNullOrEmpty(newExtendedEnemyType.EnemyDisplayName))
                     newExtendedEnemyType.EnemyDisplayName = enemyType.enemyName;
+
+                newExtendedEnemyType.ContentTags.Add(ExtendedMod.VanillaContentTag);
                 PatchedContent.VanillaMod.RegisterExtendedContent(newExtendedEnemyType);
                 PatchedContent.ExtendedEnemyTypes.Add(newExtendedEnemyType);
             }

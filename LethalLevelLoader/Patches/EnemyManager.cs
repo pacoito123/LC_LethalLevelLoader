@@ -91,21 +91,24 @@ namespace LethalLevelLoader
 
         internal static void UpdateEnemyIDs()
         {
-            int highestVanillaEnemyScanNodeCreatureID = -1;
-            foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.VanillaExtendedEnemyTypes)
-                if (extendedEnemyType.EnemyID > highestVanillaEnemyScanNodeCreatureID)
-                    highestVanillaEnemyScanNodeCreatureID = extendedEnemyType.EnemyID;
+            int highestEnemyScanNodeCreatureID = -1;
+            foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.ExtendedEnemyTypes)
+                if (extendedEnemyType.ContentType is not ContentType.Custom && extendedEnemyType.EnemyID > highestEnemyScanNodeCreatureID)
+                    highestEnemyScanNodeCreatureID = extendedEnemyType.EnemyID;
 
-            int counter = 0;
             foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.CustomExtendedEnemyTypes)
             {
-                extendedEnemyType.EnemyID = ++counter + highestVanillaEnemyScanNodeCreatureID;
-                ScanNodeProperties[] allEnemyScanNodes = extendedEnemyType.EnemyType.enemyPrefab.GetComponentsInChildren<ScanNodeProperties>(includeInactive: true);
-                for (int i = 0; i < allEnemyScanNodes.Length; i++)
+                if (extendedEnemyType == null || extendedEnemyType.ContentType is not ContentType.Custom) continue;
+                extendedEnemyType.EnemyID = ++highestEnemyScanNodeCreatureID;
+                if (extendedEnemyType.EnemyType.enemyPrefab != null)
                 {
-                    if (!string.IsNullOrEmpty(allEnemyScanNodes[i].headerText) && allEnemyScanNodes[i].headerText.ContainsSanitized(extendedEnemyType.EnemyDisplayName, bothWays: true))
-                        extendedEnemyType.ScanNodeProperties = allEnemyScanNodes[i];
-                    allEnemyScanNodes[i].creatureScanID = extendedEnemyType.EnemyID;
+                    ScanNodeProperties[] allEnemyScanNodes = extendedEnemyType.EnemyType.enemyPrefab.GetComponentsInChildren<ScanNodeProperties>(includeInactive: true);
+                    for (int i = 0; i < allEnemyScanNodes.Length; i++)
+                    {
+                        if (!string.IsNullOrEmpty(allEnemyScanNodes[i].headerText) && allEnemyScanNodes[i].headerText.ContainsSanitized(extendedEnemyType.EnemyDisplayName, bothWays: true))
+                            extendedEnemyType.ScanNodeProperties = allEnemyScanNodes[i];
+                        allEnemyScanNodes[i].creatureScanID = extendedEnemyType.EnemyID;
+                    }
                 }
                 if (string.IsNullOrEmpty(extendedEnemyType.EnemyDisplayName))
                 {

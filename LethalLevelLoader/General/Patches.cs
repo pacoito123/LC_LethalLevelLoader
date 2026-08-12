@@ -203,8 +203,13 @@ namespace LethalLevelLoader
 
                 if (DawnLibCompatibility.Enabled)
                 {
-                    DawnLibCompatibility.RegisterDawnExtendedLevels(); // Create ExtendedLevel for DawnLib moons.
-                    DawnLibCompatibility.ConvertDawnExtendedFootstepSurfaces(); // Fix ExtendedFootstepSurface values for DawnLib surfaces.
+                    DawnLibCompatibility.RegisterDawnExtendedLevels();
+                    DawnLibCompatibility.RegisterDawnExtendedEnemyTypes();
+                    DawnLibCompatibility.RegisterDawnExtendedUnlockableItems();
+
+                    DawnLibCompatibility.ConvertDawnExtendedItems();
+                    DawnLibCompatibility.ConvertDawnExtendedDungeonFlows();
+                    DawnLibCompatibility.ConvertDawnExtendedFootstepSurfaces();
                 }
 
                 PatchedContent.PopulateContentDictionaries();
@@ -300,7 +305,8 @@ namespace LethalLevelLoader
                 EnemyManager.UpdateEnemyIDs();
 
             foreach (ExtendedEnemyType extendedEnemyType in PatchedContent.CustomExtendedEnemyTypes)
-                TerminalManager.CreateEnemyTypeTerminalData(extendedEnemyType);
+                if (extendedEnemyType.ContentType is not ContentType.External)
+                    TerminalManager.CreateEnemyTypeTerminalData(extendedEnemyType);
 
             if (Plugin.IsSetupComplete == false)
             {
