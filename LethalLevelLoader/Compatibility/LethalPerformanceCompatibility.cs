@@ -22,27 +22,27 @@ namespace LethalLevelLoader.Compatibility
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         [HarmonyPatch(typeof(MoonCachingPatch.Patch_NavMeshSurface), nameof(MoonCachingPatch.Patch_NavMeshSurface.FindDropship)), HarmonyPrefix, HarmonyPriority(Patches.priority)]
-        internal static void MoonCachingPatchFindDropship_Prefix(Scene scene)
+        internal static void MoonCachingPatchFindDropship_Prefix(ref Scene scene)
         {
-            if (SceneManager.loadedSceneCount < 2) return;
+            if (string.Equals(scene.name, "SampleSceneRelay", System.StringComparison.Ordinal)) return;
+            LevelLoader.currentLevelScene = scene;
 
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel == null || currentLevel.ContentType is ContentType.External || currentLevel.SelectableLevel == null) return;
 
-            LevelLoader.currentLevelScene = scene;
             LevelLoader.ValidateItemShipContainer();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         [HarmonyPatch(typeof(MoonCachingPatch.Patch_NavMeshSurface), nameof(MoonCachingPatch.Patch_NavMeshSurface.FindDungeon)), HarmonyPrefix, HarmonyPriority(Patches.priority)]
-        internal static void MoonCachingPatchFindDungeon_Prefix(Scene scene)
+        internal static void MoonCachingPatchFindDungeon_Prefix(ref Scene scene)
         {
-            if (SceneManager.loadedSceneCount < 2) return;
+            if (string.Equals(scene.name, "SampleSceneRelay", System.StringComparison.Ordinal)) return;
+            LevelLoader.currentLevelScene = scene;
 
             ExtendedLevel currentLevel = LevelManager.CurrentExtendedLevel;
             if (currentLevel == null || currentLevel.ContentType is ContentType.External || currentLevel.SelectableLevel == null || currentLevel.SelectableLevel.spawnEnemiesAndScrap == false) return;
 
-            LevelLoader.currentLevelScene = scene;
             LevelLoader.RestoreRuntimeDungeon();
         }
     }
