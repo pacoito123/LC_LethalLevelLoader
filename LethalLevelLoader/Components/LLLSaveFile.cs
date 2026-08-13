@@ -9,22 +9,21 @@ namespace LethalLevelLoader
 
         public string CurrentLevelName { get; internal set; } = string.Empty;
 
-        public int parityStepsTaken;
         public Dictionary<int, AllItemsListItemData> itemSaveData = new Dictionary<int, AllItemsListItemData>();
         public List<ExtendedLevelData> extendedLevelSaveData = new List<ExtendedLevelData>();
 
         public void Save()
         {
             string prefix = Plugin.ModName + '.' + nameof(LLLSaveFile) + '.';
-            ES3.Save(nameof(parityStepsTaken), prefix + nameof(parityStepsTaken), SaveLocation);
-            ES3.Save(nameof(itemSaveData), prefix + nameof(itemSaveData), SaveLocation);
-            ES3.Save(nameof(extendedLevelSaveData), prefix + nameof(extendedLevelSaveData), SaveLocation);
+            ES3.Save(prefix + nameof(CurrentLevelName), CurrentLevelName, SaveLocation);
+            ES3.Save(prefix + nameof(itemSaveData), itemSaveData, SaveLocation);
+            ES3.Save(prefix + nameof(extendedLevelSaveData), extendedLevelSaveData, SaveLocation);
         }
 
         public void Load()
         {
             string prefix = Plugin.ModName + '.' + nameof(LLLSaveFile) + '.';
-            parityStepsTaken = ES3.Load(prefix + nameof(parityStepsTaken), SaveLocation, 0);
+            CurrentLevelName = ES3.Load(prefix + nameof(CurrentLevelName), SaveLocation, string.Empty);
             itemSaveData = ES3.Load(prefix + nameof(itemSaveData), SaveLocation, new Dictionary<int, AllItemsListItemData>());
             extendedLevelSaveData = ES3.Load(prefix + nameof(extendedLevelSaveData), SaveLocation, new List<ExtendedLevelData>());
         }
@@ -32,7 +31,6 @@ namespace LethalLevelLoader
         public void Reset()
         {
             CurrentLevelName = string.Empty;
-            parityStepsTaken = 0;
             itemSaveData = new Dictionary<int, AllItemsListItemData>();
             extendedLevelSaveData = new List<ExtendedLevelData>();
         }

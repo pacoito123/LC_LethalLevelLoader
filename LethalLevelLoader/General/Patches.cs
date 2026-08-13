@@ -410,26 +410,22 @@ namespace LethalLevelLoader
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ChangeLevel)), HarmonyPrefix, HarmonyPriority(priority)]
         public static void StartOfRoundChangeLevel_Prefix(ref int levelID)
         {
-            if (IsServer == false) return;
+            if (hasInitiallyChangedLevel == true || IsServer == false || string.IsNullOrEmpty(SaveManager.currentSaveFile?.CurrentLevelName)) return;
+            hasInitiallyChangedLevel = true;
 
             //Because Level ID's can change between modpack adjustments and such, we save the name of the level instead and find and load that up instead of the saved ID the base game uses.
-            if (hasInitiallyChangedLevel == false && !string.IsNullOrEmpty(SaveManager.currentSaveFile.CurrentLevelName))
-                foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
-                    if (string.Equals(extendedLevel.SelectableLevel.name, SaveManager.currentSaveFile.CurrentLevelName, StringComparison.Ordinal))
-                    {
-                        DebugHelper.Log("Loading Previously Saved SelectableLevel: " + extendedLevel.SelectableLevel.PlanetName, DebugType.User);
-                        levelID = Array.FindIndex(StartOfRound.levels, level => level == extendedLevel.SelectableLevel);
-                        hasInitiallyChangedLevel = true;
-                        return;
-                    }
+            ExtendedLevel currentExtendedLevel = PatchedContent.ExtendedLevels.Find(static extendedLevel => extendedLevel.SelectableLevel != null && string.Equals(extendedLevel.SelectableLevel.name, SaveManager.currentSaveFile.CurrentLevelName, StringComparison.Ordinal));
+            if (currentExtendedLevel != null)
+            {
+                DebugHelper.Log($"Loading Previously Saved SelectableLevel: {currentExtendedLevel.NumberlessPlanetName}", DebugType.User);
+                levelID = currentExtendedLevel.SelectableLevel.levelID;
+                return;
+            }
 
             //If we can't find the previous current level, that probably means the game is going to try and use an ID bigger than the current array, or reference the wrong level, so we reset it back to experimentation here.
-            if (hasInitiallyChangedLevel == false && !string.IsNullOrEmpty(SaveManager.currentSaveFile.CurrentLevelName) && !SaveManager.currentSaveFile.CurrentLevelName.Contains("Experimentation") && (levelID >= StartOfRound.levels.Length || levelID > OriginalContent.SelectableLevels.Count))
-                levelID = 0;
-
-            hasInitiallyChangedLevel = true;
+            DebugHelper.LogWarning($"Could Not Find Previously Saved SelectableLevel: {SaveManager.currentSaveFile.CurrentLevelName}", DebugType.User);
+            levelID = 0;
         }
-
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ChangeLevel)), HarmonyPostfix, HarmonyPriority(priority)]
         public static void StartOfRoundChangeLevel_Postfix(int levelID)

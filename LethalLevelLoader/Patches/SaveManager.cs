@@ -7,7 +7,6 @@ namespace LethalLevelLoader
     internal static class SaveManager
     {
         public static LLLSaveFile currentSaveFile;
-        public static bool parityCheck;
 
         internal static void InitializeSave()
         {
@@ -23,21 +22,6 @@ namespace LethalLevelLoader
             if (currentPlanetID != -1)
                 DebugHelper.Log($"Vanilla CurrentSaveFileName Has Saved Current Planet ID: {currentPlanetID}", DebugType.Developer);
 
-            // Compare saved "Steps Taken" statistic, to try to check whether the Vanilla and LethalLevelLoader saves are the same
-            int originalStepsTaken = ES3.Load("Stats_StepsTaken", GameNetworkManager.Instance.currentSaveFileName, 0);
-
-            if (originalStepsTaken == currentSaveFile.parityStepsTaken)
-                parityCheck = true;
-            else
-            {
-                DebugHelper.Log($"Vanilla Save File Mismatch, LLL Steps Taken: {currentSaveFile.parityStepsTaken}, Vanilla Steps Taken: {originalStepsTaken}", DebugType.Developer);
-
-                currentSaveFile.Reset();
-                currentSaveFile.parityStepsTaken = originalStepsTaken;
-
-                parityCheck = false;
-            }
-
             if (currentSaveFile.extendedLevelSaveData != null)
             {
                 foreach (ExtendedLevelData extendedLevelData in currentSaveFile.extendedLevelSaveData)
@@ -51,27 +35,12 @@ namespace LethalLevelLoader
                 return;
 
             currentSaveFile.itemSaveData = GetAllItemsListItemDataDict();
-            currentSaveFile.parityStepsTaken = Patches.StartOfRound.gameStats.allStepsTaken;
-
-            SaveAllLevels();
-
+            currentSaveFile.extendedLevelSaveData = PatchedContent.ExtendedLevels.ConvertAll(static level => new ExtendedLevelData(level));
             currentSaveFile.Save();
-        }
-
-        internal static void SaveAllLevels()
-        {
-            currentSaveFile.extendedLevelSaveData = new List<ExtendedLevelData>();
-            foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
-                currentSaveFile.extendedLevelSaveData.Add(new ExtendedLevelData(extendedLevel));
         }
 
         internal static void LoadShipGrabbableItems()
         {
-            if (!parityCheck)
-                return;
-
-            // TODO: Config option to disable this process preferably
-
             List<SavedShipItemData> loadedShipItemData = GetConstructedSavedShipItemData(currentSaveFile.itemSaveData);
             FixMismatchedSavedItemData(loadedShipItemData);
             OverrideCurrentSaveFileItemData(loadedShipItemData);
