@@ -14,6 +14,7 @@
 
 * Fixed MatchingProperties (and a few config fields) not ignoring spaces when matching ExtendedContent
 * Fixed DungeonMatchingProperties not also checking `DungeonName` field in ExtendedDungeonFlow when matching
+* Fixed LevelMatchingProperties not additionally checking the `PlanetName` field in SelectableLevel (with numbers included) when matching
 * Fixed ExtendedLevel route word overrides not being applied when TerminalKeywords are created
 * Fixed vanilla Mineshaft LevelAmbienceLibraries not being properly restored
 * Fixed weather selection being called too early and (very rarely) causing issues

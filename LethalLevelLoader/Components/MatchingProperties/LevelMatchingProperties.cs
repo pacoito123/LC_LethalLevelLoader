@@ -31,7 +31,7 @@ namespace LethalLevelLoader
             if (currentRoutePrice.Count > 0)
                 UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingWithinRanges(extendedLevel.RoutePrice, currentRoutePrice), extendedLevel.name, "Route Price");
             if (planetNames.Count > 0)
-                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedLevel.NumberlessPlanetName, planetNames), extendedLevel.name, "Planet Name");
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings([extendedLevel.NumberlessPlanetName, extendedLevel.SelectableLevel.PlanetName], planetNames), extendedLevel.name, "Planet Name");
             if (currentWeather.Count > 0)
                 UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString($"{extendedLevel.SelectableLevel.currentWeather}", currentWeather), extendedLevel.name, "Current Weather");
 
