@@ -181,8 +181,8 @@ namespace LethalLevelLoader
         public static bool ContainsSanitized(this string input, string comparison, bool bothWays = false)
         {
             if (string.IsNullOrEmpty(input)) return false;
-            (string, string) sanitized = (input.Sanitized(), comparison.Sanitized());
-            return sanitized.Item1.Contains(sanitized.Item2, StringComparison.Ordinal) || (bothWays && sanitized.Item2.Contains(sanitized.Item1, StringComparison.Ordinal));
+            (string, string) sanitized = (input.Sanitized(removeWhitespace: true), comparison.Sanitized(removeWhitespace: true));
+            return sanitized.Item1.Contains(sanitized.Item2, StringComparison.OrdinalIgnoreCase) || (bothWays && sanitized.Item2.Contains(sanitized.Item1, StringComparison.OrdinalIgnoreCase));
         }
 
         public static bool EqualsSanitized(this string input, string comparison) => string.Equals(input.Sanitized(removeWhitespace: true), comparison.Sanitized(removeWhitespace: true), StringComparison.Ordinal);
