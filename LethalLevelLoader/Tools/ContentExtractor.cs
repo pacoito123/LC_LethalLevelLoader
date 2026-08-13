@@ -209,6 +209,10 @@ namespace LethalLevelLoader
                 TryAddReference(OriginalContent.SpawnableOutsideObjects, spawnableOutsideObject.spawnableObject);
 
             TryAddReference(OriginalContent.LevelAmbienceLibraries, selectableLevel.levelAmbienceClips);
+
+            foreach (IntWithRarity dungeonWithRarity in selectableLevel.dungeonFlowTypes)
+                if (dungeonWithRarity.overrideLevelAmbience != null)
+                    TryAddReference(OriginalContent.LevelAmbienceLibraries, dungeonWithRarity.overrideLevelAmbience);
         }
 
         internal static void TryAddReference<T>(List<T> referenceList, T reference) where T : UnityEngine.Object
