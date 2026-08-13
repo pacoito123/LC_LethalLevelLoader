@@ -66,7 +66,7 @@ namespace LethalLevelLoader
             AssetBundles.AssetBundleLoader.OnBundleUnloaded.AddListener(Instance.RefreshLoadStatus);
 
             if (DawnLibCompatibility.Enabled)
-                allowedToLoadLevel.OnValueChanged += (previousValue, newValue) => DawnLibCompatibility.RefreshLocalClientBundleState(newValue ? 4 : 0); // Done, Queued
+                allowedToLoadLevel.OnValueChanged += static (previousValue, newValue) => DawnLibCompatibility.RefreshLocalClientBundleState(newValue ? 4 : 0); // Done, Queued
         }
 
         public override void OnDestroy()

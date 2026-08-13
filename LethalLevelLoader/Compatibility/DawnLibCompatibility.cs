@@ -51,7 +51,7 @@ namespace LethalLevelLoader.Compatibility
                 dawnExtendedLevel.UseTerrainFootsteps = true;
                 // ...
 
-                RegisterDawnExtendedContent(dawnMoonInfo, dawnExtendedLevel);
+                RegisterDawnExtendedContent(dawnMoonInfo, dawnMoonInfo.Key.Namespace, dawnExtendedLevel);
                 PatchedContent.ExtendedLevels.Add(dawnExtendedLevel);
             }
         }
@@ -89,7 +89,7 @@ namespace LethalLevelLoader.Compatibility
                     dawnExtendedEnemyType.EnemyDisplayName = dawnEnemyInfo.EnemyType.enemyName;
                 dawnExtendedEnemyType.Initialize();
 
-                RegisterDawnExtendedContent(dawnEnemyInfo, dawnExtendedEnemyType);
+                RegisterDawnExtendedContent(dawnEnemyInfo, dawnEnemyInfo.Key.Namespace, dawnExtendedEnemyType);
                 PatchedContent.ExtendedEnemyTypes.Add(dawnExtendedEnemyType);
             }
         }
@@ -113,7 +113,7 @@ namespace LethalLevelLoader.Compatibility
                     dawnExtendedUnlockableItem.ItemCost = dawnUnlockableItemInfo.DawnPurchaseInfo.Cost.Provide();
                 // dawnExtendedUnlockableItem.Initialize();
 
-                RegisterDawnExtendedContent(dawnUnlockableItemInfo, dawnExtendedUnlockableItem);
+                RegisterDawnExtendedContent(dawnUnlockableItemInfo, dawnUnlockableItemInfo.Key.Namespace, dawnExtendedUnlockableItem);
                 PatchedContent.ExtendedUnlockableItems.Add(dawnExtendedUnlockableItem);
             }
         }
@@ -143,7 +143,7 @@ namespace LethalLevelLoader.Compatibility
                 // dawnExtendedDungeonFlow.Initialize();
 
                 if (OriginalContent.DungeonFlows.Remove(dawnExtendedDungeonFlow.DungeonFlow))
-                    RegisterDawnExtendedContent(dawnDungeonInfo, dawnExtendedDungeonFlow);
+                    RegisterDawnExtendedContent(dawnDungeonInfo, dawnDungeonInfo.Key.Namespace, dawnExtendedDungeonFlow);
             }
         }
 
@@ -162,7 +162,7 @@ namespace LethalLevelLoader.Compatibility
                 dawnExtendedItem.name = ConvertToLLLFormat(dawnItemInfo.Key.Key) + "ExtendedItem";
 
                 if (OriginalContent.Items.Remove(dawnExtendedItem.Item))
-                    RegisterDawnExtendedContent(dawnItemInfo, dawnExtendedItem);
+                    RegisterDawnExtendedContent(dawnItemInfo, dawnItemInfo.Key.Namespace, dawnExtendedItem);
             }
         }
 
@@ -189,21 +189,20 @@ namespace LethalLevelLoader.Compatibility
                 FootstepSurfaceManager.surfaceTagExtendedFootstepDict[$"{dawnSurfaceInfo.Key}"] = dawnExtendedFootstepSurface;
 
                 if (OriginalContent.FootstepSurfaces.Remove(dawnExtendedFootstepSurface.FootstepSurface))
-                    RegisterDawnExtendedContent(dawnSurfaceInfo, dawnExtendedFootstepSurface);
+                    RegisterDawnExtendedContent(dawnSurfaceInfo, dawnSurfaceInfo.Key.Namespace, dawnExtendedFootstepSurface);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static void RegisterDawnExtendedContent<T>(DawnBaseInfo<T> dawnInfo, ExtendedContent extendedContent) where T : DawnBaseInfo<T>
+        private static void RegisterDawnExtendedContent(object dawnBaseInfo, string dawnNamespace, ExtendedContent extendedContent)
         {
             if (extendedContent.ContentType is ContentType.Vanilla)
                 PatchedContent.VanillaMod.UnregisterExtendedContent(extendedContent);
             extendedContent.ContentType = ContentType.External;
             extendedContent.ContentTags = [ExtendedMod.CustomContentTag];
 
-            CopyContentTags(dawnInfo, extendedContent);
+            CopyContentTags(dawnBaseInfo, extendedContent);
 
-            string dawnNamespace = dawnInfo.Key.Namespace;
             if (!dawnExtendedModsDict.TryGetValue(dawnNamespace, out ExtendedMod dawnExtendedMod))
             {
                 dawnExtendedMod = ExtendedMod.Create(ConvertToLLLFormat(dawnNamespace), dawnNamespace);
@@ -227,8 +226,10 @@ namespace LethalLevelLoader.Compatibility
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        internal static void CopyContentTags(ITaggable taggable, ExtendedContent extendedContent)
+        internal static void CopyContentTags(object dawnBaseInfo, ExtendedContent extendedContent)
         {
+            if (dawnBaseInfo is not ITaggable taggable) return;
+
             foreach (NamespacedKey namespacedTag in taggable.AllTags())
             {
                 string tag = ConvertToLLLFormat(namespacedTag.Key);
