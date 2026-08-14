@@ -419,7 +419,7 @@ namespace LethalLevelLoader.Tools
             }
         }
 
-        internal static T RestoreAsset<T>(Object currentAsset, T newAsset, bool debugAction = false, bool destroyOnReplace = true) where T : Object
+        internal static T RestoreAsset<T>(Object currentAsset, T newAsset, bool debugAction = true, bool destroyOnReplace = true) where T : Object
         {
             if (currentAsset != null && newAsset != null)
             {
@@ -427,13 +427,13 @@ namespace LethalLevelLoader.Tools
                     return newAsset;
 
                 if (debugAction == true)
-                    DebugHelper.Log("Restoring " + currentAsset.GetType().ToString() + ": Old Asset Name: " + currentAsset.name + " , New Asset Name: ", DebugType.Developer);
+                    DebugHelper.Log($"Restoring {currentAsset.GetType()}: '{currentAsset.name}' (ID {currentAsset.GetInstanceID()}) -> '{newAsset.name}' (ID {newAsset.GetInstanceID()})", DebugType.IAmBatby);
 
                 if (destroyOnReplace == true)
                     objectsToDestroy.Add(currentAsset);
             }
             else
-                DebugHelper.LogWarning("Asset Restoration Failed, Null Reference Found!", DebugType.Developer);
+                DebugHelper.LogWarning($"Asset Restoration Failed, Null Reference Found! '{(currentAsset != null ? currentAsset.name : "<null>")}' -> '{(newAsset != null ? newAsset.name : "<null>")}'", DebugType.Developer);
             return (newAsset);
         }
 

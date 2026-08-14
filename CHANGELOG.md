@@ -6,16 +6,16 @@
 **<details><summary>General</summary>**
 
 * Removed LethalModDataLib as a dependency
-  * Should remain compatible with existing saves created on a prior version
+  * Should remain compatible with any existing saves created on a prior version, though make a backup just in case!
 
 </details>
 
 **<details><summary>Fixes</summary>**
 
-* Fixed MatchingProperties (and a few config fields) not ignoring spaces when matching ExtendedContent
-* Fixed DungeonMatchingProperties not also checking `DungeonName` field in ExtendedDungeonFlow when matching
+* Fixed MatchingProperties (and some config fields) not ignoring spaces when matching ExtendedContent
+* Fixed DungeonMatchingProperties not additionally checking the `DungeonName` field in ExtendedDungeonFlow when matching
 * Fixed LevelMatchingProperties not additionally checking the `PlanetName` field in SelectableLevel (with numbers included) when matching
-* Fixed ExtendedLevel route word overrides not being applied when TerminalKeywords are created
+* Fixed ExtendedLevel route word overrides not being applied when TerminalKeywords are created at the start
 * Fixed vanilla Mineshaft LevelAmbienceLibraries not being properly restored
 * Fixed weather selection being called too early and (very rarely) causing issues
 * Fixed a couple errors when a Terrain with missing TerrainData is loaded by a scene
@@ -24,8 +24,9 @@
 * Fixed (harmless) errors with a soft compatibility when loading into a lobby
 * Fixed a few missing null checks when restoring assets
 * Fixed a few vanilla assets not actually being tagged
-* Fixed some content types registered by [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib) being regarded as vanilla by LLL
+* Fixed some content types registered by [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib) being considered as vanilla by LLL
   * Also fixed ExtendedContent ScriptableObjects not being created at all for a couple content types
+* Removed a sketchy step in the save loading process that _may_ have (on rare occasions) caused ExtendedLevel Hidden/Locked data to be reset when opening a save
 
 </details>
 

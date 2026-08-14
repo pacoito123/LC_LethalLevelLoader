@@ -193,7 +193,7 @@ namespace LethalLevelLoader
                 DebugHelper.LogWarning("ExtendedDungeonFlow.dungeonSizeLerpPercentage is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.DynamicDungeonSizeLerpRate instead.", DebugType.Developer);
             if (dungeonSizeMax != 1 || dungeonSizeMin != 1)
             {
-                DebugHelper.LogWarning("ExtendedDungeonFlow.dungeonSizeMin and ExtendedDungeonFlow.dungeonSizeMax are Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.DynamicSungeonSizeMinMax instead.", DebugType.Developer);
+                DebugHelper.LogWarning("ExtendedDungeonFlow.dungeonSizeMin and ExtendedDungeonFlow.dungeonSizeMax are Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.DynamicDungeonSizeMinMax instead.", DebugType.Developer);
                 DynamicDungeonSizeMinMax = new Vector2(dungeonSizeMin, dungeonSizeMax);
             }
             if (!string.IsNullOrEmpty(contentSourceName))
@@ -205,7 +205,7 @@ namespace LethalLevelLoader
             }
             if (enableDynamicDungeonSizeRestriction != false || (IsDynamicDungeonSizeRestrictionEnabled != enableDynamicDungeonSizeRestriction))
             {
-                DebugHelper.LogWarning("ExtendedDungeonFlow.enableDynamicDungeonSizeRestriction Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.IsDynamicDungeonRestrictionEnabled instead.", DebugType.Developer);
+                DebugHelper.LogWarning("ExtendedDungeonFlow.enableDynamicDungeonSizeRestriction Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.IsDynamicDungeonSizeRestrictionEnabled instead.", DebugType.Developer);
                 IsDynamicDungeonSizeRestrictionEnabled = enableDynamicDungeonSizeRestriction;
             }
             if (generateAutomaticConfigurationOptions == false || (GenerateAutomaticConfigurationOptions != generateAutomaticConfigurationOptions))

@@ -53,15 +53,16 @@ namespace LethalLevelLoader
 
             List<ExtendedDungeonFlowWithRarity> availableExtendedFlowsList = DungeonManager.GetValidExtendedDungeonFlows(LevelManager.CurrentExtendedLevel, debugResults: true);
 
-            //List<string> dungeonFlowNames = new List<string>();
             List<StringContainer> dungeonFlowNames = new List<StringContainer>();
             List<int> rarities = new List<int>();
 
             if (availableExtendedFlowsList.Count == 0)
             {
                 DebugHelper.LogError("Loading Facility DungeonFlow to prevent infinite loading!", DebugType.User);
-                StringContainer newStringContainer = new StringContainer();
-                newStringContainer.SomeText = PatchedContent.ExtendedDungeonFlows[0].DungeonFlow.name;
+                StringContainer newStringContainer = new StringContainer
+                {
+                    SomeText = PatchedContent.ExtendedDungeonFlows[0].DungeonFlow.name
+                };
                 dungeonFlowNames.Add(newStringContainer);
                 rarities.Add(300);
             }
@@ -70,8 +71,10 @@ namespace LethalLevelLoader
                 List<DungeonFlow> dungeonFlowTypes = Patches.RoundManager.GetDungeonFlows();
                 foreach (ExtendedDungeonFlowWithRarity extendedDungeonFlowWithRarity in availableExtendedFlowsList)
                 {
-                    StringContainer newStringContainer = new StringContainer();
-                    newStringContainer.SomeText = dungeonFlowTypes[dungeonFlowTypes.IndexOf(extendedDungeonFlowWithRarity.extendedDungeonFlow.DungeonFlow)].name;
+                    StringContainer newStringContainer = new StringContainer
+                    {
+                        SomeText = dungeonFlowTypes[dungeonFlowTypes.IndexOf(extendedDungeonFlowWithRarity.extendedDungeonFlow.DungeonFlow)].name
+                    };
                     dungeonFlowNames.Add(newStringContainer);
 
                     rarities.Add(extendedDungeonFlowWithRarity.rarity);
@@ -88,8 +91,10 @@ namespace LethalLevelLoader
             List<LevelWeatherType> weatherTypes = new List<LevelWeatherType>();
             foreach (ExtendedLevel extendedLevel in PatchedContent.ExtendedLevels)
             {
-                StringContainer stringContainer = new StringContainer();
-                stringContainer.SomeText = extendedLevel.name;
+                StringContainer stringContainer = new StringContainer
+                {
+                    SomeText = extendedLevel.name
+                };
                 levelNames.Add(stringContainer);
                 weatherTypes.Add(extendedLevel.SelectableLevel.currentWeather);
             }
@@ -122,7 +127,6 @@ namespace LethalLevelLoader
         {
             DebugHelper.Log("Setting Random DungeonFlows!", DebugType.User);
             List<IntWithRarity> dungeonFlowsList = new List<IntWithRarity>();
-            List<IntWithRarity> cachedDungeonFlowsList = new List<IntWithRarity>();
 
             Dictionary<string, int> dungeonFlowIds = new Dictionary<string, int>();
             int counter = 0;
@@ -136,7 +140,7 @@ namespace LethalLevelLoader
                 IntWithRarity intWithRarity = new IntWithRarity(dungeonFlowIds[dungeonFlowNames[i].SomeText], rarities[i], null);
                 dungeonFlowsList.Add(intWithRarity);
             }
-            cachedDungeonFlowsList = [.. LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes];
+            List<IntWithRarity> cachedDungeonFlowsList = [.. LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes];
             LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes = dungeonFlowsList.ToArray();
             Patches.RoundManager.GenerateNewFloor();
             LevelManager.CurrentExtendedLevel.SelectableLevel.dungeonFlowTypes = cachedDungeonFlowsList.ToArray();
