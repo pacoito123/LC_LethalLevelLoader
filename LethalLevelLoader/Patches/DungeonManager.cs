@@ -28,6 +28,7 @@ namespace LethalLevelLoader
             List<AudioClip> firstTimeDungeonAudios = [.. Patches.RoundManager.firstTimeDungeonAudios];
             foreach (ExtendedDungeonFlow extendedDungeonFlow in PatchedContent.CustomExtendedDungeonFlows)
             {
+                if (extendedDungeonFlow.ContentType is ContentType.External) continue;
                 extendedDungeonFlow.DungeonID = indoorMapTypes.Count;
                 IndoorMapType newIndoorMapType = new(extendedDungeonFlow.DungeonFlow, extendedDungeonFlow.MapTileSize, extendedDungeonFlow.FirstTimeDungeonAudio)
                 {

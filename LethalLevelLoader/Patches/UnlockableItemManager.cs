@@ -1,34 +1,29 @@
+using System.Collections.Generic;
+
 namespace LethalLevelLoader
 {
     public static class UnlockableItemManager
     {
         internal static void PatchVanillaUnlockableItemLists()
         {
-            Patches.StartOfRound.unlockablesList.unlockables = [.. PatchedContent.ExtendedUnlockableItems.ConvertAll(u => u.UnlockableItem)];
-        }
+            if (PatchedContent.CustomExtendedUnlockableItems.Count == 0) return;
 
-        internal static void SetUnlockableItemIDs()
-        {
-            int unlockableID = 0;
-            foreach (ExtendedUnlockableItem vanillaUnlockableItem in PatchedContent.VanillaExtendedUnlockableItems)
-                vanillaUnlockableItem.UnlockableItemID = unlockableID++;
-
-            foreach (ExtendedUnlockableItem customUnlockableItem in PatchedContent.CustomExtendedUnlockableItems)
-                customUnlockableItem.UnlockableItemID = unlockableID++;
-
-            foreach (ExtendedUnlockableItem extendedUnlockableItem in PatchedContent.ExtendedUnlockableItems)
+            List<UnlockableItem> unlockableItems = Patches.StartOfRound.unlockablesList.unlockables;
+            foreach (ExtendedUnlockableItem extendedUnlockableItem in PatchedContent.CustomExtendedUnlockableItems)
             {
+                if (extendedUnlockableItem.ContentType is ContentType.External) continue;
+
+                extendedUnlockableItem.UnlockableItemID = unlockableItems.Count;
+                unlockableItems.Add(extendedUnlockableItem.UnlockableItem);
+
                 if (extendedUnlockableItem.UnlockableItem.unlockableType == 1)
                 {
-                    if (extendedUnlockableItem.UnlockableItem.prefabObject == null || extendedUnlockableItem.UnlockableItem.alreadyUnlocked)
-                    {
-                        continue;
-                    }
+                    if (extendedUnlockableItem.UnlockableItem.prefabObject == null || extendedUnlockableItem.UnlockableItem.alreadyUnlocked) continue;
 
-                    AutoParentToShip autoParentToShip = extendedUnlockableItem.UnlockableItem.prefabObject.GetComponent<AutoParentToShip>();
-                    autoParentToShip.unlockableID = extendedUnlockableItem.UnlockableItemID;
+                    if (extendedUnlockableItem.UnlockableItem.prefabObject.TryGetComponent(out AutoParentToShip autoParentToShip))
+                        autoParentToShip.unlockableID = extendedUnlockableItem.UnlockableItemID;
 
-                    PlaceableShipObject placeableShipObject = extendedUnlockableItem.UnlockableItem.prefabObject.GetComponentInChildren<PlaceableShipObject>();
+                    PlaceableShipObject placeableShipObject = extendedUnlockableItem.UnlockableItem.prefabObject.GetComponentInChildren<PlaceableShipObject>(includeInactive: false);
                     if (placeableShipObject != null)
                     {
                         placeableShipObject.parentObject = autoParentToShip;

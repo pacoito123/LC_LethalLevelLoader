@@ -337,10 +337,10 @@ namespace LethalLevelLoader
             if (Plugin.IsSetupComplete == false)
             {
                 UnlockableItemManager.PatchVanillaUnlockableItemLists();
-                UnlockableItemManager.SetUnlockableItemIDs();
 
                 foreach (ExtendedUnlockableItem customExtendedUnlockableItem in PatchedContent.CustomExtendedUnlockableItems)
-                    TerminalManager.CreateUnlockableItemTerminalData(customExtendedUnlockableItem);
+                    if (customExtendedUnlockableItem.ContentType is not ContentType.External)
+                        TerminalManager.CreateUnlockableItemTerminalData(customExtendedUnlockableItem);
             }
 
             DebugStopwatch.StartStopWatch("ExtendedFootstepSurface Injection");
@@ -411,7 +411,6 @@ namespace LethalLevelLoader
         public static void StartOfRoundChangeLevel_Prefix(ref int levelID)
         {
             if (hasInitiallyChangedLevel == true || IsServer == false || string.IsNullOrEmpty(SaveManager.currentSaveFile?.CurrentLevelName)) return;
-            hasInitiallyChangedLevel = true;
 
             //Because Level ID's can change between modpack adjustments and such, we save the name of the level instead and find and load that up instead of the saved ID the base game uses.
             ExtendedLevel currentExtendedLevel = PatchedContent.ExtendedLevels.Find(static extendedLevel => extendedLevel.SelectableLevel != null && string.Equals(extendedLevel.SelectableLevel.name, SaveManager.currentSaveFile.CurrentLevelName, StringComparison.Ordinal));
@@ -436,6 +435,7 @@ namespace LethalLevelLoader
                 DebugHelper.Log("Saving Current SelectableLevel: " + RoundManager.currentLevel.PlanetName, DebugType.User);
                 SaveManager.currentSaveFile.CurrentLevelName = RoundManager.currentLevel.name;
             }
+            hasInitiallyChangedLevel = true;
         }
 
         [HarmonyPatch(typeof(Terminal), nameof(Terminal.ParseWord)), HarmonyPostfix, HarmonyPriority(priority)]
