@@ -12,7 +12,7 @@ namespace LethalLevelLoader
         [HarmonyPatch(typeof(DeleteFileButton), nameof(DeleteFileButton.DeleteFile)), HarmonyPostfix, HarmonyPriority(Patches.priority)]
         internal static void DeleteFile_Postfix(int ___fileToDelete)
         {
-            string saveName = $"LCSaveFile{___fileToDelete}.moddata";
+            string saveName = $"LCSaveFile{___fileToDelete + 1}.moddata";
             if (ES3.FileExists(saveName))
                 ES3.DeleteFile(saveName);
         }

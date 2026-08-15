@@ -41,6 +41,9 @@ namespace LethalLevelLoader
 
         internal static void LoadShipGrabbableItems()
         {
+            if (LethalLevelLoaderNetworkManager.networkManager.IsServer == false)
+                return;
+
             List<SavedShipItemData> loadedShipItemData = GetConstructedSavedShipItemData(currentSaveFile.itemSaveData);
             FixMismatchedSavedItemData(loadedShipItemData);
             OverrideCurrentSaveFileItemData(loadedShipItemData);

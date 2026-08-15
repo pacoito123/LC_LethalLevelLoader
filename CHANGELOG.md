@@ -1,6 +1,17 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.10</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed ExtendedUnlockableItems being registered twice by mistake, causing a handful of issues
+* Fixed incorrect save file index being used when deleting a save's `.moddata` file
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.9</summary>**
 
 **<details><summary>General</summary>**
