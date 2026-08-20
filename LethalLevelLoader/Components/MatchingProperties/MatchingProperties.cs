@@ -15,6 +15,18 @@ namespace LethalLevelLoader
             return (matchingProperties);
         }
 
+        public int GetDynamicRarity(ExtendedContent extendedContent)
+        {
+            int returnRarity = 0;
+
+            if (modNames.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings(extendedContent.ExtendedMod.ModNameAliases, modNames), extendedContent.name, "Mod Name");
+            if (authorNames.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedContent.AuthorName, authorNames), extendedContent.name, "Author Name");
+
+            return (returnRarity);
+        }
+
         internal static bool UpdateRarity(ref int currentValue, int newValue, string debugActionObject = null, string debugActionReason = null)
         {
             if (newValue > currentValue)
@@ -22,9 +34,9 @@ namespace LethalLevelLoader
                 if (!string.IsNullOrEmpty(debugActionReason))
                 {
                     if (!string.IsNullOrEmpty(debugActionObject))
-                        DebugHelper.Log("Raised Rarity Of: " + debugActionObject + " From (" + currentValue + ") To (" + newValue + ") Due To Matching " + debugActionReason, DebugType.Developer);
+                        DebugHelper.Log($"Raised Rarity Of: {debugActionObject} From ({currentValue}) To ({newValue}) Due To Matching {debugActionReason}", DebugType.Developer);
                     else
-                        DebugHelper.Log("Raised Rarity From (" + currentValue + ") To (" + newValue + ") Due To Matching " + debugActionReason, DebugType.Developer);
+                        DebugHelper.Log($"Raised Rarity From ({currentValue}) To ({newValue}) Due To Matching {debugActionReason}", DebugType.Developer);
                 }
                 currentValue = newValue;
                 return (true);
@@ -56,7 +68,7 @@ namespace LethalLevelLoader
             int returnInt = 0;
             foreach (ContentTag comparingTag in comparingTags)
             {
-                int rarity = GetHighestRarityViaMatchingNormalizedString(comparingTag.contentTagName, matchingStrings);
+                int rarity = GetHighestRarityViaMatchingNormalizedString($"{comparingTag}", matchingStrings);
                 if (rarity > returnInt)
                     returnInt = rarity;
             }

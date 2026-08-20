@@ -20,20 +20,16 @@ namespace LethalLevelLoader
 
         public int GetDynamicRarity(ExtendedLevel extendedLevel)
         {
-            int returnRarity = 0;
+            int returnRarity = GetDynamicRarity(extendedContent: extendedLevel);
 
             if (levelTags.Count > 0)
                 UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedTags(extendedLevel.ContentTags, levelTags), extendedLevel.name, "Content Tags");
-            if (authorNames.Count > 0)
-                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedLevel.AuthorName, authorNames), extendedLevel.name, "Author Name");
-            if (modNames.Count > 0)
-                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings(extendedLevel.ExtendedMod.ModNameAliases, modNames), extendedLevel.name, "Mod Name");
             if (currentRoutePrice.Count > 0)
                 UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingWithinRanges(extendedLevel.RoutePrice, currentRoutePrice), extendedLevel.name, "Route Price");
-            if (planetNames.Count > 0)
-                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings([extendedLevel.NumberlessPlanetName, extendedLevel.SelectableLevel.PlanetName], planetNames), extendedLevel.name, "Planet Name");
             if (currentWeather.Count > 0)
                 UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString($"{extendedLevel.SelectableLevel.currentWeather}", currentWeather), extendedLevel.name, "Current Weather");
+            if (planetNames.Count > 0)
+                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings([extendedLevel.NumberlessPlanetName, extendedLevel.SelectableLevel.PlanetName], planetNames), extendedLevel.name, "Planet Name");
 
             return (returnRarity);
         }

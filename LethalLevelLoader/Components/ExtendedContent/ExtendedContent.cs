@@ -35,24 +35,12 @@ namespace LethalLevelLoader
 
         }
 
-        public bool TryGetTag(string tag)
-        {
-            foreach (ContentTag contentTag in ContentTags)
-                if (contentTag.contentTagName == tag)
-                    return (true);
-            return (false);
-        }
+        public bool TryGetTag(string tag) => (TryGetTag(tag, out _));
 
         public bool TryGetTag(string tag, out ContentTag returnTag)
         {
-            returnTag = null;
-            foreach (ContentTag contentTag in ContentTags)
-                if (contentTag.contentTagName == tag)
-                {
-                    returnTag = contentTag;
-                    return (true);
-                }
-            return (false);
+            returnTag = ContentTags.Find(contentTag => string.Equals(contentTag.contentTagName, tag, StringComparison.OrdinalIgnoreCase));
+            return (returnTag != null);
         }
 
         public bool TryAddTag(string tag)

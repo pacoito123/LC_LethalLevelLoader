@@ -15,16 +15,13 @@ namespace LethalLevelLoader
             dungeonMatchingProperties.name = extendedContent.name + "DungeonMatchingProperties";
             return (dungeonMatchingProperties);
         }
+
         public int GetDynamicRarity(ExtendedDungeonFlow extendedDungeonFlow)
         {
-            int returnRarity = 0;
+            int returnRarity = GetDynamicRarity(extendedContent: extendedDungeonFlow);
 
             if (dungeonTags.Count > 0)
                 UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedTags(extendedDungeonFlow.ContentTags, dungeonTags), extendedDungeonFlow.name, "Content Tags");
-            if (authorNames.Count > 0)
-                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedString(extendedDungeonFlow.AuthorName, authorNames), extendedDungeonFlow.name, "Author Name");
-            if (modNames.Count > 0)
-                UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings(extendedDungeonFlow.ExtendedMod.ModNameAliases, modNames), extendedDungeonFlow.name, "Mod Name Name");
             if (dungeonNames.Count > 0)
                 UpdateRarity(ref returnRarity, GetHighestRarityViaMatchingNormalizedStrings([extendedDungeonFlow.DungeonName, extendedDungeonFlow.name], dungeonNames), extendedDungeonFlow.name, "Dungeon Name");
 
