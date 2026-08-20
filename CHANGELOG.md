@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.11</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed moon overview reappearing alongside the radar map screen whenever a client disconnects mid-round
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.10</summary>**
 
 **<details><summary>Fixes</summary>**

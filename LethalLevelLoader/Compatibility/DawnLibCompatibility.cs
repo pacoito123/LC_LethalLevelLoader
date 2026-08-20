@@ -221,6 +221,7 @@ namespace LethalLevelLoader.Compatibility
             if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null) return;
             PlayerControllerReference player = GameNetworkManager.Instance.localPlayerController;
 
+            if (StartOfRound.Instance == null || !StartOfRound.Instance.inShipPhase) return;
             if (DawnMoonNetworker.Instance != null && Enum.IsDefined(typeof(DawnMoonNetworker.BundleState), state))
                 DawnMoonNetworker.Instance.PlayerSetBundleStateRpc(player, (DawnMoonNetworker.BundleState)state);
         }
