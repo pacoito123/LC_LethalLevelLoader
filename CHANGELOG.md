@@ -6,6 +6,7 @@
 **<details><summary>Fixes</summary>**
 
 * Fixed moon overview reappearing alongside the radar map screen whenever a client disconnects mid-round
+* Fixed `IsDynamicDungeonSizeRestrictionEnabled` and `GenerateAutomaticConfigurationOptions` fields in ExtendedDungeonFlow not being properly toggleable, if their deprecated versions did not match their value
 
 </details>
 

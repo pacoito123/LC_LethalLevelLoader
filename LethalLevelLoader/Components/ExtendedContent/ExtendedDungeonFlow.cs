@@ -203,12 +203,12 @@ namespace LethalLevelLoader
                 DebugHelper.LogWarning("ExtendedDungeonFlow dynamic and manual match reference lists are Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.LevelMatchingProperties instead.", DebugType.Developer);
                 TryCreateMatchingProperties();
             }
-            if (enableDynamicDungeonSizeRestriction != false || (IsDynamicDungeonSizeRestrictionEnabled != enableDynamicDungeonSizeRestriction))
+            if (enableDynamicDungeonSizeRestriction != false && (IsDynamicDungeonSizeRestrictionEnabled != enableDynamicDungeonSizeRestriction))
             {
                 DebugHelper.LogWarning("ExtendedDungeonFlow.enableDynamicDungeonSizeRestriction Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.IsDynamicDungeonSizeRestrictionEnabled instead.", DebugType.Developer);
                 IsDynamicDungeonSizeRestrictionEnabled = enableDynamicDungeonSizeRestriction;
             }
-            if (generateAutomaticConfigurationOptions == false || (GenerateAutomaticConfigurationOptions != generateAutomaticConfigurationOptions))
+            if (generateAutomaticConfigurationOptions == false && (GenerateAutomaticConfigurationOptions != generateAutomaticConfigurationOptions))
             {
                 DebugHelper.LogWarning("ExtendedDungeonFlow.generateAutomaticConfigurationOptions Is Obsolete and will be removed in following releases, Please use ExtendedDungeonFlow.GenerateAutomaticConfigurationOptions instead.", DebugType.Developer);
                 GenerateAutomaticConfigurationOptions = generateAutomaticConfigurationOptions;
