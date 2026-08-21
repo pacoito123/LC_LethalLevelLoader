@@ -8,6 +8,7 @@
 * Fixed moon overview reappearing alongside the radar map screen whenever a client disconnects mid-round
 * Fixed ExtendedBuyableVehicle secondary prefab (e.g. Cruiser manual) not being optional when validated at the start
 * Fixed `IsDynamicDungeonSizeRestrictionEnabled` and `GenerateAutomaticConfigurationOptions` fields in ExtendedDungeonFlow not being properly toggleable, if their deprecated versions did not match their value
+* Fixed SelectableLevel's `spawnableMapObjects` field breaking some hazard spawns under very niche circumstances
 
 </details>
 

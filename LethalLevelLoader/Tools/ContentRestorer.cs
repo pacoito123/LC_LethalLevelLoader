@@ -171,6 +171,17 @@ namespace LethalLevelLoader.Tools
                 if (removedMapHazards > 0)
                     DebugHelper.LogWarning($"Removed '{removedMapHazards}' missing or empty IndoorMapHazard spawns in SelectableLevel: {extendedLevel.SelectableLevel.name}", DebugType.User);
                 extendedLevel.SelectableLevel.indoorMapHazards = [.. indoorMapHazards];
+                extendedLevel.SelectableLevel.spawnableMapObjects = [.. indoorMapHazards.ConvertAll(indoorMapHazard => new SpawnableMapObject()
+                {
+                    prefabToSpawn = indoorMapHazard.hazardType.prefabToSpawn,
+                    spawnFacingAwayFromWall = indoorMapHazard.hazardType.spawnFacingAwayFromWall,
+                    spawnFacingWall = indoorMapHazard.hazardType.spawnFacingWall,
+                    spawnWithBackToWall = indoorMapHazard.hazardType.spawnWithBackToWall,
+                    spawnWithBackFlushAgainstWall = indoorMapHazard.hazardType.spawnWithBackFlushAgainstWall,
+                    requireDistanceBetweenSpawns = indoorMapHazard.hazardType.requireDistanceBetweenSpawns,
+                    disallowSpawningNearEntrances = indoorMapHazard.hazardType.disallowSpawningNearEntrances,
+                    numberToSpawn = indoorMapHazard.numberToSpawn
+                })];
             }
 
             List<SpawnableOutsideObjectWithRarity> spawnableOutsideObjects = [.. extendedLevel.SelectableLevel.spawnableOutsideObjects];
@@ -437,13 +448,13 @@ namespace LethalLevelLoader.Tools
             return (newAsset);
         }
 
-        internal static void DestroyRestoredAssets(bool debugAction = false)
+        internal static void DestroyRestoredAssets(bool debugAction = true)
         {
             foreach (Object objectToDestroy in objectsToDestroy)
             {
                 if (objectToDestroy == null) continue;
                 if (debugAction == true)
-                    DebugHelper.Log("Destroying: " + objectToDestroy.name, DebugType.Developer);
+                    DebugHelper.Log($"Destroying: {objectToDestroy.GetType()}: '{objectToDestroy.name}' (ID {objectToDestroy.GetInstanceID()})", DebugType.IAmBatby);
                 Object.DestroyImmediate(objectToDestroy);
             }
             objectsToDestroy.Clear();
