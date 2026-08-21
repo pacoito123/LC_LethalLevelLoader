@@ -3,14 +3,23 @@ using Unity.Netcode;
 
 namespace LethalLevelLoader
 {
-    public class LLLSaveFile(string currentSaveFileName)
+    public class LLLSaveFile
     {
-        public string SaveLocation => currentSaveFileName + ".moddata";
+        public string SaveLocation { get; } = string.Empty;
 
         public string CurrentLevelName { get; internal set; } = string.Empty;
 
         public Dictionary<int, AllItemsListItemData> itemSaveData = new Dictionary<int, AllItemsListItemData>();
         public List<ExtendedLevelData> extendedLevelSaveData = new List<ExtendedLevelData>();
+
+        private static readonly List<ExtendedLevelData> defaultExtendedLevelSaveData = new List<ExtendedLevelData>();
+
+        public LLLSaveFile(string currentSaveFileName)
+        {
+            SaveLocation = currentSaveFileName + ".moddata";
+            if (defaultExtendedLevelSaveData.Count == 0)
+                defaultExtendedLevelSaveData.AddRange(ExtendedLevelData.GetAllLevels());
+        }
 
         public void Save()
         {
@@ -25,14 +34,14 @@ namespace LethalLevelLoader
             string prefix = Plugin.ModName + '.' + nameof(LLLSaveFile) + '.';
             CurrentLevelName = ES3.Load(prefix + nameof(CurrentLevelName), SaveLocation, string.Empty);
             itemSaveData = ES3.Load(prefix + nameof(itemSaveData), SaveLocation, new Dictionary<int, AllItemsListItemData>());
-            extendedLevelSaveData = ES3.Load(prefix + nameof(extendedLevelSaveData), SaveLocation, new List<ExtendedLevelData>());
+            extendedLevelSaveData = ES3.Load(prefix + nameof(extendedLevelSaveData), SaveLocation, new List<ExtendedLevelData>(defaultExtendedLevelSaveData));
         }
 
         public void Reset()
         {
             CurrentLevelName = string.Empty;
             itemSaveData = new Dictionary<int, AllItemsListItemData>();
-            extendedLevelSaveData = new List<ExtendedLevelData>();
+            extendedLevelSaveData = [.. defaultExtendedLevelSaveData];
         }
     }
 
@@ -68,5 +77,7 @@ namespace LethalLevelLoader
             extendedLevel.IsRouteHidden = isHidden;
             extendedLevel.IsRouteLocked = isLocked;
         }
+
+        public static List<ExtendedLevelData> GetAllLevels() => PatchedContent.ExtendedLevels.ConvertAll(static level => new ExtendedLevelData(level));
     }
 }

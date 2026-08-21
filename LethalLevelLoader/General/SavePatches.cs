@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
@@ -9,12 +10,35 @@ namespace LethalLevelLoader
 {
     internal static class SavePatches
     {
-        [HarmonyPatch(typeof(DeleteFileButton), nameof(DeleteFileButton.DeleteFile)), HarmonyPostfix, HarmonyPriority(Patches.priority)]
-        internal static void DeleteFile_Postfix(int ___fileToDelete)
+        public const string saveDataName = "LCSaveFile";
+        public const string saveDataExtension = ".moddata";
+
+        [HarmonyPatch(typeof(ES3), nameof(ES3.DeleteFile), [typeof(ES3Settings)]), HarmonyPostfix, HarmonyPriority(Patches.priority)]
+        internal static void DeleteFile_Postfix(ES3Settings settings)
         {
-            string saveName = $"LCSaveFile{___fileToDelete + 1}.moddata";
-            if (ES3.FileExists(saveName))
-                ES3.DeleteFile(saveName);
+            if (settings.location is not ES3.Location.File)
+                return;
+            string filePath = settings.FullPath;
+
+            // Trim file name from full path.
+            string fileName = filePath[(filePath.LastIndexOf(Path.AltDirectorySeparatorChar) + 1)..];
+
+            // Check if file name starts with 'LCSaveFile' and does NOT end with '.moddata'.
+            if (!fileName.StartsWith(saveDataName, StringComparison.Ordinal) || fileName.EndsWith(saveDataExtension, StringComparison.Ordinal))
+                return;
+
+            string fileDataPath = filePath + saveDataExtension;
+            if (File.Exists(fileDataPath))
+            {
+                try
+                {
+                    File.Delete(fileDataPath);
+                }
+                catch (Exception e)
+                {
+                    DebugHelper.LogError($"Could not delete save data file '{fileName}': {e}", DebugType.User);
+                }
+            }
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.AutoSaveShipData))]

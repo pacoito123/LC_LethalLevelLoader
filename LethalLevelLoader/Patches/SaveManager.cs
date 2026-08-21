@@ -35,7 +35,7 @@ namespace LethalLevelLoader
                 return;
 
             currentSaveFile.itemSaveData = GetAllItemsListItemDataDict();
-            currentSaveFile.extendedLevelSaveData = PatchedContent.ExtendedLevels.ConvertAll(static level => new ExtendedLevelData(level));
+            currentSaveFile.extendedLevelSaveData = ExtendedLevelData.GetAllLevels();
             currentSaveFile.Save();
         }
 
