@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -83,7 +84,6 @@ namespace LethalLevelLoader
                             if (compatibleNoun.result != null)
                                 TryAddReference(OriginalContent.TerminalNodes, compatibleNoun.result);
 
-                ExtractMemoryLoadedAudioMixerGroups();
                 ExtractMemoryLoadedReverbPresets();
 
                 OriginalContent.SelectableLevels.AddRange(startOfRound.levels);
@@ -146,29 +146,18 @@ namespace LethalLevelLoader
                         OriginalContent.Enemies.Add(enemyWithRarity.enemyType);
         }
 
-        internal static void ExtractMemoryLoadedAudioMixerGroups()
+        [Obsolete] internal static void ExtractMemoryLoadedAudioMixerGroups() { }
+
+        internal static void ExtractVanillaAudioMixerAndGroups(AudioSource audioSource)
         {
-            AudioMixerGroup[] allMixerGroups = Resources.FindObjectsOfTypeAll<AudioMixerGroup>();
-            AudioMixerSnapshot[] allMixerSnapshots = Resources.FindObjectsOfTypeAll<AudioMixerSnapshot>();
+            if (audioSource == null || audioSource.outputAudioMixerGroup == null) return;
 
-            Dictionary<string, AudioMixerGroup> extractedMixerGroups = new Dictionary<string, AudioMixerGroup>(allMixerGroups.Length);
-            Dictionary<string, AudioMixerSnapshot> extractedMixerSnapshots = new Dictionary<string, AudioMixerSnapshot>(allMixerSnapshots.Length);
-
-            for (int i = 0; i < allMixerGroups.Length; i++)
+            AudioMixer audioMixer = audioSource.outputAudioMixerGroup.audioMixer;
+            if (audioMixer != null)
             {
-                AudioMixerGroup mixerGroup = allMixerGroups[i];
-                if (mixerGroup != null && !string.IsNullOrEmpty(mixerGroup.name))
-                    extractedMixerGroups.TryAdd(mixerGroup.name, mixerGroup);
+                OriginalContent.AudioMixers.Add(audioMixer);
+                OriginalContent.AudioMixerGroups.AddRange(audioMixer.FindMatchingGroups(string.Empty));
             }
-            OriginalContent.AudioMixerGroups.AddRange(extractedMixerGroups.Values);
-
-            for (int i = 0; i < allMixerSnapshots.Length; i++)
-            {
-                AudioMixerSnapshot mixerSnapshot = allMixerSnapshots[i];
-                if (mixerSnapshot != null && !string.IsNullOrEmpty(mixerSnapshot.name))
-                    extractedMixerSnapshots.TryAdd(mixerSnapshot.name, mixerSnapshot);
-            }
-            OriginalContent.AudioMixerSnapshots.AddRange(extractedMixerSnapshots.Values);
         }
 
         internal static void ExtractMemoryLoadedReverbPresets()

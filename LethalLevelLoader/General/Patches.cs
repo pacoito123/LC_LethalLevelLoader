@@ -46,7 +46,7 @@ namespace LethalLevelLoader
             if (Plugin.IsSetupComplete == false)
             {
                 if (__instance.TryGetComponent(out AudioSource audioSource))
-                    OriginalContent.AudioMixers.Add(audioSource.outputAudioMixerGroup.audioMixer);
+                    ContentExtractor.ExtractVanillaAudioMixerAndGroups(audioSource); // Obtain NonDiagetic AudioMixer and AudioMixerGroups.
                 ContentTagParser.ImportVanillaContentTags();
             }
         }
@@ -98,9 +98,10 @@ namespace LethalLevelLoader
                 LethalLevelLoaderNetworkManager.networkManager = networkManager;
                 NetworkBundleManager.networkManager = networkManager;
                 foreach (NetworkPrefab networkPrefab in NetworkBundleManager.networkManager.NetworkConfig.Prefabs.m_Prefabs)
-                    if (networkPrefab.Prefab.TryGetComponent(out AudioSource audioSource))
+                    if (networkPrefab != null && networkPrefab.Prefab != null && networkPrefab.Prefab.TryGetComponent(out AudioSource audioSource)
+                        && audioSource.outputAudioMixerGroup != null && !OriginalContent.AudioMixers.Contains(audioSource.outputAudioMixerGroup.audioMixer))
                     {
-                        OriginalContent.AudioMixers.Add(audioSource.outputAudioMixerGroup.audioMixer);
+                        ContentExtractor.ExtractVanillaAudioMixerAndGroups(audioSource); // Obtain Diagetic AudioMixer and AudioMixerGroups.
                         break;
                     }
 
@@ -528,6 +529,7 @@ namespace LethalLevelLoader
                 foreach (GameObject rootObject in scene.GetRootGameObjects())
                     ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
                 LevelLoader.RestoreSceneBlankReferences();
+                ContentRestorer.DestroyRestoredAssets();
 
                 LevelLoader.RefreshWeatherEffects(currentLevel);
                 LevelLoader.RefreshTimeOfDayMusic(currentLevel);

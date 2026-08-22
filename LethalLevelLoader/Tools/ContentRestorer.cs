@@ -299,12 +299,17 @@ namespace LethalLevelLoader.Tools
 
         internal static void TryRestoreAudioSource(AudioSource audioSource)
         {
-            if (audioSource.outputAudioMixerGroup == null) return;
+            if (audioSource.outputAudioMixerGroup == null || OriginalContent.AudioMixerGroups.Contains(audioSource.outputAudioMixerGroup)) return;
 
             AudioMixerGroup targetMixerGroup = audioSource.outputAudioMixerGroup;
-            AudioMixerGroup restoredMixerGroup = OriginalContent.AudioMixerGroups.Find(vanillaMixerGroup => string.Equals(vanillaMixerGroup.name, targetMixerGroup.name, StringComparison.Ordinal));
+            AudioMixerGroup restoredMixerGroup = OriginalContent.AudioMixerGroups.Find(vanillaMixerGroup => string.Equals(vanillaMixerGroup.name, targetMixerGroup.name, StringComparison.Ordinal)
+                && string.Equals(vanillaMixerGroup.audioMixer.name, targetMixerGroup.audioMixer.name, StringComparison.Ordinal));
             if (restoredMixerGroup != null)
-                audioSource.outputAudioMixerGroup = restoredMixerGroup;
+            {
+                if (objectsToDestroy.Add(targetMixerGroup.audioMixer))
+                    objectsToDestroy.UnionWith(targetMixerGroup.audioMixer.FindMatchingGroups(string.Empty));
+                audioSource.outputAudioMixerGroup = RestoreAsset(targetMixerGroup, restoredMixerGroup);
+            }
         }
 
         internal static void TryRestoreShader(Material customMaterial, Shader vanillaShader, LocalKeyword[] enabledKeywords = null)

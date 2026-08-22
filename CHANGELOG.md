@@ -11,6 +11,8 @@
 * Fixed `IsDynamicDungeonSizeRestrictionEnabled` and `GenerateAutomaticConfigurationOptions` fields in ExtendedDungeonFlow not being properly toggleable, if their deprecated versions did not match their value
 * Fixed SelectableLevel's `spawnableMapObjects` field breaking some hazard spawns under very niche circumstances
 * Fixed incorrect save `.moddata` file being deleted in a few cases
+* Fixed incorrect AudioMixerGroups being used when restoring audio assets _(Thanks [DiFFoZ](https://thunderstore.io/c/lethal-company/p/DiFFoZ)!)_
+  * Also made any bundled AudioMixers and AudioMixerGroups be destroyed after being restored
 
 </details>
 
