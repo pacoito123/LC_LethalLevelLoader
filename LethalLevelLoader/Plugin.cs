@@ -16,7 +16,7 @@ namespace LethalLevelLoader
     {
         public const string ModGUID = "imabatby.lethallevelloader";
         public const string ModName = "LethalLevelLoader";
-        public const string ModVersion = "1.7.10";
+        public const string ModVersion = "1.7.11";
 
         internal static readonly Harmony Harmony = new Harmony(ModGUID);
         internal static new readonly ManualLogSource Logger = BepInEx.Logging.Logger.CreateLogSource(ModName);
