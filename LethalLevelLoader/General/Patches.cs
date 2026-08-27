@@ -529,7 +529,6 @@ namespace LethalLevelLoader
                 foreach (GameObject rootObject in scene.GetRootGameObjects())
                     ContentRestorer.RestoreAudioAssetReferencesInParent(rootObject);
                 LevelLoader.RestoreSceneBlankReferences();
-                ContentRestorer.DestroyRestoredAssets();
 
                 LevelLoader.RefreshWeatherEffects(currentLevel);
                 LevelLoader.RefreshTimeOfDayMusic(currentLevel);

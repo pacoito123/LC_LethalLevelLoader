@@ -1,6 +1,16 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.12</summary>**
+
+**<details><summary>Fixes</summary>**
+
+* Fixed certain restored assets being missing during subsequent rounds in the same level _(Thanks [Sniper1-1](https://thunderstore.io/c/lethal-company/p/Sniper1_1)!)_
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.11</summary>**
 
 **<details><summary>Fixes</summary>**

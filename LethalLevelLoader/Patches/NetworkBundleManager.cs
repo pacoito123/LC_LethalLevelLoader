@@ -1,5 +1,6 @@
 ﻿using LethalLevelLoader.AssetBundles;
 using LethalLevelLoader.Compatibility;
+using LethalLevelLoader.Tools;
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -103,6 +104,7 @@ namespace LethalLevelLoader
                 foreach (AssetBundleGroup bundleGroup in previousGroups)
                     if (!newGroups.Contains(bundleGroup))
                         bundleGroup.TryUnloadGroup();
+                ContentRestorer.DestroyRestoredAssets(); // Clear/destroy assets when unloading.
 
                 currentRouteRequestor = currentLevel;
             }
