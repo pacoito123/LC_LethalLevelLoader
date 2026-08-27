@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using Dawn;
 using Dawn.Internal;
 using Dawn.Utils;
+using HarmonyLib;
 
 namespace LethalLevelLoader.Compatibility
 {
@@ -24,6 +27,56 @@ namespace LethalLevelLoader.Compatibility
         private static bool? _enabled;
 
         private static readonly Dictionary<string, ExtendedMod> dawnExtendedModsDict = [];
+
+        [HarmonyPrepare]
+        private static void PrepareDawnLibCompatibility(MethodBase original)
+        {
+            if (original == null)
+                DebugHelper.Log("DawnLib found! Enabling compatibility patches...", DebugType.User);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        [HarmonyPatch(typeof(DawnMoonNetworker), "DoMoonSceneLoading", MethodType.Enumerator), HarmonyTranspiler, HarmonyPriority(Patches.priority)]
+        internal static IEnumerable<CodeInstruction> DawnMoonNetworker_QueueMoonSceneLoadingClientRpc_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            MethodInfo playerSetBundleStateRpcInfo = typeof(DawnMoonNetworker).GetMethod(nameof(DawnMoonNetworker.PlayerSetBundleStateRpc), BindingFlags.Instance | BindingFlags.Public);
+            CodeMatcher codeMatcher = new CodeMatcher(instructions, generator).End().MatchBack(useEnd: false,
+                new(OpCodes.Ldc_I4_4),
+                new(OpCodes.Call, playerSetBundleStateRpcInfo));
+
+            if (codeMatcher.IsInvalid)
+            {
+                DebugHelper.LogError("Could not match local player 'BundleState.Done' assignment.", DebugType.User);
+                return instructions;
+            }
+
+            MethodInfo isCurrentMoonLLLInfo = typeof(DawnLibCompatibility).GetMethod(nameof(IsCurrentMoonLLL), BindingFlags.Static | BindingFlags.NonPublic);
+            return codeMatcher.SetInstructionAndAdvance(new(OpCodes.Call, isCurrentMoonLLLInfo))
+            .InsertAndAdvance(
+                new(OpCodes.Brfalse),
+                new(OpCodes.Pop),
+                new(OpCodes.Pop),
+                new(OpCodes.Ldc_I4_0),
+                new(OpCodes.Ret),
+                new(OpCodes.Ldc_I4_4))
+            .Advance(-1)
+            .CreateLabel(out Label nonLLLMoonTarget)
+            .Advance(-5)
+            .SetOperandAndAdvance(nonLLLMoonTarget)
+            .InstructionEnumeration();
+        }
+
+        private static bool IsCurrentMoonLLL()
+        {
+            if (LevelManager.CurrentExtendedLevel != null && LevelManager.CurrentExtendedLevel.ContentType is ContentType.Custom)
+            {
+                bool loadedStatus = NetworkBundleManager.Instance != null && NetworkBundleManager.Instance.GetLoadStatus(LevelManager.CurrentExtendedLevel);
+                RefreshLocalClientBundleState(loadedStatus ? 4 : 2); // Done, Loading
+
+                return true;
+            }
+            return false;
+        }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         internal static void RegisterDawnExtendedLevels()

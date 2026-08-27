@@ -67,7 +67,11 @@ namespace LethalLevelLoader
             AssetBundles.AssetBundleLoader.OnBundleUnloaded.AddListener(Instance.RefreshLoadStatus);
 
             if (DawnLibCompatibility.Enabled)
-                allowedToLoadLevel.OnValueChanged += static (previousValue, newValue) => DawnLibCompatibility.RefreshLocalClientBundleState(newValue ? 4 : 0); // Done, Queued
+                allowedToLoadLevel.OnValueChanged += static (previousValue, newValue) =>
+                {
+                    if (newValue)
+                        DawnLibCompatibility.RefreshLocalClientBundleState(4); // Done
+                };
         }
 
         public override void OnDestroy()
@@ -151,19 +155,20 @@ namespace LethalLevelLoader
         {
             bool loadedStatus = true;
             foreach (AssetBundleGroup routeGroup in GetRouteGroups(LevelManager.CurrentExtendedLevel))
-                if (routeGroup.LoadedStatus != AssetBundleGroupLoadedStatus.Loaded)
+                if (routeGroup.LoadedStatus is not AssetBundleGroupLoadedStatus.Loaded)
                 {
                     loadedStatus = false;
-                    if (routeGroup.LoadingStatus != AssetBundleGroupLoadingStatus.Loading)
-                    {
-                        if (DawnLibCompatibility.Enabled)
-                            DawnLibCompatibility.RefreshLocalClientBundleState(2); // Loading
+                    if (routeGroup.LoadingStatus is not AssetBundleGroupLoadingStatus.Loading)
                         routeGroup.TryLoadGroup();
-                    }
                 }
+            if (DawnLibCompatibility.Enabled && LevelManager.CurrentExtendedLevel != null && LevelManager.CurrentExtendedLevel.ContentType is ContentType.Custom)
+                DawnLibCompatibility.RefreshLocalClientBundleState(loadedStatus ? 4 : 2); // Done, Loading
+
             DebugHelper.Log("Sending LoadedStatus: " + loadedStatus + " To Server!", DebugType.User);
             SetLoadedStatusServerRpc(NetworkManager.LocalClientId, loadedStatus);
         }
+
+        public bool GetLoadStatus(ExtendedLevel extendedLevel) => GetRouteGroups(extendedLevel).FindIndex(group => group.LoadedStatus is not AssetBundleGroupLoadedStatus.Loaded) == -1;
 
         [Rpc(SendTo.Server, RequireOwnership = false)]
         private void SetLoadedStatusServerRpc(ulong clientID, bool status)

@@ -87,6 +87,16 @@ namespace LethalLevelLoader
         {
             Harmony.PatchAll(typeof(TimeOfDayPatches));
 
+            try
+            {
+                if (DawnLibCompatibility.Enabled)
+                    Harmony.PatchAll(typeof(DawnLibCompatibility));
+            }
+            catch (Exception ex)
+            {
+                DebugHelper.LogError(ex, DebugType.User);
+            }
+
             if (LethalLibCompatibility.Enabled)
                 Harmony.PatchAll(typeof(LethalLibCompatibility));
 

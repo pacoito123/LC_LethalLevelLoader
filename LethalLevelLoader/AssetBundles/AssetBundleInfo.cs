@@ -138,6 +138,8 @@ namespace LethalLevelLoader.AssetBundles
             else
             {
                 DebugHelper.Log("Failed To Load: " + AssetBundleFileName, DebugType.User);
+                if (DawnLibCompatibility.Enabled)
+                    DawnLibCompatibility.RefreshLocalClientBundleState(3); // Error
                 return (false);
             }
         }
@@ -185,8 +187,6 @@ namespace LethalLevelLoader.AssetBundles
                 bundleLoadStopwatch.Stop();
                 LastTimeLoaded = Time.time;
                 DebugHelper.LogError("AssetBundleInfo: " + AssetBundleFileName + " failed to load or is already loaded. Skipping...", DebugType.User);
-                if (DawnLibCompatibility.Enabled)
-                    DawnLibCompatibility.RefreshLocalClientBundleState(3); // Error
                 if (hasInitialized == false)
                     AssetBundleLoader.Instance.AssetBundleInfos.Remove(this);
             }

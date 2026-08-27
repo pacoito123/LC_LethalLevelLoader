@@ -6,6 +6,9 @@
 **<details><summary>Fixes</summary>**
 
 * Fixed certain restored assets being missing during subsequent rounds in the same level _(Thanks [Sniper1-1](https://thunderstore.io/c/lethal-company/p/Sniper1_1)!)_
+* Fixed bundle loading state for LLL moons not being properly shared with [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib)
+  * Was causing the ship's lever to be able to be pulled a bit too early, preventing the ship from landing if a scene bundle isn't loaded quickly enough
+  * Also fixes bundle loading progress not being accurately displayed by the moon routing UI
 
 </details>
 
