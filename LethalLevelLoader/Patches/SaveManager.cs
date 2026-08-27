@@ -258,6 +258,12 @@ namespace LethalLevelLoader
             int counter = 0;
             foreach (Item item in Patches.StartOfRound.allItemsList.itemsList)
             {
+                if (item == null)
+                {
+                    DebugHelper.LogError($"Null item present in 'StartOfRound.allItemsList' at index '{counter}'!", DebugType.User);
+                    continue;
+                }
+
                 TryGetExtendedItemInfo(item, out string modName, out string modAuthor, out int modItemIndex);
                 int itemNameDuplicateIndex = GetItemNameDuplicateIndex(item, modName);
 
@@ -271,8 +277,8 @@ namespace LethalLevelLoader
         internal static bool TryGetExtendedItemInfo(Item item, out string modName, out string modAuthor, out int modItemIndex)
         {
             int lowestNameAliases = int.MaxValue;
-            modName = "";
-            modAuthor = "";
+            modName = string.Empty;
+            modAuthor = string.Empty;
             modItemIndex = -1;
 
             foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods)
@@ -360,7 +366,7 @@ namespace LethalLevelLoader
                     result.Add(newItemsListData);
                 else
                     // Don't know this item somehow? Add empty junk
-                    result.Add(new AllItemsListItemData("", "", "", "", id, -1, 0, false, false));
+                    result.Add(new AllItemsListItemData(string.Empty, string.Empty, string.Empty, string.Empty, id, -1, 0, false, false));
             }
 
             return (result);

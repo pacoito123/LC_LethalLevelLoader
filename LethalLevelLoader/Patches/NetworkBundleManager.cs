@@ -143,10 +143,7 @@ namespace LethalLevelLoader
         }
 
         [Rpc(SendTo.ClientsAndHost)]
-        private void RequestLoadStatusRefreshClientRpc()
-        {
-            RefreshLoadStatus();
-        }
+        private void RequestLoadStatusRefreshClientRpc() => RefreshLoadStatus();
 
         //Called by RequestLoadStatusRefreshClientRpc
         //Called by OnBundleLoaded

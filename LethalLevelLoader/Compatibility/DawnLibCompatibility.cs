@@ -184,6 +184,9 @@ namespace LethalLevelLoader.Compatibility
                 if (dawnExtendedDungeonFlow == null)
                     continue;
 
+                dawnExtendedDungeonFlow.DungeonName = dawnDungeonInfo.DungeonFlow.name.Replace("Flow", string.Empty, StringComparison.OrdinalIgnoreCase);
+                dawnExtendedDungeonFlow.name = dawnExtendedDungeonFlow.DungeonName.RemoveWhitespace() + "ExtendedDungeonFlow";
+
                 dawnExtendedDungeonFlow.MapTileSize = dawnDungeonInfo.MapTileSize;
                 if (dawnDungeonInfo.StingerDetail != null)
                     dawnExtendedDungeonFlow.FirstTimeDungeonAudio = dawnDungeonInfo.StingerDetail.FirstTimeAudio;
@@ -193,7 +196,6 @@ namespace LethalLevelLoader.Compatibility
                     dawnExtendedDungeonFlow.DynamicDungeonSizeMinMax = new(dawnDungeonInfo.DungeonClampRange.Min, dawnDungeonInfo.DungeonClampRange.Max);
                 }
                 dawnExtendedDungeonFlow.GenerateAutomaticConfigurationOptions = false;
-                // dawnExtendedDungeonFlow.Initialize();
 
                 if (OriginalContent.DungeonFlows.Remove(dawnExtendedDungeonFlow.DungeonFlow))
                     RegisterDawnExtendedContent(dawnDungeonInfo, dawnDungeonInfo.Key.Namespace, dawnExtendedDungeonFlow);

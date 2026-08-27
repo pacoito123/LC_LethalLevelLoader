@@ -137,6 +137,8 @@ namespace LethalLevelLoader.Tools
 
         public ConfigEntry<bool> disabledWarning;
 
+        private const int maxWeight = (1000 * 1000) - 1; // (999,999)
+
         public void BindConfigs(ExtendedDungeonFlow extendedDungeonFlow)
         {
             if (extendedDungeonFlow.GenerateAutomaticConfigurationOptions == true)
@@ -157,11 +159,11 @@ namespace LethalLevelLoader.Tools
 
                 // ----- Getting -----
                 subCategory = "Dungeon Injection Settings - ";
-                manualModNames = BindValue("Manual Mod Names List", "Add this Dungeon to any Level's randomisaton pool in a specific mod based on matching Mod Names. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString([.. extendedDungeonFlow.LevelMatchingProperties.modNames]));
-                manualLevelNames = BindValue("Manual Level Names List", "Add this Dungeon to a Level's randomisaton pool based on matching Level Names. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString([.. extendedDungeonFlow.LevelMatchingProperties.planetNames]));
+                manualModNames = BindValue("Manual Mod Names List", $"Add this Dungeon to any Level's randomization pool in a specific mod based on matching Mod Names. (Minimum: 0, Maximum: {maxWeight})", ConfigHelper.StringWithRaritiesToString([.. extendedDungeonFlow.LevelMatchingProperties.modNames]));
+                manualLevelNames = BindValue("Manual Level Names List", $"Add this Dungeon to a Level's randomization pool based on matching Level Names. (Minimum: 0, Maximum: {maxWeight})", ConfigHelper.StringWithRaritiesToString([.. extendedDungeonFlow.LevelMatchingProperties.planetNames]));
 
-                dynamicLevelTags = BindValue("Dynamic Level Tags List", "Add this Dungeon to a Level's randomisaton pool based on matching Level Tags. (Minimum: 0, Maximum: 9999)", ConfigHelper.StringWithRaritiesToString([.. extendedDungeonFlow.LevelMatchingProperties.levelTags]));
-                dynamicRoutePrices = BindValue("Dynamic Route Price List", "Add this Dungeon to a Level's randomisaton pool based on matching Route Prices. (Minimum: 0, Maximum: 9999)", ConfigHelper.Vector2WithRaritiesToString([.. extendedDungeonFlow.LevelMatchingProperties.currentRoutePrice]));
+                dynamicLevelTags = BindValue("Dynamic Level Tags List", $"Add this Dungeon to a Level's randomization pool based on matching Level Tags. (Minimum: 0, Maximum: {maxWeight})", ConfigHelper.StringWithRaritiesToString([.. extendedDungeonFlow.LevelMatchingProperties.levelTags]));
+                dynamicRoutePrices = BindValue("Dynamic Route Price List", $"Add this Dungeon to a Level's randomization pool based on matching Route Prices. (Minimum: 0, Maximum: {maxWeight})", ConfigHelper.Vector2WithRaritiesToString([.. extendedDungeonFlow.LevelMatchingProperties.currentRoutePrice]));
 
                 if (enableContentConfiguration.Value == true)
                 {
@@ -174,13 +176,13 @@ namespace LethalLevelLoader.Tools
                     extendedDungeonFlow.DynamicDungeonSizeMinMax = new Vector2(minimumDungeonSizeMultiplier.Value, maximumDungeonSizeMultiplier.Value);
                     extendedDungeonFlow.DynamicDungeonSizeLerpRate = restrictDungeonSizeScaler.Value;
 
-                    extendedDungeonFlow.LevelMatchingProperties.modNames = ConfigHelper.ConvertToStringWithRarityList(manualModNames.Value, new Vector2(0, 9999));
-                    extendedDungeonFlow.LevelMatchingProperties.planetNames = ConfigHelper.ConvertToStringWithRarityList(manualLevelNames.Value, new Vector2(0, 9999));
+                    extendedDungeonFlow.LevelMatchingProperties.modNames = ConfigHelper.ConvertToStringWithRarityList(manualModNames.Value, new Vector2(0, maxWeight));
+                    extendedDungeonFlow.LevelMatchingProperties.planetNames = ConfigHelper.ConvertToStringWithRarityList(manualLevelNames.Value, new Vector2(0, maxWeight));
 
-                    extendedDungeonFlow.LevelMatchingProperties.currentRoutePrice = ConfigHelper.ConvertToVector2WithRarityList(dynamicRoutePrices.Value, new Vector2(0, 9999));
-                    extendedDungeonFlow.LevelMatchingProperties.levelTags = ConfigHelper.ConvertToStringWithRarityList(dynamicLevelTags.Value, new Vector2(0, 9999));
+                    extendedDungeonFlow.LevelMatchingProperties.currentRoutePrice = ConfigHelper.ConvertToVector2WithRarityList(dynamicRoutePrices.Value, new Vector2(0, maxWeight));
+                    extendedDungeonFlow.LevelMatchingProperties.levelTags = ConfigHelper.ConvertToStringWithRarityList(dynamicLevelTags.Value, new Vector2(0, maxWeight));
 
-                    foreach (StringWithRarity stringWithRarity in ConfigHelper.ConvertToStringWithRarityList(dynamicLevelTags.Value, new Vector2(0, 9999)))
+                    foreach (StringWithRarity stringWithRarity in ConfigHelper.ConvertToStringWithRarityList(dynamicLevelTags.Value, new Vector2(0, maxWeight)))
                         DebugHelper.Log(stringWithRarity.Name + " | " + stringWithRarity.Rarity, DebugType.Developer);
 
                     if (extendedDungeonFlow.ContentType == ContentType.Vanilla)

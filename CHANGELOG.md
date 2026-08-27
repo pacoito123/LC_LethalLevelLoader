@@ -3,6 +3,12 @@
 
 **<details><summary>Version 1.7.12</summary>**
 
+**<details><summary>Features</summary>**
+
+* Increased upper bound value for configurable interior weights to `999,999`
+
+</details>
+
 **<details><summary>Fixes</summary>**
 
 * Fixed certain restored assets being missing during subsequent rounds in the same level _(Thanks [Sniper1-1](https://thunderstore.io/c/lethal-company/p/Sniper1_1)!)_

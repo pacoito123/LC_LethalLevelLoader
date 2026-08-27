@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace LethalLevelLoader
@@ -23,7 +24,7 @@ namespace LethalLevelLoader
                     scenePathsInBundle.Add(scene);
 
             foreach (string scene in scenePathsInBundle)
-                sceneNamesInBundle.Add(scene[(scene.LastIndexOf('/') + 1)..].Replace(".unity", string.Empty));
+                sceneNamesInBundle.Add(scene[(scene.LastIndexOf('/') + 1)..].Replace(".unity", string.Empty, StringComparison.OrdinalIgnoreCase));
             foreach (string scene in sceneNamesInBundle)
                 DebugHelper.Log("AssetBundleInfo Has Scene: " + scene, DebugType.User);
         }

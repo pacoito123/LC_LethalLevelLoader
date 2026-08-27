@@ -110,7 +110,7 @@ namespace LethalLevelLoader
             if (string.IsNullOrEmpty(DungeonName))
                 DungeonName = DungeonFlow.name;
 
-            name = DungeonFlow.name.Replace("Flow", "") + "ExtendedDungeonFlow";
+            name = DungeonName.Replace("Flow", string.Empty, StringComparison.OrdinalIgnoreCase).RemoveWhitespace() + "ExtendedDungeonFlow";
 
             if (FirstTimeDungeonAudio == null)
             {
