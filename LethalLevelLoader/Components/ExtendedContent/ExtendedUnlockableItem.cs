@@ -16,22 +16,20 @@ namespace LethalLevelLoader
         [field: Space(5)]
         [field: Header("Terminal Store & Info Override Settings")]
 
-        [field: TextArea(2, 20)]
-        [field: SerializeField] public string OverrideInfoNodeDescription { get; set; } = string.Empty;
-        [field: TextArea(2, 20)]
-        [field: SerializeField] public string OverrideBuyNodeDescription { get; set; } = string.Empty;
-        [field: TextArea(2, 20)]
-        [field: SerializeField] public string OverrideBuyConfirmNodeDescription { get; set; } = string.Empty;
+        [field: TextArea(2, 20)][field: SerializeField] public string OverrideInfoNodeDescription { get; set; } = string.Empty;
+        [field: TextArea(2, 20)][field: SerializeField] public string OverrideBuyNodeDescription { get; set; } = string.Empty;
+        [field: TextArea(2, 20)][field: SerializeField] public string OverrideBuyConfirmNodeDescription { get; set; } = string.Empty;
+
+        [field: Space(5)]
+        [field: SerializeField] public TerminalNode BuyNode { get; internal set; }
+        [field: SerializeField] public TerminalNode BuyConfirmNode { get; internal set; }
+        [field: SerializeField] public TerminalNode BuyInfoNode { get; internal set; }
 
         public int UnlockableItemID { get; set; } = -1;
 
-        public TerminalNode BuyNode { get; internal set; }
-        public TerminalNode BuyConfirmNode { get; internal set; }
-        public TerminalNode BuyInfoNode { get; internal set; }
-
         public void Initialize()
         {
-            name = UnlockableItem.unlockableName + "ExtendedDungeonFlow";
+            name = UnlockableItem.unlockableName + "ExtendedUnlockableItem";
 
             if (UnlockableItem.prefabObject == null)
                 ContentRestorer.RestoreAudioAssetReferencesInParent(UnlockableItem.prefabObject);

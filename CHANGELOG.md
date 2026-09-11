@@ -1,6 +1,25 @@
 **Changelog**
 --
 
+**<details><summary>Version 1.7.13</summary>**
+
+**<details><summary>Features</summary>**
+
+* Made custom TerminalNode ScriptableObjects able to be provided to ExtendedContent fields (e.g. ExtendedItem's `BuyNode`) to override more values without a dedicated field for them all
+  * Required fields (e.g. `buyItemIndex` for a shop item) are properly assigned at runtime with the correct values
+  * Optional fields (e.g. `displayVideo` or `displayText`) can be overridden with custom values, if so desired
+  * Existing override fields (e.g. ExtendedItem's `OverrideBuyNodeDescription`) will continue working as expected
+
+</details>
+
+**<details><summary>Fixes</summary>**
+
+* Fixed ExtendedEnemyType Bestiary entries not displaying properly
+
+</details>
+
+</details>
+
 **<details><summary>Version 1.7.12</summary>**
 
 **<details><summary>Features</summary>**

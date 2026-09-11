@@ -550,50 +550,78 @@ namespace LethalLevelLoader
 
             //Terminal Route Node
             TerminalNode terminalNodeRoute;
-            if (extendedLevel.RouteNode != null)
-                terminalNodeRoute = extendedLevel.RouteNode;
+            if (extendedLevel.RouteNode == null)
+                terminalNodeRoute = CreateNewTerminalNode();
             else
             {
-                terminalNodeRoute = CreateNewTerminalNode();
+                terminalNodeRoute = extendedLevel.RouteNode;
+                terminalNodeRoute.ResetValues();
+            }
+            terminalNodeRoute.clearPreviousText = true;
+            terminalNodeRoute.buyRerouteToMoon = -2;
+            terminalNodeRoute.displayPlanetInfo = extendedLevel.SelectableLevel.levelID;
+            terminalNodeRoute.itemCost = routePrice;
+            terminalNodeRoute.overrideOptions = true;
+
+            if (extendedLevel.ContentType is ContentType.Custom)
+            {
                 terminalNodeRoute.name = $"{sanitizedName}Route";
-                terminalNodeRoute.displayText = (!string.IsNullOrEmpty(extendedLevel.OverrideRouteNodeDescription)) ? extendedLevel.OverrideRouteNodeDescription
-                    : $"The cost to route to {extendedLevel.SelectableLevel.PlanetName} is [totalCost]. It is currently [currentPlanetTime] on this moon.\n\nPlease CONFIRM or DENY.\n\n";
-                terminalNodeRoute.clearPreviousText = true;
-                terminalNodeRoute.buyRerouteToMoon = -2;
-                terminalNodeRoute.displayPlanetInfo = extendedLevel.SelectableLevel.levelID;
-                terminalNodeRoute.itemCost = routePrice;
-                terminalNodeRoute.overrideOptions = true;
+
+                string routeString = terminalNodeRoute.displayText;
+                if (!string.IsNullOrEmpty(extendedLevel.OverrideRouteNodeDescription))
+                    routeString = extendedLevel.OverrideRouteNodeDescription;
+                else if (string.IsNullOrEmpty(routeString))
+                    routeString = $"The cost to route to {extendedLevel.SelectableLevel.PlanetName} is [totalCost]. It is currently [currentPlanetTime] on this moon.\n\nPlease CONFIRM or DENY.\n\n";
+
+                terminalNodeRoute.displayText = routeString;
             }
 
             //Terminal Route Confirm Node
             TerminalNode terminalNodeRouteConfirm;
-            if (extendedLevel.RouteConfirmNode != null)
-                terminalNodeRouteConfirm = extendedLevel.RouteConfirmNode;
+            if (extendedLevel.RouteConfirmNode == null)
+                terminalNodeRouteConfirm = CreateNewTerminalNode();
             else
             {
-                terminalNodeRouteConfirm = CreateNewTerminalNode();
+                terminalNodeRouteConfirm = extendedLevel.RouteConfirmNode;
+                terminalNodeRouteConfirm.ResetValues();
+            }
+            terminalNodeRouteConfirm.clearPreviousText = true;
+            terminalNodeRouteConfirm.buyRerouteToMoon = extendedLevel.SelectableLevel.levelID;
+            terminalNodeRouteConfirm.itemCost = routePrice;
+
+            if (extendedLevel.ContentType is ContentType.Custom)
+            {
                 terminalNodeRouteConfirm.name = $"{sanitizedName}RouteConfirm";
-                terminalNodeRouteConfirm.displayText = (!string.IsNullOrEmpty(extendedLevel.OverrideRouteConfirmNodeDescription)) ? extendedLevel.OverrideRouteConfirmNodeDescription
-                    : $"Routing autopilot to {extendedLevel.SelectableLevel.PlanetName} Your new balance is [playerCredits]. \n\nPlease enjoy your flight.";
-                terminalNodeRouteConfirm.clearPreviousText = true;
-                terminalNodeRouteConfirm.buyRerouteToMoon = extendedLevel.SelectableLevel.levelID;
-                terminalNodeRouteConfirm.itemCost = routePrice;
+
+                string routeConfirmString = terminalNodeRouteConfirm.displayText;
+                if (!string.IsNullOrEmpty(extendedLevel.OverrideRouteConfirmNodeDescription))
+                    routeConfirmString = extendedLevel.OverrideRouteConfirmNodeDescription;
+                else if (string.IsNullOrEmpty(routeConfirmString))
+                    routeConfirmString = $"Routing autopilot to {extendedLevel.SelectableLevel.PlanetName} Your new balance is [playerCredits]. \n\nPlease enjoy your flight.";
+
+                terminalNodeRouteConfirm.displayText = routeConfirmString;
             }
 
             //Terminal Info Node
             TerminalNode terminalNodeInfo;
-            if (extendedLevel.InfoNode != null)
-                terminalNodeInfo = extendedLevel.InfoNode;
+            if (extendedLevel.InfoNode == null)
+                terminalNodeInfo = CreateNewTerminalNode();
             else
             {
-                terminalNodeInfo = CreateNewTerminalNode();
+                terminalNodeInfo = extendedLevel.InfoNode;
+                terminalNodeInfo.ResetValues();
+            }
+            terminalNodeInfo.clearPreviousText = true;
+            terminalNodeInfo.maxCharactersToType = 35;
+
+            if (extendedLevel.ContentType is ContentType.Custom)
+            {
                 terminalNodeInfo.name = $"{sanitizedName}Info";
-                terminalNodeInfo.clearPreviousText = true;
-                terminalNodeInfo.maxCharactersToType = 35;
-                string infoString;
+
+                string infoString = terminalNodeInfo.displayText;
                 if (!string.IsNullOrEmpty(extendedLevel.OverrideInfoNodeDescription))
                     infoString = extendedLevel.OverrideInfoNodeDescription;
-                else
+                else if (string.IsNullOrEmpty(infoString))
                 {
                     infoString = $"{extendedLevel.SelectableLevel.PlanetName}\n----------------------\n";
                     foreach (string line in extendedLevel.SelectableLevel.LevelDescription.Split('\n', StringSplitOptions.None))
@@ -626,7 +654,7 @@ namespace LethalLevelLoader
         {
             if (Plugin.IsSetupComplete)
             {
-                Terminal.logEntryFiles.Add(newStoryLog.assignedNode);
+                Terminal.logEntryFiles.Add(newStoryLog.StoryLogNode);
                 return;
             }
             string sanitizedName = newStoryLog.storyLogTitle.Sanitized(toLower: false).RemoveWhitespace();
@@ -635,14 +663,27 @@ namespace LethalLevelLoader
             newStoryLogKeyword.name = $"{sanitizedName}Keyword";
             newStoryLogKeyword.word = newStoryLog.terminalKeywordNoun.Sanitized().RemoveWhitespace();
             newStoryLogKeyword.defaultVerb = viewKeyword;
-            TerminalNode newStoryLogNode = CreateNewTerminalNode();
-            newStoryLogNode.name = $"LogFile{Terminal.logEntryFiles.Count + 1}";
-            newStoryLogNode.displayText = newStoryLog.storyLogDescription;
+
+            TerminalNode newStoryLogNode;
+            if (newStoryLog.StoryLogNode == null)
+                newStoryLogNode = CreateNewTerminalNode();
+            else
+            {
+                newStoryLogNode = newStoryLog.StoryLogNode;
+                newStoryLogNode.ResetValues();
+            }
             newStoryLogNode.clearPreviousText = true;
+            newStoryLogNode.maxCharactersToType = 35;
+
+            newStoryLogNode.displayText = newStoryLog.storyLogDescription;
             newStoryLogNode.creatureName = newStoryLog.storyLogTitle;
+
             newStoryLogNode.storyLogFileID = Terminal.logEntryFiles.Count;
             newStoryLog.newStoryLogID = Terminal.logEntryFiles.Count;
-            newStoryLog.assignedNode = newStoryLogNode;
+
+            newStoryLogNode.name = $"LogFile{Terminal.logEntryFiles.Count + 1}";
+
+            //Population Into Base game
 
             Terminal.logEntryFiles.Add(newStoryLogNode);
             viewKeyword.AddCompatibleNoun(newStoryLogKeyword, newStoryLogNode);
@@ -652,103 +693,147 @@ namespace LethalLevelLoader
         {
             string sanitizedName = extendedItem.Item.itemName.Sanitized(toLower: false).RemoveWhitespace();
 
-            //Terminal Buy Keyword
+            //Terminal Item Buy Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
             terminalKeyword.name = $"{sanitizedName}Keyword";
             terminalKeyword.word = sanitizedName.ToLowerInvariant();
             terminalKeyword.defaultVerb = buyKeyword;
 
-            //Terminal Buy Keyword
+            //Terminal Item Buy Node
             TerminalNode terminalNodeBuy;
-            if (extendedItem.BuyNode != null)
-                terminalNodeBuy = extendedItem.BuyNode;
-            else
-            {
+            if (extendedItem.BuyNode == null)
                 terminalNodeBuy = CreateNewTerminalNode();
-                terminalNodeBuy.name = $"{sanitizedName}Buy";
-                terminalNodeBuy.displayText = (!string.IsNullOrEmpty(extendedItem.OverrideBuyNodeDescription)) ? extendedItem.OverrideBuyNodeDescription
-                    : $"You have requested to order {(!string.IsNullOrEmpty(extendedItem.PluralisedItemName) ? extendedItem.PluralisedItemName
-                    : extendedItem.Item.itemName)}. Amount: [variableAmount].\n Total cost of items: [totalCost].\n\nPlease CONFIRM or DENY.\n\n";
-                terminalNodeBuy.clearPreviousText = true;
-                terminalNodeBuy.maxCharactersToType = 15;
-                terminalNodeBuy.isConfirmationNode = true;
-                terminalNodeBuy.itemCost = extendedItem.Item.creditsWorth;
-                terminalNodeBuy.overrideOptions = true;
-            }
-
-            //Terminal Route Confirm Node
-            TerminalNode terminalNodeBuyConfirm;
-            if (extendedItem.BuyConfirmNode != null)
-                terminalNodeBuyConfirm = extendedItem.BuyConfirmNode;
             else
             {
-                terminalNodeBuyConfirm = CreateNewTerminalNode();
-                terminalNodeBuyConfirm.name = $"{sanitizedName}BuyConfirm";
-                terminalNodeBuyConfirm.displayText = (!string.IsNullOrEmpty(extendedItem.OverrideBuyConfirmNodeDescription)) ? extendedItem.OverrideBuyConfirmNodeDescription
-                    : $"Ordered [variableAmount] {(!string.IsNullOrEmpty(extendedItem.PluralisedItemName) ? extendedItem.PluralisedItemName
-                    : extendedItem.Item.itemName)}. Your new balance is[playerCredits]\n\nOur contractors enjoy fast, free shipping while on the job! Any purchased items will arrive hourly at your approximate location.";
-                terminalNodeBuyConfirm.clearPreviousText = true;
-                terminalNodeBuyConfirm.maxCharactersToType = 35;
-                terminalNodeBuyConfirm.isConfirmationNode = false;
-                terminalNodeBuyConfirm.playSyncedClip = 0;
+                terminalNodeBuy = extendedItem.BuyNode;
+                terminalNodeBuy.ResetValues();
             }
+            terminalNodeBuy.clearPreviousText = true;
+            terminalNodeBuy.maxCharactersToType = 15;
+            terminalNodeBuy.isConfirmationNode = true;
+            terminalNodeBuy.itemCost = extendedItem.Item.creditsWorth;
+            terminalNodeBuy.overrideOptions = true;
 
-            //Terminal Info Node
-            TerminalNode terminalNodeInfo = null;
-            if (!string.IsNullOrEmpty(extendedItem.OverrideInfoNodeDescription))
+            terminalNodeBuy.name = $"{sanitizedName}Buy";
+
+            string buyString = terminalNodeBuy.displayText;
+            if (!string.IsNullOrEmpty(extendedItem.OverrideBuyNodeDescription))
+                buyString = extendedItem.OverrideBuyNodeDescription;
+            else if (string.IsNullOrEmpty(buyString))
+                buyString = $"You have requested to order {(!string.IsNullOrEmpty(extendedItem.PluralisedItemName) ? extendedItem.PluralisedItemName
+                    : extendedItem.Item.itemName)}. Amount: [variableAmount].\n Total cost of items: [totalCost].\n\nPlease CONFIRM or DENY.\n\n";
+
+            terminalNodeBuy.displayText = buyString;
+
+            //Terminal Item Buy Confirm Node
+            TerminalNode terminalNodeBuyConfirm;
+            if (extendedItem.BuyConfirmNode == null)
+                terminalNodeBuyConfirm = CreateNewTerminalNode();
+            else
             {
-                if (extendedItem.BuyInfoNode != null)
-                    terminalNodeInfo = extendedItem.BuyInfoNode;
-                else
-                {
-                    terminalNodeInfo = CreateNewTerminalNode();
-                    terminalNodeInfo.name = $"{sanitizedName}Info";
-                    terminalNodeInfo.clearPreviousText = true;
-                    terminalNodeInfo.maxCharactersToType = 25;
-                    terminalNodeInfo.displayText = '\n' + extendedItem.OverrideInfoNodeDescription;
-                }
+                terminalNodeBuyConfirm = extendedItem.BuyConfirmNode;
+                terminalNodeBuyConfirm.ResetValues();
             }
+            terminalNodeBuy.clearPreviousText = true;
+            terminalNodeBuy.maxCharactersToType = 35;
+            terminalNodeBuy.itemCost = extendedItem.Item.creditsWorth;
+            if (terminalNodeBuy.playClip == null)
+                terminalNodeBuy.playSyncedClip = 0;
+
+            terminalNodeBuyConfirm.name = $"{sanitizedName}BuyConfirm";
+
+            string buyConfirmString = terminalNodeBuyConfirm.displayText;
+            if (!string.IsNullOrEmpty(extendedItem.OverrideBuyConfirmNodeDescription))
+                buyConfirmString = extendedItem.OverrideBuyConfirmNodeDescription;
+            else if (string.IsNullOrEmpty(buyConfirmString))
+                buyConfirmString = $"Ordered [variableAmount] {(!string.IsNullOrEmpty(extendedItem.PluralisedItemName) ? extendedItem.PluralisedItemName
+                    : extendedItem.Item.itemName)}. Your new balance is[playerCredits]\n\nOur contractors enjoy fast, free shipping while on the job! Any purchased items will arrive hourly at your approximate location.";
+
+            terminalNodeBuyConfirm.displayText = buyConfirmString;
+
+            //Terminal Item Info Node
+            TerminalNode terminalNodeBuyInfo;
+            if (extendedItem.BuyInfoNode == null)
+                terminalNodeBuyInfo = CreateNewTerminalNode();
+            else
+            {
+                terminalNodeBuyInfo = extendedItem.BuyInfoNode;
+                terminalNodeBuyInfo.ResetValues();
+            }
+            terminalNodeBuyInfo.clearPreviousText = true;
+
+            terminalNodeBuyInfo.name = $"{sanitizedName}Info";
+
+            string buyInfoString = terminalNodeBuyInfo.displayText;
+            if (!string.IsNullOrEmpty(extendedItem.OverrideInfoNodeDescription))
+                buyInfoString = extendedItem.OverrideInfoNodeDescription;
+            else if (string.IsNullOrEmpty(buyInfoString))
+                buyInfoString = "[No information about this object was found.]\n\n";
+
+            terminalNodeBuyInfo.displayText = buyInfoString;
+
+            //Population Into Base game
 
             terminalNodeBuy.AddCompatibleNoun(routeConfirmKeyword, terminalNodeBuyConfirm);
             terminalNodeBuy.AddCompatibleNoun(routeDenyKeyword, cancelPurchaseNode);
             buyKeyword.AddCompatibleNoun(terminalKeyword, terminalNodeBuy);
-            if (terminalNodeInfo != null)
-                routeInfoKeyword.AddCompatibleNoun(terminalKeyword, terminalNodeInfo);
+            if (terminalNodeBuyInfo != null)
+                routeInfoKeyword.AddCompatibleNoun(terminalKeyword, terminalNodeBuyInfo);
 
             extendedItem.BuyNode = terminalNodeBuy;
             extendedItem.BuyConfirmNode = terminalNodeBuyConfirm;
-            extendedItem.BuyInfoNode = terminalNodeInfo;
+            extendedItem.BuyInfoNode = terminalNodeBuyInfo;
         }
 
         internal static void CreateEnemyTypeTerminalData(ExtendedEnemyType extendedEnemyType)
         {
             if (Plugin.IsSetupComplete)
             {
-                // Load ExtendedEnemyType beastiary entry.
+                // Load ExtendedEnemyType bestiary entry.
                 Patches.Terminal.enemyFiles.Add(extendedEnemyType.EnemyInfoNode);
                 return;
             }
             string sanitizedName = extendedEnemyType.EnemyDisplayName.Sanitized(toLower: false).RemoveWhitespace();
 
+            //Terminal Enemy Keyword
             TerminalKeyword newEnemyInfoKeyword = CreateNewTerminalKeyword();
             newEnemyInfoKeyword.name = $"{sanitizedName}BestiaryKeyword";
             newEnemyInfoKeyword.word = sanitizedName.ToLowerInvariant();
             newEnemyInfoKeyword.defaultVerb = routeInfoKeyword;
 
-            TerminalNode newEnemyInfoNode = CreateNewTerminalNode();
-            newEnemyInfoNode.name = $"{sanitizedName}BestiaryNode";
-            newEnemyInfoNode.displayText = extendedEnemyType.InfoNodeDescription;
+            //Terminal Enemy Info Node
+            TerminalNode newEnemyInfoNode;
+            if (extendedEnemyType.EnemyInfoNode == null)
+                newEnemyInfoNode = CreateNewTerminalNode();
+            else
+            {
+                newEnemyInfoNode = extendedEnemyType.EnemyInfoNode;
+                newEnemyInfoNode.ResetValues();
+            }
+            newEnemyInfoNode.clearPreviousText = true;
+            newEnemyInfoNode.maxCharactersToType = 35;
             newEnemyInfoNode.creatureFileID = extendedEnemyType.EnemyID;
             newEnemyInfoNode.creatureName = extendedEnemyType.EnemyDisplayName;
-            newEnemyInfoNode.playSyncedClip = 2;
+            if (newEnemyInfoNode.playClip == null)
+                newEnemyInfoNode.playSyncedClip = 2;
+            newEnemyInfoNode.loadImageSlowly = true;
+
+            newEnemyInfoNode.name = $"{sanitizedName}BestiaryNode";
+
+            string bestiaryString = newEnemyInfoNode.displayText;
+            if (!string.IsNullOrEmpty(extendedEnemyType.InfoNodeDescription))
+                bestiaryString = extendedEnemyType.InfoNodeDescription;
+            else if (string.IsNullOrEmpty(bestiaryString))
+                bestiaryString = $"{extendedEnemyType.EnemyDisplayName}\n\n[No information about this entity was found.]\n\n";
+
+            newEnemyInfoNode.displayText = bestiaryString;
 
             if (extendedEnemyType.InfoNodeVideoClip != null)
-            {
                 newEnemyInfoNode.displayVideo = extendedEnemyType.InfoNodeVideoClip;
-                newEnemyInfoNode.loadImageSlowly = true;
-            }
 
             extendedEnemyType.EnemyInfoNode = newEnemyInfoNode;
+
+            //Population Into Base game
 
             Patches.Terminal.enemyFiles.Add(newEnemyInfoNode);
             routeInfoKeyword.AddCompatibleNoun(newEnemyInfoKeyword, newEnemyInfoNode);
@@ -758,33 +843,72 @@ namespace LethalLevelLoader
         {
             string sanitizedName = extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName.Sanitized(toLower: false).RemoveWhitespace();
 
+            //Terminal Vehicle Buy Keyword
             TerminalKeyword newVehicleTerminalKeyword = CreateNewTerminalKeyword();
             newVehicleTerminalKeyword.name = $"{sanitizedName}Keyword";
             newVehicleTerminalKeyword.word = extendedBuyableVehicle.TerminalKeywordName.ToLowerInvariant();
             newVehicleTerminalKeyword.defaultVerb = buyKeyword;
 
-            TerminalNode newVehicleBuyNode = CreateNewTerminalNode();
-            newVehicleBuyNode.name = $"{sanitizedName}Buy";
-            newVehicleBuyNode.itemCost = extendedBuyableVehicle.BuyableVehicle.creditsWorth;
-            newVehicleBuyNode.buyVehicleIndex = extendedBuyableVehicle.VehicleID;
-            newVehicleBuyNode.isConfirmationNode = true;
-            newVehicleBuyNode.overrideOptions = true;
+            //Terminal Vehicle Buy Node
+            TerminalNode newVehicleBuyNode;
+            if (extendedBuyableVehicle.VehicleBuyNode == null)
+                newVehicleBuyNode = CreateNewTerminalNode();
+            else
+            {
+                newVehicleBuyNode = extendedBuyableVehicle.VehicleBuyNode;
+                newVehicleBuyNode.ResetValues();
+            }
             newVehicleBuyNode.clearPreviousText = true;
             newVehicleBuyNode.maxCharactersToType = 15;
-            newVehicleBuyNode.displayText = $"You have requested to order the {extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName}.\n[warranty] Total cost of items: [totalCost].\n\nPlease CONFIRM or DENY.\n\n";
+            newVehicleBuyNode.buyVehicleIndex = extendedBuyableVehicle.VehicleID;
+            newVehicleBuyNode.itemCost = extendedBuyableVehicle.BuyableVehicle.creditsWorth;
+            newVehicleBuyNode.isConfirmationNode = true;
+            newVehicleBuyNode.overrideOptions = true;
 
-            TerminalNode newVehicleBuyConfirmNode = CreateNewTerminalNode();
-            newVehicleBuyConfirmNode.name = $"{sanitizedName}BuyConfirm";
-            newVehicleBuyConfirmNode.itemCost = extendedBuyableVehicle.BuyableVehicle.creditsWorth;
-            newVehicleBuyConfirmNode.buyVehicleIndex = extendedBuyableVehicle.VehicleID;
+            newVehicleBuyNode.name = $"{sanitizedName}Buy";
+
+            if (string.IsNullOrEmpty(newVehicleBuyNode.displayText))
+                newVehicleBuyNode.displayText = $"You have requested to order the {extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName}.\n[warranty] Total cost of items: [totalCost].\n\nPlease CONFIRM or DENY.\n\n";
+
+            //Terminal Vehicle Buy Confirm Node
+            TerminalNode newVehicleBuyConfirmNode;
+            if (extendedBuyableVehicle.VehicleBuyConfirmNode == null)
+                newVehicleBuyConfirmNode = CreateNewTerminalNode();
+            else
+            {
+                newVehicleBuyConfirmNode = extendedBuyableVehicle.VehicleBuyConfirmNode;
+                newVehicleBuyConfirmNode.ResetValues();
+            }
             newVehicleBuyConfirmNode.clearPreviousText = true;
             newVehicleBuyConfirmNode.maxCharactersToType = 35;
-            newVehicleBuyConfirmNode.playSyncedClip = 0;
-            newVehicleBuyConfirmNode.displayText = $"Ordered the {extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName}. Your new balance is [playerCredits].\n\nWe are so confident in the quality of this product, it comes with a life-time warranty! "
-                + $"If your {extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName} is lost or destroyed, you can get one free replacement. Items cannot be purchased while the vehicle is en route." + "\n\n";
+            newVehicleBuyConfirmNode.buyVehicleIndex = extendedBuyableVehicle.VehicleID;
+            newVehicleBuyConfirmNode.itemCost = extendedBuyableVehicle.BuyableVehicle.creditsWorth;
+            if (newVehicleBuyConfirmNode.playClip == null)
+                newVehicleBuyConfirmNode.playSyncedClip = 0;
 
-            TerminalNode newVehicleInfoNode = CreateNewTerminalNode();
+            newVehicleBuyConfirmNode.name = $"{sanitizedName}BuyConfirm";
+
+            if (string.IsNullOrEmpty(newVehicleBuyConfirmNode.displayText))
+                newVehicleBuyConfirmNode.displayText = $"Ordered the {extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName}. Your new balance is [playerCredits].\n\nWe are so confident in the quality of this product, it comes with a life-time warranty! "
+                    + $"If your {extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName} is lost or destroyed, you can get one free replacement. Items cannot be purchased while the vehicle is en route.\n\n";
+
+            //Terminal Vehicle Info Node
+            TerminalNode newVehicleInfoNode;
+            if (extendedBuyableVehicle.VehicleInfoNode == null)
+                newVehicleInfoNode = CreateNewTerminalNode();
+            else
+            {
+                newVehicleInfoNode = extendedBuyableVehicle.VehicleInfoNode;
+                newVehicleInfoNode.ResetValues();
+            }
+            newVehicleInfoNode.clearPreviousText = true;
+
             newVehicleInfoNode.name = $"{sanitizedName}Info";
+
+            if (string.IsNullOrEmpty(newVehicleInfoNode.displayText))
+                newVehicleInfoNode.displayText = $"{extendedBuyableVehicle.BuyableVehicle.vehicleDisplayName}\n\n[No information about this vehicle was found.]\n\n";
+
+            //Population Into Base game
 
             extendedBuyableVehicle.VehicleBuyNode = newVehicleBuyNode;
             extendedBuyableVehicle.VehicleBuyConfirmNode = newVehicleBuyConfirmNode;
@@ -800,67 +924,89 @@ namespace LethalLevelLoader
         {
             string sanitizedName = extendedUnlockableItem.UnlockableItem.unlockableName.Sanitized(toLower: false).RemoveWhitespace();
 
-            //Terminal Buy Keyword
+            //Terminal Unlockable Buy Keyword
             TerminalKeyword terminalKeyword = CreateNewTerminalKeyword();
             terminalKeyword.name = $"{sanitizedName}Keyword";
             terminalKeyword.word = sanitizedName.ToLowerInvariant();
             terminalKeyword.defaultVerb = buyKeyword;
 
-            //Terminal Buy Keyword
+            //Terminal Unlockable Buy Node
             TerminalNode terminalNodeBuy;
-            if (extendedUnlockableItem.BuyNode != null)
-                terminalNodeBuy = extendedUnlockableItem.BuyNode;
-            else
-            {
+            if (extendedUnlockableItem.BuyNode == null)
                 terminalNodeBuy = CreateNewTerminalNode();
-                terminalNodeBuy.name = $"{sanitizedName}Buy";
-                terminalNodeBuy.itemCost = extendedUnlockableItem.ItemCost;
-                terminalNodeBuy.isConfirmationNode = false;
-                terminalNodeBuy.overrideOptions = true;
-                terminalNodeBuy.clearPreviousText = true;
-                terminalNodeBuy.maxCharactersToType = 15;
-                terminalNodeBuy.creatureName = extendedUnlockableItem.UnlockableItem.unlockableName;
-                terminalNodeBuy.displayText = (!string.IsNullOrEmpty(extendedUnlockableItem.OverrideBuyNodeDescription)) ? extendedUnlockableItem.OverrideBuyNodeDescription
-                    : $"You have requested to order the {terminalNodeBuy.creatureName}.\n Total cost of item: [totalCost].\n\nPlease CONFIRM or DENY.\n\n";
-            }
-            terminalNodeBuy.shipUnlockableID = extendedUnlockableItem.UnlockableItemID;
-
-            //Terminal Buy Confirm Node
-            TerminalNode terminalNodeBuyConfirm;
-            if (extendedUnlockableItem.BuyConfirmNode != null)
-                terminalNodeBuyConfirm = extendedUnlockableItem.BuyConfirmNode;
             else
             {
-                terminalNodeBuyConfirm = CreateNewTerminalNode();
-                terminalNodeBuyConfirm.name = $"{sanitizedName}BuyConfirm";
-                terminalNodeBuyConfirm.itemCost = extendedUnlockableItem.ItemCost;
-                terminalNodeBuyConfirm.isConfirmationNode = false;
-                terminalNodeBuyConfirm.clearPreviousText = true;
-                terminalNodeBuyConfirm.buyUnlockable = true;
-                terminalNodeBuyConfirm.maxCharactersToType = 35;
-                terminalNodeBuyConfirm.playSyncedClip = 0;
-                terminalNodeBuyConfirm.creatureName = extendedUnlockableItem.UnlockableItem.unlockableName;
-                terminalNodeBuyConfirm.displayText = (!string.IsNullOrEmpty(extendedUnlockableItem.OverrideBuyConfirmNodeDescription)) ? extendedUnlockableItem.OverrideBuyConfirmNodeDescription
-                    : $"Ordered the {terminalNodeBuyConfirm.creatureName}! Your new balance is [playerCredits]";
+                terminalNodeBuy = extendedUnlockableItem.BuyNode;
+                terminalNodeBuy.ResetValues();
             }
-            terminalNodeBuyConfirm.shipUnlockableID = extendedUnlockableItem.UnlockableItemID;
+            terminalNodeBuy.clearPreviousText = true;
+            terminalNodeBuy.maxCharactersToType = 15;
+            terminalNodeBuy.isConfirmationNode = true;
+            terminalNodeBuy.shipUnlockableID = extendedUnlockableItem.UnlockableItemID;
+            terminalNodeBuy.itemCost = extendedUnlockableItem.ItemCost;
+            terminalNodeBuy.creatureName = extendedUnlockableItem.UnlockableItem.unlockableName;
+            terminalNodeBuy.overrideOptions = true;
 
-            //Terminal Info Node
-            TerminalNode terminalNodeInfo = null;
-            if (!string.IsNullOrEmpty(extendedUnlockableItem.OverrideInfoNodeDescription))
+            terminalNodeBuy.name = $"{sanitizedName}Buy";
+
+            string buyString = terminalNodeBuy.displayText;
+            if (!string.IsNullOrEmpty(extendedUnlockableItem.OverrideBuyNodeDescription))
+                buyString = extendedUnlockableItem.OverrideBuyNodeDescription;
+            else if (string.IsNullOrEmpty(buyString))
+                buyString = $"You have requested to order the {terminalNodeBuy.creatureName}.\n Total cost of item: [totalCost].\n\nPlease CONFIRM or DENY.\n\n";
+
+            terminalNodeBuy.displayText = buyString;
+
+            //Terminal Unlockable Buy Confirm Node
+            TerminalNode terminalNodeBuyConfirm;
+            if (extendedUnlockableItem.BuyConfirmNode == null)
+                terminalNodeBuyConfirm = CreateNewTerminalNode();
+            else
             {
-                if (extendedUnlockableItem.BuyInfoNode != null)
-                    terminalNodeInfo = extendedUnlockableItem.BuyInfoNode;
-                else
-                {
-                    terminalNodeInfo = CreateNewTerminalNode();
-                    terminalNodeInfo.name = $"{sanitizedName}Info";
-                    terminalNodeInfo.clearPreviousText = true;
-                    terminalNodeInfo.maxCharactersToType = 25;
-                    terminalNodeInfo.displayText = '\n' + extendedUnlockableItem.OverrideInfoNodeDescription;
-                    terminalNodeInfo.creatureName = extendedUnlockableItem.UnlockableItem.unlockableName;
-                }
+                terminalNodeBuyConfirm = extendedUnlockableItem.BuyConfirmNode;
+                terminalNodeBuyConfirm.ResetValues();
             }
+            terminalNodeBuyConfirm.clearPreviousText = true;
+            terminalNodeBuyConfirm.maxCharactersToType = 35;
+            terminalNodeBuyConfirm.shipUnlockableID = extendedUnlockableItem.UnlockableItemID;
+            terminalNodeBuyConfirm.buyUnlockable = true;
+            terminalNodeBuyConfirm.itemCost = extendedUnlockableItem.ItemCost;
+            terminalNodeBuyConfirm.creatureName = extendedUnlockableItem.UnlockableItem.unlockableName;
+            if (terminalNodeBuyConfirm.playClip == null)
+                terminalNodeBuyConfirm.playSyncedClip = 0;
+
+            terminalNodeBuyConfirm.name = $"{sanitizedName}BuyConfirm";
+
+            string buyConfirmString = terminalNodeBuyConfirm.displayText;
+            if (!string.IsNullOrEmpty(extendedUnlockableItem.OverrideBuyConfirmNodeDescription))
+                buyConfirmString = extendedUnlockableItem.OverrideBuyConfirmNodeDescription;
+            else if (string.IsNullOrEmpty(buyConfirmString))
+                buyConfirmString = $"Ordered the {terminalNodeBuyConfirm.creatureName}! Your new balance is [playerCredits]";
+
+            terminalNodeBuyConfirm.displayText = buyConfirmString;
+
+            //Terminal Unlockable Info Node
+            TerminalNode terminalNodeInfo;
+            if (extendedUnlockableItem.BuyInfoNode == null)
+                terminalNodeInfo = CreateNewTerminalNode();
+            else
+            {
+                terminalNodeInfo = extendedUnlockableItem.BuyInfoNode;
+                terminalNodeInfo.ResetValues();
+            }
+            terminalNodeInfo.clearPreviousText = true;
+            terminalNodeInfo.shipUnlockableID = extendedUnlockableItem.UnlockableItemID;
+            terminalNodeInfo.creatureName = extendedUnlockableItem.UnlockableItem.unlockableName;
+
+            terminalNodeInfo.name = $"{sanitizedName}Info";
+
+            string infoString = terminalNodeInfo.displayText;
+            if (!string.IsNullOrEmpty(extendedUnlockableItem.OverrideInfoNodeDescription))
+                infoString = extendedUnlockableItem.OverrideInfoNodeDescription;
+            else if (string.IsNullOrEmpty(infoString))
+                infoString = $"{extendedUnlockableItem.UnlockableItem.unlockableName}\n\n[No information about this object was found.]\n\n";
+
+            terminalNodeInfo.displayText = infoString;
 
             //Population Into Base game
 
@@ -997,17 +1143,7 @@ namespace LethalLevelLoader
             TerminalNode newTerminalNode = ScriptableObject.CreateInstance<TerminalNode>();
             newTerminalNode.name = "NewLethalLevelLoaderTerminalNode";
 
-            newTerminalNode.displayText = string.Empty;
-            newTerminalNode.terminalEvent = string.Empty;
-            newTerminalNode.maxCharactersToType = 25;
-            newTerminalNode.buyItemIndex = -1;
-            newTerminalNode.buyRerouteToMoon = -1;
-            newTerminalNode.displayPlanetInfo = -1;
-            newTerminalNode.shipUnlockableID = -1;
-            newTerminalNode.creatureFileID = -1;
-            newTerminalNode.storyLogFileID = -1;
-            newTerminalNode.playSyncedClip = -1;
-            newTerminalNode.terminalOptions = [];
+            newTerminalNode.ResetValues();
 
             return (newTerminalNode);
         }

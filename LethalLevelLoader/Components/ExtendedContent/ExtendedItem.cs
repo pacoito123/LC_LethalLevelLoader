@@ -22,13 +22,14 @@ namespace LethalLevelLoader
         [field: Space(5)]
         [field: Header("Terminal Store & Info Override Settings")]
 
-        [field: SerializeField] public string OverrideInfoNodeDescription { get; set; } = string.Empty;
-        [field: SerializeField] public string OverrideBuyNodeDescription { get; set; } = string.Empty;
-        [field: SerializeField] public string OverrideBuyConfirmNodeDescription { get; set; } = string.Empty;
+        [field: SerializeField][field: TextArea(2, 20)] public string OverrideInfoNodeDescription { get; set; } = string.Empty;
+        [field: SerializeField][field: TextArea(2, 20)] public string OverrideBuyNodeDescription { get; set; } = string.Empty;
+        [field: SerializeField][field: TextArea(2, 20)] public string OverrideBuyConfirmNodeDescription { get; set; } = string.Empty;
 
-        public TerminalNode BuyNode { get; internal set; }
-        public TerminalNode BuyConfirmNode { get; internal set; }
-        public TerminalNode BuyInfoNode { get; internal set; }
+        [field: Space(5)]
+        [field: SerializeField] public TerminalNode BuyNode { get; internal set; }
+        [field: SerializeField] public TerminalNode BuyConfirmNode { get; internal set; }
+        [field: SerializeField] public TerminalNode BuyInfoNode { get; internal set; }
 
         public int CreditsWorth
         {

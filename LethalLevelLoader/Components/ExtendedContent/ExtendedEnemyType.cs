@@ -31,9 +31,11 @@ namespace LethalLevelLoader
         [field: SerializeField][field: TextArea(2, 20)] public string InfoNodeDescription { get; set; } = string.Empty;
         [field: SerializeField] public VideoClip InfoNodeVideoClip { get; set; }
 
+        [field: Space(5)]
+        [field: SerializeField] public TerminalNode EnemyInfoNode { get; internal set; }
+
         public ScanNodeProperties ScanNodeProperties { get; internal set; }
         public int EnemyID { get; internal set; } = -1;
-        public TerminalNode EnemyInfoNode { get; internal set; }
 
         public static ExtendedEnemyType Create(EnemyType enemyType)
         {

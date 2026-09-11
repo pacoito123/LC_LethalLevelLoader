@@ -7,16 +7,19 @@ namespace LethalLevelLoader
     {
         public string sceneName = string.Empty;
         public int storyLogID;
+
         [Space(5)]
         //public string terminalKeywordVerb = string.Empty;
         public string terminalKeywordNoun = string.Empty;
+
         [Space(5)]
         public string storyLogTitle = string.Empty;
         [TextArea(2, 20)] public string storyLogDescription = string.Empty;
 
-        [HideInInspector] internal int newStoryLogID;
+        [field: Space(5)]
+        [field: SerializeField] public TerminalNode StoryLogNode { get; internal set; }
 
-        [HideInInspector] internal TerminalNode assignedNode;
+        [HideInInspector] internal int newStoryLogID;
 
         internal override (bool result, string log) TryValidateContent()
         {

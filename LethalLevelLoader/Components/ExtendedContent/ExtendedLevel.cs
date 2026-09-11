@@ -99,6 +99,11 @@ namespace LethalLevelLoader
         [field: SerializeField][field: TextArea(2, 20)] public string OverrideRouteNodeDescription { get; set; } = string.Empty;
         [field: SerializeField][field: TextArea(2, 20)] public string OverrideRouteConfirmNodeDescription { get; set; } = string.Empty;
 
+        [field: Space(5)]
+        [field: SerializeField] public TerminalNode RouteNode { get; internal set; }
+        [field: SerializeField] public TerminalNode RouteConfirmNode { get; internal set; }
+        [field: SerializeField] public TerminalNode InfoNode { get; internal set; }
+
         [field: Space(10)]
         [field: Header("Misc. Settings")]
         [field: Space(5)]
@@ -166,11 +171,7 @@ namespace LethalLevelLoader
         public bool IsCurrentLevel => LevelManager.CurrentExtendedLevel == this;
         public bool IsLevelLoaded => IsCurrentLevel && SceneManager.GetSceneByName(SelectableLevel.sceneName).isLoaded;
 
-        [HideInInspector] public LevelEvents LevelEvents { get; internal set; } = new LevelEvents();
-
-        public TerminalNode RouteNode { get; internal set; }
-        public TerminalNode RouteConfirmNode { get; internal set; }
-        public TerminalNode InfoNode { get; internal set; }
+        public LevelEvents LevelEvents { get; internal set; } = new LevelEvents();
         public TerminalNode SimulateNode { get; internal set; }
 
         //Dunno about these yet

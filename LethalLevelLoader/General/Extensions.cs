@@ -232,5 +232,42 @@ namespace LethalLevelLoader
                 component = gameObject.AddComponent<T>();
             return component;
         }
+
+        public static void ResetValues(this TerminalNode terminalNode)
+        {
+            terminalNode.displayText ??= string.Empty;
+            terminalNode.terminalEvent = string.Empty;
+
+            terminalNode.clearPreviousText = false;
+            terminalNode.maxCharactersToType = 25;
+
+            terminalNode.buyItemIndex = -1;
+            terminalNode.buyVehicleIndex = -1;
+            terminalNode.isConfirmationNode = false;
+            terminalNode.buyRerouteToMoon = -1;
+            terminalNode.displayPlanetInfo = -1;
+
+            terminalNode.shipUnlockableID = -1;
+            terminalNode.buyUnlockable = false;
+            terminalNode.returnFromStorage = false;
+
+            terminalNode.itemCost = 0;
+
+            terminalNode.creatureFileID = -1;
+            terminalNode.creatureName = string.Empty;
+            terminalNode.storyLogFileID = -1;
+
+            terminalNode.overrideOptions = false;
+            terminalNode.acceptAnything = false;
+            terminalNode.terminalOptions = [];
+
+            // terminalNode.playClip = null;
+            if (terminalNode.playClip == null)
+                terminalNode.playSyncedClip = -1;
+            // terminalNode.displayTexture = null;
+            // terminalNode.displayVideo = null;
+            // terminalNode.loadImageSlowly = false;
+            // terminalNode.persistentImage = false;
+        }
     }
 }

@@ -12,9 +12,11 @@ namespace LethalLevelLoader
 
         public int VehicleID { get; set; }
 
-        public TerminalNode VehicleBuyNode { get; set; }
-        public TerminalNode VehicleBuyConfirmNode { get; set; }
-        public TerminalNode VehicleInfoNode { get; set; }
+        [field: Header("Terminal Store & Info Override Settings")]
+
+        [field: SerializeField] public TerminalNode VehicleBuyNode { get; set; }
+        [field: SerializeField] public TerminalNode VehicleBuyConfirmNode { get; set; }
+        [field: SerializeField] public TerminalNode VehicleInfoNode { get; set; }
 
         internal static ExtendedBuyableVehicle Create(BuyableVehicle newBuyableVehicle)
         {
