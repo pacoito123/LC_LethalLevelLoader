@@ -259,7 +259,7 @@ namespace LethalLevelLoader
             dayHistoryList.Add(newDayHistory);
         }
 
-        public static int CalculateExtendedLevelDifficultyRating(ExtendedLevel extendedLevel, bool debugResults = false)
+        public static int CalculateExtendedLevelDifficultyRating(ExtendedLevel extendedLevel, bool debugResults = true)
         {
             int returnRating = 0;
             string debugString = "Calculated Difficulty Rating For ExtendedLevel: " + extendedLevel.NumberlessPlanetName + "(" + extendedLevel.SelectableLevel.riskLevel + ")" + " ----- ";

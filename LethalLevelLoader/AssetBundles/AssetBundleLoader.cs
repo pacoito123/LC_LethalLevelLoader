@@ -126,12 +126,12 @@ namespace LethalLevelLoader.AssetBundles
             {
                 string fileName = "UNKNOWN";
                 if (filePath.Contains(Path.DirectorySeparatorChar))
-                    fileName = filePath.Substring(filePath.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+                    fileName = filePath[(filePath.LastIndexOf(Path.DirectorySeparatorChar) + 1)..];
 
                 // Skip any bundles defined in the blacklist.
                 if (Settings.bundlesBlacklist?.Length > 0 && Array.IndexOf(Settings.bundlesBlacklist, fileName) != -1)
                 {
-                    DebugHelper.Log("Bundle '" + fileName + "' found in blacklist, it will not be loaded...", DebugType.User);
+                    DebugHelper.Log($"Bundle '{fileName}' found in blacklist, it will not be loaded...", DebugType.User);
                     continue;
                 }
 
@@ -153,7 +153,7 @@ namespace LethalLevelLoader.AssetBundles
                         // Make sure bundles are the same (time-wise), in case there's any changes done to scenes for a different version of the mod that's loading.
                         if (bundleManifest.timestamp == File.GetLastWriteTime(info.AssetBundleFilePath).Ticks)
                         {
-                            DebugHelper.Log("Skipping streaming bundle '" + bundleManifest.bundleName + "', as it will be loaded later!", DebugType.User);
+                            DebugHelper.Log($"Skipping streaming bundle '{bundleManifest.bundleName}', as it will be loaded later!", DebugType.User);
                             info.Initialize(); // Initialize AssetBundleInfo fields for proper AssetBundleGroup creation.
 
                             requestedBundleCount--;
@@ -162,8 +162,10 @@ namespace LethalLevelLoader.AssetBundles
                             continue;
                         }
                         else
-                            DebugHelper.Log("Found different version of bundle '" + bundleManifest.bundleName + "', it will not be skipped.", DebugType.User);
+                            DebugHelper.Log($"Found different version of bundle '{bundleManifest.bundleName}', it will not be skipped.", DebugType.User);
                     }
+                    else
+                        DebugHelper.Log($"Queued bundle '{info.AssetBundleFileName}' for loading...", DebugType.User);
 
                     info.TryLoadBundle();
                 }
@@ -174,7 +176,6 @@ namespace LethalLevelLoader.AssetBundles
                 AllowLoading = true;
                 OnBundlesFinishedProcessing.Invoke();
             }
-
         }
 
         private static void OnAssetBundleLoadChanged(AssetBundleInfo info)
