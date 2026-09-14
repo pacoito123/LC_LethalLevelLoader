@@ -141,7 +141,7 @@ namespace LethalLevelLoader.AssetBundles
             int priority = requestedBundleCount;
             foreach (FileInfo bundleInfo in lethalBundles)
             {
-                AssetBundleInfo newInfo = new AssetBundleInfo(Instance, bundleInfo.FullName, bundleInfo.Name)
+                AssetBundleInfo newInfo = new AssetBundleInfo(bundleInfo.FullName, bundleInfo.Name)
                 {
                     BundleSizeBytes = bundleInfo.Length,
                     Priority = priority--

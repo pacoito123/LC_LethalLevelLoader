@@ -12,11 +12,10 @@ namespace LethalLevelLoader.AssetBundles
     public enum AssetBundleType { Unknown, Standard, Streaming }
     public enum AssetBundleLoadingStatus { None, Loading, Unloading }
 
-    public class AssetBundleInfo(MonoBehaviour newCoroutineHandler, string filePath, string fileName)
+    public class AssetBundleInfo(string filePath, string fileName)
     {
         private bool hasInitialized;
         private AssetBundle assetBundle;
-        private readonly MonoBehaviour coroutineHandler = newCoroutineHandler;
         private AssetBundleCreateRequest activeLoadRequest;
         private AssetBundleUnloadOperation activeUnloadRequest;
 
@@ -84,7 +83,7 @@ namespace LethalLevelLoader.AssetBundles
         public ExtendedEvent<AssetBundleInfo> OnBundleLoaded = new ExtendedEvent<AssetBundleInfo>();
         public ExtendedEvent<AssetBundleInfo> OnBundleUnloaded = new ExtendedEvent<AssetBundleInfo>();
 
-        public AssetBundleInfo(MonoBehaviour newCoroutineHandler, string filePath) : this(newCoroutineHandler, filePath, "UNKNOWN")
+        public AssetBundleInfo(string filePath) : this(filePath, "UNKNOWN")
         {
             AssetBundleFileName = filePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)[^1];
         }
@@ -142,9 +141,9 @@ namespace LethalLevelLoader.AssetBundles
                 OnBundleLoaded.Invoke(this); //Feels a little strange but if something requests a bundle to be loaded and expects this event to fire in response we wanna fire it in the event it's already loaded. (might change later) 
                 return (true);
             }
-            else if (IsAssetBundleLoaded == false && activeLoadRequest == null)
+            else if (IsAssetBundleLoaded == false && activeLoadRequest == null && AssetBundleLoader.Instance != null)
             {
-                coroutineHandler.StartCoroutine(LoadBundleRequest());
+                AssetBundleLoader.Instance.StartCoroutine(LoadBundleRequest());
                 return (true);
             }
             else
@@ -164,9 +163,9 @@ namespace LethalLevelLoader.AssetBundles
                 OnBundleUnloaded.Invoke(this);  //Feels a little strange but if something requests a bundle to be unloaded and expects this event to fire in response we wanna fire it in the event it's already unloaded. (might change later) 
                 return (true);
             }
-            else if (activeUnloadRequest == null)
+            else if (activeUnloadRequest == null && AssetBundleLoader.Instance != null)
             {
-                coroutineHandler.StartCoroutine(UnloadBundleRequest());
+                AssetBundleLoader.Instance.StartCoroutine(UnloadBundleRequest());
                 return (true);
             }
             else
