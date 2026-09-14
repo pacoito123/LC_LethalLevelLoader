@@ -98,7 +98,7 @@ namespace LethalLevelLoader.AssetBundles
             foreach (AssetBundleInfo info in assetBundleInfos)
             {
                 info.OnBundleLoaded.AddListener(OnAssetBundleInfoLoadChanged);
-                info.OnBundeUnloaded.AddListener(OnAssetBundleInfoLoadChanged);
+                info.OnBundleUnloaded.AddListener(OnAssetBundleInfoLoadChanged);
             }
             GroupName = AssetBundleUtilities.GetDisplayName(assetBundleInfos);
         }

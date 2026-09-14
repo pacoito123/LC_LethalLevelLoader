@@ -82,7 +82,7 @@ namespace LethalLevelLoader.AssetBundles
         }
 
         public ExtendedEvent<AssetBundleInfo> OnBundleLoaded = new ExtendedEvent<AssetBundleInfo>();
-        public ExtendedEvent<AssetBundleInfo> OnBundeUnloaded = new ExtendedEvent<AssetBundleInfo>();
+        public ExtendedEvent<AssetBundleInfo> OnBundleUnloaded = new ExtendedEvent<AssetBundleInfo>();
 
         public AssetBundleInfo(MonoBehaviour newCoroutineHandler, string filePath) : this(newCoroutineHandler, filePath, "UNKNOWN")
         {
@@ -161,7 +161,7 @@ namespace LethalLevelLoader.AssetBundles
             if (IsHotReloadable == false) return (false);
             else if (IsAssetBundleLoaded == false)
             {
-                OnBundeUnloaded.Invoke(this);  //Feels a little strange but if something requests a bundle to be unloaded and expects this event to fire in response we wanna fire it in the event it's already unloaded. (might change later) 
+                OnBundleUnloaded.Invoke(this);  //Feels a little strange but if something requests a bundle to be unloaded and expects this event to fire in response we wanna fire it in the event it's already unloaded. (might change later) 
                 return (true);
             }
             else if (activeUnloadRequest == null)
@@ -235,7 +235,7 @@ namespace LethalLevelLoader.AssetBundles
                 bundleUnloadStopwatch.Stop();
                 LastTimeUnloaded = Time.time;
                 DebugHelper.Log(AssetBundleFileName + " Unloaded (" + LastUnloadTime + ")", DebugType.User);
-                OnBundeUnloaded.Invoke(this);
+                OnBundleUnloaded.Invoke(this);
             }
 
         }
