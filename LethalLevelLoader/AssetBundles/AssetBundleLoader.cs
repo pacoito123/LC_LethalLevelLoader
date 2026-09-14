@@ -67,11 +67,11 @@ namespace LethalLevelLoader.AssetBundles
                 return (false);
             }
 
-            //TODO: Should cache this
+            /* //TODO: Should cache this
             int foundFilesCount = 0;
-            if (directory == null) directory = pluginsFolder;
-            if (specifiedFileExtension == null) specifiedFileExtension = ".*";
-            if (specifiedFileName == null) specifiedFileName = "*";
+            directory ??= pluginsFolder;
+            specifiedFileExtension ??= ".*";
+            specifiedFileName ??= "*";
             foreach (string filePath in Directory.GetFiles(directory.FullName, specifiedFileName + specifiedFileExtension, SearchOption.AllDirectories))
                 foundFilesCount++;
 
@@ -79,7 +79,7 @@ namespace LethalLevelLoader.AssetBundles
             {
                 DebugHelper.Log("No Files Found, Cancelling LoadAllBundlesRequest!", DebugType.User);
                 return (false);
-            }
+            } */
 
             LoadAllBundles(directory, specifiedFileName, specifiedFileExtension, onProcessedCallback);
             return (true);
@@ -102,7 +102,6 @@ namespace LethalLevelLoader.AssetBundles
 
         private static void LoadAllBundles(DirectoryInfo directory = null, string specifiedFileName = null, string specifiedFileExtension = null, ParameterEvent<AssetBundleGroup> onProcessedCallback = null)
         {
-
             AllowLoading = false;
             processedBundleCount = 0;
             requestedBundleCount = 0;
@@ -122,21 +121,31 @@ namespace LethalLevelLoader.AssetBundles
                     list.Add(onProcessedCallback);
             }
 
-            foreach (string filePath in Directory.GetFiles(directory.FullName, specifiedFileName + specifiedFileExtension, SearchOption.AllDirectories))
+            List<FileInfo> lethalBundles = [];
+            foreach (FileInfo fileInfo in directory.GetFiles(specifiedFileName + specifiedFileExtension, SearchOption.AllDirectories))
             {
-                string fileName = "UNKNOWN";
-                if (filePath.Contains(Path.DirectorySeparatorChar))
-                    fileName = filePath[(filePath.LastIndexOf(Path.DirectorySeparatorChar) + 1)..];
+                string fileName = fileInfo.Name;
 
                 // Skip any bundles defined in the blacklist.
-                if (Settings.bundlesBlacklist?.Length > 0 && Array.IndexOf(Settings.bundlesBlacklist, fileName) != -1)
+                if (Settings.bundlesBlacklist?.Length > 0 && Array.FindIndex(Settings.bundlesBlacklist, bundleName => string.Equals(bundleName, fileName, StringComparison.OrdinalIgnoreCase)) != -1)
                 {
                     DebugHelper.Log($"Bundle '{fileName}' found in blacklist, it will not be loaded...", DebugType.User);
                     continue;
                 }
 
-                requestedBundleCount++;
-                AssetBundleInfo newInfo = new AssetBundleInfo(Instance, filePath, fileName);
+                lethalBundles.Add(fileInfo);
+            }
+            requestedBundleCount = lethalBundles.Count;
+            lethalBundles.Sort(new FileInfoSizeComparer(ascending: false));
+
+            int priority = requestedBundleCount;
+            foreach (FileInfo bundleInfo in lethalBundles)
+            {
+                AssetBundleInfo newInfo = new AssetBundleInfo(Instance, bundleInfo.FullName, bundleInfo.Name)
+                {
+                    BundleSizeBytes = bundleInfo.Length,
+                    Priority = priority--
+                };
                 newInfo.OnBundleLoaded.AddListener(OnAssetBundleLoadChanged);
                 Instance.AssetBundleInfos.Add(newInfo);
             }
@@ -176,6 +185,11 @@ namespace LethalLevelLoader.AssetBundles
                 AllowLoading = true;
                 OnBundlesFinishedProcessing.Invoke();
             }
+        }
+
+        internal struct FileInfoSizeComparer(bool ascending = true) : IComparer<FileInfo>
+        {
+            public readonly int Compare(FileInfo a, FileInfo b) => (ascending) ? a.Length.CompareTo(b.Length) : b.Length.CompareTo(a.Length);
         }
 
         private static void OnAssetBundleLoadChanged(AssetBundleInfo info)

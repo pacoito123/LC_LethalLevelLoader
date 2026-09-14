@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using LethalLevelLoader.Compatibility;
 using UnityEngine;
@@ -27,7 +28,18 @@ namespace LethalLevelLoader.AssetBundles
         public string LastUnloadTime => AssetBundleUtilities.GetStopWatchTime(bundleUnloadStopwatch);
         public float LastTimeUnloaded { get; private set; }
 
-
+        public long BundleSizeBytes { get; internal set; }
+        public string BundleSizeFormatted
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(field) && BundleSizeBytes > 0)
+                    field = (BundleSizeBytes / (double)Math.Pow(1024, 2)).ToString("0.00", CultureInfo.InvariantCulture) + " MB";
+                return field;
+            }
+            private set;
+        } = string.Empty;
+        public int Priority { get; internal set; }
 
         private List<string> allAssetPaths = new List<string>();
         private List<string> streamingBundleScenePaths = new List<string>();
@@ -164,25 +176,40 @@ namespace LethalLevelLoader.AssetBundles
             }
         }
 
+        private static int activeRequests;
+
         private IEnumerator LoadBundleRequest()
         {
             bundleLoadStopwatch = Stopwatch.StartNew();
             string combinedPath = Path.Combine(Application.streamingAssetsPath, AssetBundleFilePath);
-            activeLoadRequest = AssetBundle.LoadFromFileAsync(combinedPath);
+
+            while (activeLoadRequest == null)
+            {
+                if (activeRequests < Environment.ProcessorCount * 2)
+                {
+                    activeLoadRequest = AssetBundle.LoadFromFileAsync(combinedPath);
+                    activeLoadRequest.priority = Priority;
+                    activeRequests++;
+                }
+                else
+                    yield return null;
+            }
             yield return activeLoadRequest;
             if (assetBundle != null || (activeLoadRequest.isDone && activeLoadRequest.assetBundle != null))
             {
                 assetBundle = activeLoadRequest.assetBundle;
                 if (hasInitialized == false)
                     Initialize();
+                activeRequests--;
                 activeLoadRequest = null;
                 bundleLoadStopwatch.Stop();
                 LastTimeLoaded = Time.time;
-                DebugHelper.Log(AssetBundleFileName + " Loaded (" + LastLoadTime + ")!", DebugType.User);
+                DebugHelper.Log(AssetBundleFileName + " (" + BundleSizeFormatted + ") Loaded (" + LastLoadTime + ")!", DebugType.User);
                 OnBundleLoaded.Invoke(this);
             }
             else
             {
+                activeRequests--;
                 activeLoadRequest = null;
                 bundleLoadStopwatch.Stop();
                 LastTimeLoaded = Time.time;
