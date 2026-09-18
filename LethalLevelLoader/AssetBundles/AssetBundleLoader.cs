@@ -67,22 +67,8 @@ namespace LethalLevelLoader.AssetBundles
                 return (false);
             }
 
-            /* //TODO: Should cache this
-            int foundFilesCount = 0;
-            directory ??= pluginsFolder;
-            specifiedFileExtension ??= ".*";
-            specifiedFileName ??= "*";
-            foreach (string filePath in Directory.GetFiles(directory.FullName, specifiedFileName + specifiedFileExtension, SearchOption.AllDirectories))
-                foundFilesCount++;
-
-            if (foundFilesCount == 0)
-            {
-                DebugHelper.Log("No Files Found, Cancelling LoadAllBundlesRequest!", DebugType.User);
-                return (false);
-            } */
-
             LoadAllBundles(directory, specifiedFileName, specifiedFileExtension, onProcessedCallback);
-            return (true);
+            return (requestedBundleCount > 0);
         }
 
         private static IEnumerator ClearCacheRoutine()
