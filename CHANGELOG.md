@@ -15,6 +15,7 @@
 **<details><summary>Fixes</summary>**
 
 * Fixed ExtendedEnemyType Bestiary entries not displaying properly
+* Fixed Level1Flow3Exits Facility variant not being properly added to March
 
 </details>
 

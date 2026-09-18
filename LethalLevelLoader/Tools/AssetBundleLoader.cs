@@ -631,6 +631,9 @@ namespace LethalLevelLoader
                 : dungeonName.StartsWith("Level3", StringComparison.Ordinal) ? "Mineshaft"
                 : dungeonName.StartsWith("Level4", StringComparison.Ordinal) ? "Aquarium" // What if I call it though...
                 : "Unknown";
+            extendedDungeonFlow.DungeonName += dungeonName.EndsWith("ExtraLarge", StringComparison.Ordinal) ? "ExtraLarge"
+                : dungeonName.EndsWith("3Exits", StringComparison.Ordinal) ? "3Exits"
+                : string.Empty;
             extendedDungeonFlow.ContentTags.Add(ExtendedMod.VanillaContentTag);
             extendedDungeonFlow.Initialize();
             PatchedContent.VanillaMod.RegisterExtendedContent(extendedDungeonFlow);
