@@ -103,9 +103,6 @@ namespace LethalLevelLoader
             if (LethalPerformanceCompatibility.Enabled)
                 Harmony.PatchAll(typeof(LethalPerformanceCompatibility));
 
-            if (DeepSewersCompatibility.Enabled)
-                DeepSewersCompatibility.FixDeepSewersGeneration();
-
             DebugHelper.Log("Additional LethalLevelLoader Compatibilities Done.", DebugType.User);
         }
     }
